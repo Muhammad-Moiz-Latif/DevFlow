@@ -1,8 +1,9 @@
 import { Router } from "express";
-
+import { authController } from "./controllers";
+import { upload } from "../../middlewares/multer";
 export const router = Router();
 
-router.post("/register");
+router.post("/register", upload.single("image"), authController.registerUser);
 
 router.post("/login");
 

@@ -1,10 +1,28 @@
 import express, { type Response } from 'express';
 import { router as AuthRoutes } from './modules/auth/routes';
+import cookieParser from 'cookie-parser';
+import passport from 'passport';
+
+
+
 
 const app = express();
-const PORT = 3000;
+
+//express middleware which parses incoming JSON data from req into json object and stored in req.body
+app.use(express.json());
+
+//parses application/form-data only (converts string into js notation)
+app.use(express.urlencoded({ extended: true }));
+
+//middleware for cookies
+app.use(cookieParser());
+
+// Initialize Passport
+app.use(passport.initialize());
 
 app.use('/api/auth', AuthRoutes);
+
+const PORT = 3000;
 
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
