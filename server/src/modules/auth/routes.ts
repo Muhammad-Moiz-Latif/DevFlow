@@ -5,15 +5,21 @@ export const router = Router();
 
 router.post("/register", upload.single("image"), authController.registerUser);
 
-router.post("/login");
+router.post("/resend-verification", authController.resendVerificationToken);
 
-router.get("/logout");
+router.post("/verify-email", authController.verifyEmailOTP);
 
-router.post("/verify-email");
 
-router.post("/resend-verification");
+// router.get("")
 
-router.post("/forgot-password");
+// router.post("/login");
 
-router.post("/reset-password");
+// router.get("/logout");
+
+
+// router.post("/resend-verification");
+
+// router.post("/forgot-password");
+
+// router.post("/reset-password");
 
