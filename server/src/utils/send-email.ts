@@ -109,7 +109,7 @@ export const sendEmailToken = async (username: string, email: string, type: emai
                     color: #333;
                 ">${resetLink}</p>
 
-                <p><strong>This link will expire in 1 hour.</strong></p>
+                <p><strong>This link will expire in 10 minutes.</strong></p>
                 <p>If you didn't request a password reset, you can safely ignore this email. Your password will not change.</p>
                 <hr>
                 <p style="color: #666; font-size: 12px;">

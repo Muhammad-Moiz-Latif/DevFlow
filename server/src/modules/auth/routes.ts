@@ -3,6 +3,7 @@ import { authController } from "./controllers";
 import { upload } from "../../middlewares/multer";
 export const router = Router();
 
+// REGISTRATION ENDPOINTS
 router.post("/register", upload.single("image"), authController.registerUser);
 
 router.post("/resend-verification", authController.resendVerificationToken);
@@ -10,16 +11,19 @@ router.post("/resend-verification", authController.resendVerificationToken);
 router.post("/verify-email", authController.verifyEmailOTP);
 
 
-// router.get("")
+// LOGIN ENDPOINTS
+router.post("/login", authController.loginUser);
 
-// router.post("/login");
+router.post("/forgot-password", authController.forgotPassword);
 
-// router.get("/logout");
+router.post("/reset-password", authController.resetPassword);
 
 
-// router.post("/resend-verification");
+// GENERAL ENDPOINTS
+router.get("/refresh-access-token", authController.refreshAccessToken);
 
-// router.post("/forgot-password");
+router.get("/logout", authController.handleLogout);
 
-// router.post("/reset-password");
+
+
 

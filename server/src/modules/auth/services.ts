@@ -36,6 +36,24 @@ export const authServices = {
         return getToken;
     },
 
+    async getVerificationTokenViaTokenSecret(tokenSecret: string) {
+        const [getToken] = await db.select().from(verificationTokenTable).where(and(
+            eq(verificationTokenTable.token, tokenSecret),
+            eq(verificationTokenTable.type, "PASSWORD_RESET")
+        ));
+
+        return getToken;
+    },
+
+    async updatePassword(password: string) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const [updatedUser] = await db.update(UserTable).set({
+            password: hashedPassword
+        }).returning();
+
+        return updatedUser;
+    },
+
     async markUserVerified(userId: string) {
         await db.update(UserTable).set({
             status: "SUCCESS"
@@ -55,6 +73,13 @@ export const authServices = {
         const [getUser] = await db.select().from(UserTable).where(
             eq(UserTable.id, userId)
         );
+        return getUser;
+    },
+
+    async getUserViaEmail(email: string) {
+        const [getUser] = await db.select().from(UserTable).where(
+            eq(UserTable.email, email)
+        ).limit(1);
         return getUser;
     },
 
