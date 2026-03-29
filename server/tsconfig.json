@@ -8,7 +8,10 @@
     // See also https://aka.ms/tsconfig/module
     "module": "es2022",
     "target": "esnext",
-    "types": [],
+    "types": [
+      "node",
+      "express"
+    ],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -33,7 +36,6 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
     "skipLibCheck": true,
   },
   "exclude": [

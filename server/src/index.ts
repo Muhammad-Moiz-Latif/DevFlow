@@ -1,5 +1,6 @@
 import express, { type Response } from 'express';
 import { router as AuthRoutes } from './modules/auth/routes';
+import { router as WorkspaceRoutes } from './modules/workspace/routes';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 
@@ -21,6 +22,7 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 app.use('/api/auth', AuthRoutes);
+app.use('/api/workspace', WorkspaceRoutes);
 
 const PORT = 3000;
 
