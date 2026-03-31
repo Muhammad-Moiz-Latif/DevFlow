@@ -1,6 +1,6 @@
 {
-  "id": "06e5aceb-6045-497b-b86e-e968935c6f1a",
-  "prevId": "3c775cb2-7d3d-491f-9c5f-2ed95bcc51d0",
+  "id": "1088aaac-985d-46b9-b5b8-706529882231",
+  "prevId": "06e5aceb-6045-497b-b86e-e968935c6f1a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1080,7 +1080,8 @@
         "ISSUE_ASSIGNED",
         "COMMENT_ON_ISSUE",
         "MENTIONED",
-        "INVITE_ACCEPTED"
+        "INVITE_ACCEPTED",
+        "INVITE_ISSUED"
       ]
     },
     "public.projectStatus": {

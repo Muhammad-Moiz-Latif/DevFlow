@@ -52,16 +52,13 @@ export const workspaceServices = {
         return members;
     },
 
-    async updateWorkspace(workspaceId: string, data: Partial<{
-        name: string,
-        slug: string,
-        logo_url: string
-    }>) {
+    async updateWorkspace(workspaceId: string, data: Partial<typeof WorkspaceTable.$inferInsert>) {
+
         const updateData: typeof data = {};
 
         if (data.name !== undefined) updateData.name = data.name;
         if (data.slug !== undefined) updateData.slug = data.slug;
-        if (data.logo_url !== undefined) updateData.logo_url = data.logo_url;
+        if (data.img !== undefined && data.img != null) updateData.img = data.img;
 
         if (Object.keys(updateData).length === 0) {
             throw new Error("No fields provided to update");
@@ -76,6 +73,15 @@ export const workspaceServices = {
         return updated;
     },
 
+    async deleteWorkspace(workspaceId: string, ownerId: string) {
+        const [deleted] = await db.delete(WorkspaceTable).where(and(
+            eq(WorkspaceTable.id, workspaceId),
+            eq(WorkspaceTable.owner_id, ownerId)
+        )).returning();
+
+        return deleted;
+    },
+
     async getWorkspaceMemberViaId(userId: string, workspaceId: string) {
         const [member] = await db.select().from(WorkspaceMembersTable).where(and(
             eq(WorkspaceMembersTable.user_id, userId),
@@ -85,15 +91,5 @@ export const workspaceServices = {
         return member;
     },
 
-    async createProject(name: string, description: string, slug: string, workspaceId: string, createdBy: string) {
-        const [project] = await db.insert(ProjectTable).values({
-            name,
-            slug,
-            description,
-            workspace_id: workspaceId,
-            created_by: createdBy
-        }).returning();
-
-        return project;
-    },
+   
 };

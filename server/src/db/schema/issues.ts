@@ -9,10 +9,10 @@ export const Priority = pgEnum("priority", ["URGENT", "HIGH", "MEDIUM", "LOW"]);
 export const IssueTable = pgTable("issues", (t) => ({
     id: t.uuid("id").primaryKey().defaultRandom(),
     project_id: t.uuid("projectId").references(() => ProjectTable.id),
-    wordkspace_id: t.uuid("workspaceId").references(() => WorkspaceTable.id),
+    workspace_id: t.uuid("workspaceId").references(() => WorkspaceTable.id),
     title: t.varchar("title", { length: 255 }).notNull(),
     description: t.text("description").notNull(),
-    status: IssueStatus("status").default('TODO',),
+    status: IssueStatus("status").default('TODO'),
     priority: Priority("priority").default("LOW"),
     assignee_id: t.uuid("assigneeId").references(() => UserTable.id),
     createdBy: t.uuid("createdBy").references(() => UserTable.id),

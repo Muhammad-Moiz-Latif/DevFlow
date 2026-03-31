@@ -8,6 +8,13 @@
       "when": 1772615067175,
       "tag": "0000_mixed_pandemic",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774977633757,
+      "tag": "0001_slimy_dragon_man",
+      "breakpoints": true
     }
   ]
 }

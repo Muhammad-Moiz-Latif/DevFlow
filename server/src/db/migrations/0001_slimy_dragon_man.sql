@@ -1,0 +1,1 @@
+ALTER TYPE "public"."notificationType" ADD VALUE 'INVITE_ISSUED';

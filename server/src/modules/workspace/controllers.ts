@@ -120,50 +120,40 @@ export const workspaceControllers = {
         };
     },
 
-    async createProjectInsideWorkspace(req: Request, res: Response) {
+    async updateWorkspace(req: Request, res: Response) {
         try {
-            const { name, description } = req.body;
-            const workspaceId = req.params.workspaceId as string;
-            const userId = req.user?.id;
 
-            if (!workspaceId || !userId) {
-                return res.status(401).json({
-                    success: false,
-                    message: "Unauthorized access"
-                });
-            };
+            const { name, slug } = req.body;
+
+            const workspaceId = req.params.workspaceId as string;
 
             const doesWorkspaceExist = await workspaceServices.getWorkspaceViaId(workspaceId);
 
             if (!doesWorkspaceExist) {
-                return res.status(403).json({
-                    success: false,
-                    message: "The workspace does not exist"
+                return res.status(409).json({
+                    success: true,
+                    message: "Workspace does not exist"
                 });
             };
 
-            const doesMemberExist = await workspaceServices.getWorkspaceMemberViaId(userId, workspaceId);
+            const image = req.file;
 
-            if (!doesMemberExist) {
-                return res.status(403).json({
-                    success: false,
-                    message: "You are not a member of this workspace"
-                });
+            let imgURL: string | null = null;
+
+            if (image) {
+                imgURL = await uploadImage(image.buffer);
             };
 
-            const slug = slugify(name, {
+            const regexSlug = slugify(slug, {
                 lower: true,
                 strict: true
             });
 
-            const project = await workspaceServices.createProject(name, description, slug, workspaceId, userId);
+            await workspaceServices.updateWorkspace(workspaceId, { name, slug: regexSlug, img: imgURL });
 
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
-                message: "created project successfully!",
-                data: {
-                    projectId: project?.id
-                }
+                message: "Workspace has been updated successfully"
             });
 
         } catch (error) {
@@ -174,4 +164,43 @@ export const workspaceControllers = {
             });
         };
     },
+
+    async deleteWorkspace(req: Request, res: Response) {
+        try {
+            const workspaceId = req.params.workspaceId as string;
+
+            const userId = req.user?.id;
+
+            if (!userId) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Forbidden access"
+                })
+            };
+
+            const doesWorkspaceExist = await workspaceServices.getWorkspaceViaId(workspaceId);
+
+            if (!doesWorkspaceExist) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Workspace does not exist"
+                });
+            };
+
+            await workspaceServices.deleteWorkspace(workspaceId, userId);
+
+            return res.status(200).json({
+                success: true,
+                message: "Workspace has been deleted successfully!"
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
+    },
+
 };

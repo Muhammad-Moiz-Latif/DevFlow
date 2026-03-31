@@ -8,13 +8,11 @@ export const router = Router();
 
 router.post('/create-workspace', upload.single("image"), verifyJWT, workspaceControllers.createWorkspace);
 
-router.get('/workspace/:workspaceId', verifyJWT, workspaceControllers.getWorkspace);
+router.get('/:workspaceId', verifyJWT, workspaceControllers.getWorkspace);
 
-router.get("/workspace/:workspaceId/members", verifyJWT, workspaceControllers.getAllWorkspaceMembers);
+router.get("/:workspaceId/members", verifyJWT, workspaceControllers.getAllWorkspaceMembers);
 
-router.post('/create-project/:workspaceId', verifyJWT, allowedRoles(['ADMIN', 'MEMBER']), workspaceControllers.createProjectInsideWorkspace);
+router.patch("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.updateWorkspace);
 
-// GET    /workspace/:workspaceId              → get single workspace
-// GET    /workspace/:workspaceId/members      → get all members of workspace
-// DELETE /workspace/:workspaceId              → delete workspace (admin only)
-// PATCH  /workspace/:workspaceId              → update name, slug, logo (admin only)
+router.delete("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.deleteWorkspace);
+
