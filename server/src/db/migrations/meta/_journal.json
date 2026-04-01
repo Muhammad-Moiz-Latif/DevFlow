@@ -15,6 +15,13 @@
       "when": 1774977633757,
       "tag": "0001_slimy_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775030259009,
+      "tag": "0002_flimsy_starhawk",
+      "breakpoints": true
     }
   ]
 }

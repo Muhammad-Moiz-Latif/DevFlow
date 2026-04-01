@@ -10,9 +10,13 @@ export const router = Router({
 
 router.post("/create-issue", verifyJWT, allowedRoles(['ADMIN', 'MEMBER']), IssueControllers.createIssue);
 
-// GET    /workspace/:workspaceId/projects/:projectId/issues                → get all issues (kanban data)
-// GET    /workspace/:workspaceId/projects/:projectId/issues/:issueId       → get single issue
-// PATCH  /workspace/:workspaceId/projects/:projectId/issues/:issueId       → update issue
-// DELETE /workspace/:workspaceId/projects/:projectId/issues/:issueId       → delete issue
-// PATCH  /workspace/:workspaceId/projects/:projectId/issues/reorder        → drag and drop reorder
-// GET    /workspace/:workspaceId/my-issues                                 → personal dashboard
+router.get('/all-issues', verifyJWT, IssueControllers.getAllIssues);
+
+router.get('/issue/:issueId', verifyJWT, IssueControllers.getIssue);
+
+router.patch('/issue/:issueId', verifyJWT, allowedRoles(['ADMIN', 'MEMBER']), IssueControllers.updateIssue);
+
+router.delete('/issue/:issueId', verifyJWT, allowedRoles(['ADMIN']), IssueControllers.deleteIssue);
+
+router.get('/my-issues', verifyJWT, IssueControllers.myIssues);
+

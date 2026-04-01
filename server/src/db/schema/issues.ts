@@ -17,7 +17,7 @@ export const IssueTable = pgTable("issues", (t) => ({
     assignee_id: t.uuid("assigneeId").references(() => UserTable.id),
     createdBy: t.uuid("createdBy").references(() => UserTable.id),
     order: t.integer("order").default(0),
-    due_date: t.timestamp("dueData").defaultNow(),
+    dueDate: t.timestamp("dueDate").defaultNow(),
     createdAt: t.timestamp("createdAt").defaultNow(),
     updatedAt: t.timestamp("updatedAt").defaultNow(),
 }));
