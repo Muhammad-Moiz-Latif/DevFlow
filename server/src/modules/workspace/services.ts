@@ -44,14 +44,6 @@ export const workspaceServices = {
         return workspace;
     },
 
-    async getAllWorkspaceMembers(workspaceId: string) {
-        const members = await db.select().from(WorkspaceMembersTable).where(
-            eq(WorkspaceMembersTable.workspace_id, workspaceId)
-        );
-
-        return members;
-    },
-
     async updateWorkspace(workspaceId: string, data: Partial<typeof WorkspaceTable.$inferInsert>) {
 
         const updateData: typeof data = {};

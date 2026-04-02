@@ -107,6 +107,15 @@ export const issueServices = {
         return issue.rows[0];
     },
 
+    async getIssueViaWorkspaceAndIssueId(workspaceId: string, issueId: string) {
+        const [issue] = await db.select().from(IssueTable).where(and(
+            eq(IssueTable.id, issueId),
+            eq(IssueTable.workspace_id, workspaceId)
+        ));
+
+        return issue;
+    },
+
     async updateIssue(workspaceId: string, projectId: string, issueId: string, data: Partial<typeof IssueTable.$inferInsert>) {
 
         const updateData = Object.fromEntries(

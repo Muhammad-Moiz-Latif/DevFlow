@@ -92,34 +92,6 @@ export const workspaceControllers = {
         };
     },
 
-    async getAllWorkspaceMembers(req: Request, res: Response) {
-        try {
-            const workspaceId = req.params.workspaceId as string;
-            const userId = req.user?.id;
-
-            if (!workspaceId || !userId) {
-                return res.status(401).json({
-                    success: false,
-                    message: "Unauthorized access"
-                });
-            };
-
-            const workspaceMembers = await workspaceServices.getAllWorkspaceMembers(workspaceId);
-
-            return res.status(200).json({
-                success: true,
-                message: "Retrieved all of the workspace members successfully!",
-                data: workspaceMembers
-            });
-
-        } catch (error) {
-            return res.status(500).json({
-                success: false,
-                message: "Internal server error"
-            });
-        };
-    },
-
     async updateWorkspace(req: Request, res: Response) {
         try {
 

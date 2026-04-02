@@ -10,8 +10,6 @@ router.post('/create-workspace', upload.single("image"), verifyJWT, workspaceCon
 
 router.get('/:workspaceId', verifyJWT, workspaceControllers.getWorkspace);
 
-router.get("/:workspaceId/members", verifyJWT, workspaceControllers.getAllWorkspaceMembers);
-
 router.patch("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.updateWorkspace);
 
 router.delete("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.deleteWorkspace);

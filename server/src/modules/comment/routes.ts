@@ -1,6 +1,15 @@
+import { Router } from "express";
 import { commentControllers } from "./controllers";
+import { verifyJWT } from "../../middlewares/verifyJWT";
 
-// POST   /workspace/:workspaceId/issues/:issueId/comments           → create comment or reply
-// GET    /workspace/:workspaceId/issues/:issueId/comments           → get all comments for an issue
-// PATCH  /workspace/:workspaceId/issues/:issueId/comments/:commentId → edit your own comment
-// DELETE /workspace/:workspaceId/issues/:issueId/comments/:commentId → delete your own comment
+export const router = Router({
+    mergeParams: true
+});
+
+router.post('/create-comment', verifyJWT, commentControllers.createComment);
+
+router.get('/all-comments', verifyJWT, commentControllers.getAllComments);
+
+router.patch('/comment/:commentId', verifyJWT, commentControllers.editComment);
+
+router.delete('/comment/:commentId', verifyJWT, commentControllers.deleteComment);
