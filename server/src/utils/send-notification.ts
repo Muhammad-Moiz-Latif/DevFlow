@@ -2,7 +2,7 @@ import { db } from "../config/db";
 import { NotificationTable } from "../db/schema/notifications";
 
 
-type Notification = 'ISSUE_ASSIGNED' | 'COMMENT_ON_ISSUE' | 'MENTIONED' | 'INVITE_ACCEPTED' | "INVITE_ISSUED"
+type Notification = 'ISSUE_ASSIGNED' | 'COMMENT_ON_ISSUE' | 'MENTIONED' | 'INVITE_ACCEPTED' | "INVITE_ISSUED" | "REMOVED"
 
 export const sendNotification = async (data: {
     type: Notification,

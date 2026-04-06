@@ -4,6 +4,9 @@ import { router as WorkspaceRoutes } from './modules/workspace/routes';
 import { router as ProjectRoutes } from './modules/projects/routes';
 import { router as IssueRoutes } from './modules/issue/routes';
 import { router as CommentRoutes } from './modules/comment/routes';
+import { router as MemberRoutes } from './modules/members/routes';
+import { router as WorkspaceInvitationRoutes } from './modules/invitations/routes';
+import { router as InvitationAcceptRoutes } from './modules/invitations/accept-routes';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 
@@ -27,6 +30,9 @@ app.use(passport.initialize());
 app.use('/api/auth', AuthRoutes);
 app.use('/api/workspace', WorkspaceRoutes);
 app.use('/api/workspace/:workspaceId', ProjectRoutes);
+app.use('/api/workspace/:workspaceId/members', MemberRoutes);
+app.use('/api/workspace/:workspaceId/invitations', WorkspaceInvitationRoutes);
+app.use('/api/invitations', InvitationAcceptRoutes);
 app.use('/api/workspace/:workspaceId/project/:projectId', IssueRoutes);
 app.use('/api/workspace/:workspaceId/issue/:issueId', CommentRoutes);
 

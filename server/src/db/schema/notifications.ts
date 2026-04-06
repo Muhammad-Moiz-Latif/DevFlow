@@ -2,7 +2,7 @@ import { pgEnum, pgTable } from 'drizzle-orm/pg-core';
 import { UserTable } from './users';
 import { WorkspaceTable } from './workspaces';
 
-export const NotificationType = pgEnum("notificationType", ['ISSUE_ASSIGNED', 'COMMENT_ON_ISSUE', 'MENTIONED', 'INVITE_ACCEPTED', 'INVITE_ISSUED']);
+export const NotificationType = pgEnum("notificationType", ['ISSUE_ASSIGNED', 'COMMENT_ON_ISSUE', 'MENTIONED', 'INVITE_ACCEPTED', 'INVITE_ISSUED', 'REMOVED']);
 
 export const NotificationTable = pgTable('notifications', (t) => ({
     id: t.uuid("id").primaryKey().defaultRandom(),

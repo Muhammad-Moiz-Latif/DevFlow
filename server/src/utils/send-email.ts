@@ -17,6 +17,56 @@ const transporter = nodemailer.createTransport({
 
 export type emailTokenType = "EMAIL_VERIFICATION" | "PASSWORD_RESET";
 
+export const sendWorkspaceInvitationEmail = async (data: {
+    inviterName: string,
+    email: string,
+    workspaceName: string,
+    inviteLink: string,
+    role: "ADMIN" | "MEMBER" | "VIEWER"
+}) => {
+    try {
+        const { rejected } = await transporter.sendMail({
+            from: `DevFlow <${process.env.SENDER_EMAIL}>`,
+            to: data.email,
+            subject: `You have been invited to join ${data.workspaceName} - DevFlow`,
+            html: `
+            <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto;">
+                <h2>Hi there,</h2>
+                <p><strong>${data.inviterName}</strong> invited you to join <strong>${data.workspaceName}</strong> on DevFlow.</p>
+                <p>Your role on acceptance will be <strong>${data.role}</strong>.</p>
+                <p>Click the button below to accept the invitation. If you do not yet have an account, create one first using this same email address, then come back and accept the invite.</p>
+
+                <a href="${data.inviteLink}" style="
+                    display: inline-block;
+                    padding: 12px 24px;
+                    background-color: #0f172a;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    margin: 20px 0;
+                ">Accept Invitation</a>
+
+                <p style="word-break: break-all; background: #f4f4f4; padding: 10px; border-radius: 4px;">
+                    ${data.inviteLink}
+                </p>
+
+                <p><strong>This invitation link will expire in 7 days.</strong></p>
+            </div>
+        `
+        });
+
+        if (rejected.length > 0) {
+            throw new Error("Failed to send invitation email");
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Workspace invitation email error:", error);
+        throw error;
+    }
+};
+
 export const sendEmailToken = async (username: string, email: string, type: emailTokenType, userId: string) => {
     const tokenSecret = type === "EMAIL_VERIFICATION" ? crypto.randomInt(100000, 999999).toString() : crypto.randomBytes(16).toString("hex");
 
