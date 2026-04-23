@@ -1,0 +1,210 @@
+src/
+|
++-- app/
+|   +-- routes/                    # all route components (pages)
+|   |   +-- index.tsx              # redirects to dashboard or login
+|   |   +-- login.tsx
+|   |   +-- register.tsx
+|   |   +-- verify-email.tsx
+|   |   +-- forgot-password.tsx
+|   |   +-- reset-password.tsx
+|   |   +-- dashboard.tsx
+|   |   +-- workspace/
+|   |   |   +-- $workspaceSlug/
+|   |   |       +-- index.tsx      # workspace dashboard
+|   |   |       +-- projects/
+|   |   |       |   +-- index.tsx  # projects list
+|   |   |       |   +-- $projectSlug/
+|   |   |       |       +-- index.tsx   # kanban board
+|   |   |       +-- my-issues.tsx
+|   |   |       +-- members.tsx
+|   |   |       +-- notifications.tsx
+|   |   |       +-- settings.tsx
+|   +-- app.tsx
+|   +-- provider.tsx               # wraps app with QueryClient, SocketProvider, AuthProvider
+|   +-- router.tsx
+|
++-- assets/
+|   +-- fonts/
+|   +-- images/
+|
++-- components/                    # shared, reusable, feature-agnostic components
+|   +-- ui/
+|   |   +-- button.tsx
+|   |   +-- input.tsx
+|   |   +-- modal.tsx
+|   |   +-- dropdown.tsx
+|   |   +-- avatar.tsx
+|   |   +-- badge.tsx
+|   |   +-- toast.tsx
+|   |   +-- tooltip.tsx
+|   |   +-- spinner.tsx
+|   |   +-- drawer.tsx
+|   +-- layout/
+|   |   +-- sidebar.tsx
+|   |   +-- header.tsx
+|   |   +-- protected-route.tsx    # redirects unauthenticated users
+|   |   +-- workspace-layout.tsx   # wraps all workspace pages with sidebar
+|
++-- config/
+|   +-- env.ts                     # exports all import.meta.env variables with types
+|   +-- constants.ts               # app-wide constants like API base URL
+|
++-- features/
+|   +-- auth/
+|   |   +-- api/
+|   |   |   +-- login.ts
+|   |   |   +-- register.ts
+|   |   |   +-- logout.ts
+|   |   |   +-- verify-email.ts
+|   |   |   +-- reset-password.ts
+|   |   +-- components/
+|   |   |   +-- login-form.tsx
+|   |   |   +-- register-form.tsx
+|   |   |   +-- reset-password-form.tsx
+|   |   +-- hooks/
+|   |   |   +-- use-login.ts
+|   |   |   +-- use-register.ts
+|   |   +-- types/
+|   |   |   +-- index.ts
+|   |   +-- stores/
+|   |       +-- auth-store.ts      # zustand store for current user
+|   |
+|   +-- workspaces/
+|   |   +-- api/
+|   |   |   +-- get-workspace.ts
+|   |   |   +-- create-workspace.ts
+|   |   |   +-- update-workspace.ts
+|   |   |   +-- delete-workspace.ts
+|   |   +-- components/
+|   |   |   +-- workspace-switcher.tsx
+|   |   |   +-- create-workspace-modal.tsx
+|   |   |   +-- workspace-settings-form.tsx
+|   |   +-- hooks/
+|   |   |   +-- use-workspace.ts
+|   |   |   +-- use-update-workspace.ts
+|   |   +-- types/
+|   |       +-- index.ts
+|   |
+|   +-- projects/
+|   |   +-- api/
+|   |   |   +-- get-projects.ts
+|   |   |   +-- get-project.ts
+|   |   |   +-- create-project.ts
+|   |   |   +-- update-project.ts
+|   |   |   +-- delete-project.ts
+|   |   +-- components/
+|   |   |   +-- project-card.tsx
+|   |   |   +-- project-list.tsx
+|   |   |   +-- create-project-modal.tsx
+|   |   |   +-- project-settings-form.tsx
+|   |   +-- hooks/
+|   |   |   +-- use-projects.ts
+|   |   |   +-- use-create-project.ts
+|   |   +-- types/
+|   |       +-- index.ts
+|   |
+|   +-- issues/
+|   |   +-- api/
+|   |   |   +-- get-issues.ts
+|   |   |   +-- get-issue.ts
+|   |   |   +-- create-issue.ts
+|   |   |   +-- update-issue.ts
+|   |   |   +-- delete-issue.ts
+|   |   +-- components/
+|   |   |   +-- issue-card.tsx          # kanban card, draggable
+|   |   |   +-- issue-detail-drawer.tsx # right panel when card is clicked
+|   |   |   +-- issue-form.tsx          # shared by create and edit
+|   |   |   +-- kanban-board.tsx        # the four column board
+|   |   |   +-- kanban-column.tsx       # single column with droppable
+|   |   |   +-- priority-badge.tsx
+|   |   |   +-- status-badge.tsx
+|   |   |   +-- assignee-picker.tsx
+|   |   |   +-- due-date-picker.tsx
+|   |   |   +-- my-issues-list.tsx
+|   |   +-- hooks/
+|   |   |   +-- use-issues.ts
+|   |   |   +-- use-create-issue.ts
+|   |   |   +-- use-update-issue.ts
+|   |   |   +-- use-drag-drop.ts        # all dnd-kit logic lives here
+|   |   +-- types/
+|   |       +-- index.ts
+|   |
+|   +-- comments/
+|   |   +-- api/
+|   |   |   +-- get-comments.ts
+|   |   |   +-- create-comment.ts
+|   |   |   +-- update-comment.ts
+|   |   |   +-- delete-comment.ts
+|   |   +-- components/
+|   |   |   +-- comment-thread.tsx      # full list of comments for an issue
+|   |   |   +-- comment-item.tsx        # single comment with replies
+|   |   |   +-- comment-form.tsx        # shared by create and reply
+|   |   +-- hooks/
+|   |   |   +-- use-comments.ts
+|   |   |   +-- use-create-comment.ts
+|   |   +-- types/
+|   |       +-- index.ts
+|   |
+|   +-- members/
+|   |   +-- api/
+|   |   |   +-- get-members.ts
+|   |   |   +-- remove-member.ts
+|   |   |   +-- update-member-role.ts
+|   |   |   +-- send-invitation.ts
+|   |   |   +-- get-invitations.ts
+|   |   |   +-- cancel-invitation.ts
+|   |   |   +-- accept-invitation.ts
+|   |   +-- components/
+|   |   |   +-- member-list.tsx
+|   |   |   +-- member-row.tsx
+|   |   |   +-- invite-modal.tsx
+|   |   |   +-- pending-invitations.tsx
+|   |   |   +-- role-badge.tsx
+|   |   |   +-- change-role-dropdown.tsx
+|   |   +-- hooks/
+|   |   |   +-- use-members.ts
+|   |   |   +-- use-invite-member.ts
+|   |   +-- types/
+|   |       +-- index.ts
+|   |
+|   +-- notifications/
+|       +-- api/
+|       |   +-- get-notifications.ts
+|       |   +-- mark-read.ts
+|       |   +-- mark-all-read.ts
+|       +-- components/
+|       |   +-- notification-list.tsx
+|       |   +-- notification-item.tsx
+|       |   +-- notification-bell.tsx   # bell icon with unread badge in header
+|       +-- hooks/
+|       |   +-- use-notifications.ts
+|       |   +-- use-socket-notifications.ts  # listens for real-time notification events
+|       +-- types/
+|           +-- index.ts
+|
++-- hooks/                         # shared hooks used across multiple features
+|   +-- use-debounce.ts
+|   +-- use-local-storage.ts
+|   +-- use-media-query.ts
+|   +-- use-outside-click.ts
+|
++-- lib/                           # third party library configurations
+|   +-- axios.ts                   # axios ifnstance with base URL and interceptors
+|   +-- query-client.ts            # TanStack Query client configuration
+|   +-- socket.ts                  # Socket.io client instance
+|   +-- zod-schemas.ts             # shared zod schemas used across features
+|
++-- stores/                        # global zustand stores
+|   +-- auth-store.ts              # current user, token, login/logout actions
+|   +-- workspace-store.ts         # currently active workspace
+|
++-- types/                         # shared TypeScript types
+|   +-- api.ts                     # generic API response shape
+|   +-- index.ts                   # re-exports all shared types
+|
++-- utils/                         # shared utility functions
+    +-- format-date.ts
+    +-- format-relative-time.ts    # "2 hours ago" style timestamps
+    +-- get-initials.ts            # "John Doe" → "JD" for avatar fallbacks
+    +-- cn.ts                      # tailwind class merging utility

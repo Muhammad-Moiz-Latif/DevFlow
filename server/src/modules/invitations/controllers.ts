@@ -215,6 +215,7 @@ export const invitationControllers = {
 
             const invitation = await invitationServices.getWorkspaceInvitationByToken(token);
 
+
             if (!invitation) {
                 return res.status(404).json({
                     success: false,
