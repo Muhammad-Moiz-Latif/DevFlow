@@ -1,5 +1,6 @@
 import { Link } from "react-router";
-import { AuthShell, GoogleButton, Divider, Field } from "../../components/ui/AuthShell";
+import { AuthShell, GoogleButton, Divider } from "../../components/ui/AuthShell";
+import { LoginForm } from "../../features/auth/components/login-form";
 
 
 export function LoginPage() {
@@ -18,32 +19,7 @@ export function LoginPage() {
             <GoogleButton label="Continue with Google" />
             <Divider text="or" />
 
-            <form onSubmit={(e) => e.preventDefault()}>
-                <Field
-                    label="Email"
-                    type="email"
-                    placeholder="you@company.com"
-                    autoComplete="email"
-                />
-                <Field
-                    label="Password"
-                    type="password"
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    rightAction={
-                        <a href="#" className="text-[11px] text-primary hover:underline">
-                            Forgot password?
-                        </a>
-                    }
-                />
-
-                <button
-                    type="submit"
-                    className="w-full h-9 mt-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-                >
-                    Sign in
-                </button>
-            </form>
+            <LoginForm />
 
             <p className="text-xs text-muted-foreground text-center mt-5">
                 Don't have an account?{" "}

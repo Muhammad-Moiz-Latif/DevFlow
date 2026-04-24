@@ -127,7 +127,7 @@ export function Field({
     autoComplete?: string;
 }) {
     return (
-        <div className="mb-3.5">
+        <div className="mb-2">
             <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-medium text-foreground/90">{label}</label>
                 {rightAction}
