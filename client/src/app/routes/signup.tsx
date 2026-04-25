@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
 import { AuthShell, GoogleButton, Divider, Field } from "../../components/ui/AuthShell";
 import { Link } from "react-router";
+import { SignUpForm } from "../../features/auth/components/signup-form";
 
 
 
@@ -18,39 +19,7 @@ export function SignupPage() {
             <GoogleButton label="Sign up with Google" />
             <Divider text="or sign up with email" />
 
-            <form onSubmit={(e) => e.preventDefault()}>
-                <Field
-                    label="Full name"
-                    placeholder="Jordan Doe"
-                    autoComplete="name"
-                />
-                <Field
-                    label="Work email"
-                    type="email"
-                    placeholder="you@company.com"
-                    autoComplete="email"
-                />
-                <Field
-                    label="Password"
-                    type="password"
-                    placeholder="At least 8 characters"
-                    autoComplete="new-password"
-                    hint="Use 8+ characters with a mix of letters, numbers & symbols."
-                />
-
-                <div className="space-y-1.5 mt-4 mb-4">
-                    <Requirement met label="Account is free to create" />
-                    <Requirement met label="No credit card required" />
-                    <Requirement label="Pending admin approval after signup" />
-                </div>
-
-                <button
-                    type="submit"
-                    className="w-full h-9 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-                >
-                    Create account
-                </button>
-            </form>
+           <SignUpForm/>
 
             <p className="text-xs text-muted-foreground text-center mt-5">
                 Already have an account?{" "}

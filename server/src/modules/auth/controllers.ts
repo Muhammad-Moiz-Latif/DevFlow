@@ -173,7 +173,7 @@ export const authController = {
 
             if (!email || !password) {
                 return res.status(409).json({
-                    status: false,
+                    success: false,
                     message: "Invalid credentials"
                 });
             };

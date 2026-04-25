@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { router as AuthRoutes } from './modules/auth/routes';
 import { router as WorkspaceRoutes } from './modules/workspace/routes';
 import { router as ProjectRoutes } from './modules/projects/routes';
@@ -15,11 +16,18 @@ import passport from 'passport';
 
 const app = express();
 
+
+
 // express middleware which parses incoming JSON data from req into json object and stored in req.body
 app.use(express.json());
 
 // parses application/form-data only (converts string into js notation)
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true
+}));
 
 // middleware for cookies
 app.use(cookieParser());
@@ -41,5 +49,3 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
 });
-
-
