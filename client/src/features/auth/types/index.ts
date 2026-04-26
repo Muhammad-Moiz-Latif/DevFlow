@@ -13,3 +13,8 @@ export type LoginResponse = ApiResponse<{
     email: string,
     createdAt: string
 }>;
+
+
+export type SignUpResponse = ApiResponse<{
+    userId: string
+}>;

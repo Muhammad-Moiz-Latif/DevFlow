@@ -3,6 +3,10 @@ import { Camera } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod"
+import { useSignUp } from "../query/useSignUp";
+import { useAuth } from "../../../context/authContext";
+import axios from "axios";
+import { successToast } from "../../../components/ui/CustomToasts";
 
 const SignUpSchema = z.object({
     username: z.string().min(8, "Minimum 8 characters are required").max(25, "username is too long"),
@@ -28,6 +32,8 @@ export const SignUpForm = () => {
     const { register, reset, formState: { errors }, handleSubmit, watch } = useForm({
         resolver: zodResolver(SignUpSchema)
     });
+    const [errorMessage, setErrorMessage] = useState("");
+    const { mutate, isPending } = useSignUp();
 
     // watch for live updates in the image value internally in react-hook-form
     const profilePicture = watch("image");
@@ -46,7 +52,20 @@ export const SignUpForm = () => {
     }, [profilePicture]);
 
     const onSubmit: SubmitHandler<SignUpSchemaType> = async (data) => {
-
+        mutate(data, {
+            onSuccess: (response) => {
+                if (response.success) {
+                    console.log(response.message);
+                    reset();
+                }
+            },
+            onError: (error: Error) => {
+                if (axios.isAxiosError(error)) {
+                    console.error(error);
+                    setErrorMessage(error.response?.data.message || "Something went wrong")
+                }
+            }
+        });
     };
 
     return (
@@ -54,12 +73,12 @@ export const SignUpForm = () => {
             className="flex flex-col gap-3.5"
             onSubmit={handleSubmit(onSubmit)}
         >
-            {/* {errorMessage && (
+            {errorMessage && (
                 <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/8 border border-destructive/20 px-4 py-2.5 rounded-xl animate-slide-down">
                     <div className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
                     {errorMessage}
                 </div>
-            )} */}
+            )}
 
             {/* FULL NAME FIELD */}
             <div className="flex flex-col gap-1.5">
@@ -135,10 +154,13 @@ export const SignUpForm = () => {
 
             {/* SIGNUP BUTTON */}
             <button
+                onClick={()=>{
+                    successToast("Signed up successfully!")
+                }}
                 type="submit"
                 className="w-full h-9 mt-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity hover:cursor-pointer"
             >
-                Sign up
+                {isPending ? "Signing up..." : "Sign up"}
             </button>
         </form>
     )
