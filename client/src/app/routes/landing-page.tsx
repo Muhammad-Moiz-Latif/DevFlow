@@ -14,26 +14,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 
-// export const Route = createFileRoute("/")({
-//     head: () => ({
-//         meta: [
-//             { title: "DevFlow — The issue tracker product teams actually love" },
-//             {
-//                 name: "description",
-//                 content:
-//                     "Linear-grade kanban, threaded comments, and live presence in one workspace. Built for product teams that ship fast.",
-//             },
-//             { property: "og:title", content: "DevFlow — Issue tracking that ships" },
-//             {
-//                 property: "og:description",
-//                 content:
-//                     "Real-time kanban, threaded discussions, and role-based workspaces for modern product teams.",
-//             },
-//         ],
-//     }),
-//     component: Landing,
-// });
-
 export function LandingPage() {
     return (
         <div className="min-h-screen bg-background text-foreground overflow-x-hidden">

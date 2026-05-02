@@ -2,6 +2,8 @@ import { createBrowserRouter } from "react-router";
 import { LandingPage } from "./routes/landing-page";
 import { SignupPage } from "./routes/signup";
 import { LoginPage } from "./routes/login";
+import { DashboardLayout } from "../components/layout/dashboard-layout";
+import { Dashboard } from "./routes/dashboard";
 
 
 export const router = createBrowserRouter([
@@ -23,11 +25,11 @@ export const router = createBrowserRouter([
     },
     {
         path: '/w/:workspaceSlug',
-        element: <h1>the workspace layout and an outlet for children</h1>,
+        element: <DashboardLayout />,
         children: [
             {
                 index: true,
-                element: <h1>Workspace dashboard</h1>
+                element: <Dashboard/>
             },
             {
                 path: 'projects',

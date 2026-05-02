@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod"
 import { useSignUp } from "../query/useSignUp";
-import { useAuth } from "../../../context/authContext";
 import axios from "axios";
 import { successToast } from "../../../components/ui/CustomToasts";
 
