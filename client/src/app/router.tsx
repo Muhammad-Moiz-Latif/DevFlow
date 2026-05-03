@@ -4,6 +4,8 @@ import { SignupPage } from "./routes/signup";
 import { LoginPage } from "./routes/login";
 import { DashboardLayout } from "../components/layout/dashboard-layout";
 import { Dashboard } from "./routes/dashboard";
+import { CreateWorkspacePage } from "../app/routes/create-workspace-page";
+import { VerifyEmailPage } from "./routes/verify-email";
 
 
 export const router = createBrowserRouter([
@@ -20,8 +22,12 @@ export const router = createBrowserRouter([
         element: <SignupPage />
     },
     {
+        path: '/verify-email',
+        element: <VerifyEmailPage />
+    },
+    {
         path: '/create-workspace',
-        element: <h1>Create workspace page for new users</h1>
+        element: <CreateWorkspacePage />
     },
     {
         path: '/w/:workspaceSlug',
@@ -29,7 +35,7 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Dashboard/>
+                element: <Dashboard />
             },
             {
                 path: 'projects',

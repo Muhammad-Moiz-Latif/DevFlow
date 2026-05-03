@@ -5,7 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod"
 import { useSignUp } from "../query/useSignUp";
 import axios from "axios";
-import { successToast } from "../../../components/ui/CustomToasts";
+import { useNavigate } from "react-router";
 
 const SignUpSchema = z.object({
     username: z.string().min(8, "Minimum 8 characters are required").max(25, "username is too long"),
@@ -28,6 +28,7 @@ export type SignUpSchemaType = z.infer<typeof SignUpSchema>;
 
 export const SignUpForm = () => {
     const [previewUrl, setPreviewUrl] = useState("");
+    const navigate = useNavigate();
     const { register, reset, formState: { errors }, handleSubmit, watch } = useForm({
         resolver: zodResolver(SignUpSchema)
     });
@@ -54,7 +55,8 @@ export const SignUpForm = () => {
         mutate(data, {
             onSuccess: (response) => {
                 if (response.success) {
-                    console.log(response.message);
+                    sessionStorage.setItem("pendingVerificationUserId", response.data?.userId!);
+                    navigate('/verify-email', { state: { userId: response.data?.userId } });
                     reset();
                 }
             },
@@ -69,7 +71,7 @@ export const SignUpForm = () => {
 
     return (
         <form
-            className="flex flex-col gap-3.5"
+            className="flex flex-col gap-3.5 relative"
             onSubmit={handleSubmit(onSubmit)}
         >
             {errorMessage && (
@@ -153,9 +155,6 @@ export const SignUpForm = () => {
 
             {/* SIGNUP BUTTON */}
             <button
-                onClick={()=>{
-                    successToast("Signed up successfully!")
-                }}
                 type="submit"
                 className="w-full h-9 mt-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity hover:cursor-pointer"
             >

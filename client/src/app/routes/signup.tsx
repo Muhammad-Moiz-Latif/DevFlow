@@ -1,5 +1,4 @@
-import { Check } from "lucide-react";
-import { AuthShell, GoogleButton, Divider, Field } from "../../components/ui/AuthShell";
+import { AuthShell, GoogleButton, Divider } from "../../components/ui/AuthShell";
 import { Link } from "react-router";
 import { SignUpForm } from "../../features/auth/components/signup-form";
 
@@ -19,7 +18,7 @@ export function SignupPage() {
             <GoogleButton label="Sign up with Google" />
             <Divider text="or sign up with email" />
 
-           <SignUpForm/>
+            <SignUpForm />
 
             <p className="text-xs text-muted-foreground text-center mt-5">
                 Already have an account?{" "}
@@ -29,18 +28,4 @@ export function SignupPage() {
             </p>
         </AuthShell>
     );
-}
-
-function Requirement({ label, met }: { label: string; met?: boolean }) {
-    return (
-        <div className="flex items-center gap-2 text-[11px]">
-            <span
-                className={`size-3.5 rounded-full flex items-center justify-center ${met ? "bg-status-done/20 text-status-done" : "bg-muted text-muted-foreground"
-                    }`}
-            >
-                {met && <Check className="size-2.5" strokeWidth={3} />}
-            </span>
-            <span className={met ? "text-foreground/80" : "text-muted-foreground"}>{label}</span>
-        </div>
-    );
-}
+};

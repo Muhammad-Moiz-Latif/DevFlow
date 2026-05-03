@@ -180,12 +180,15 @@ export const authController = {
 
             const { isUser, user } = await authServices.getUserViaCredentials(email, password);
 
+
             if (!isUser || !user) {
                 return res.status(404).json({
                     success: false,
                     message: "User does not exist"
                 });
             };
+
+            const doesUserBelongToAWorkspace = await authServices.doesUserBelongToAWorkspace(user.id);
 
             const access_secret = process.env.ACCESS_TOKEN_SECRET!;
             const refresh_secret = process.env.REFRESH_TOKEN_SECRET!;
@@ -213,10 +216,12 @@ export const authController = {
                     email: user.email,
                     createdAt: user.createdAt
                 },
-                access_token
+                access_token,
+                defaultWorkspaceId: doesUserBelongToAWorkspace ? {
+                    id: doesUserBelongToAWorkspace.workspaceId,
+                    slug: doesUserBelongToAWorkspace.slug
+                } : null
             });
-
-
 
         } catch (error) {
             console.error(error);

@@ -1,9 +1,10 @@
 import { db } from "../../config/db";
 import bcrypt from 'bcrypt';
 import { UserTable } from "../../db/schema/users";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import type { emailTokenType } from "../../utils/send-email";
 import { verificationTokenTable } from "../../db/schema/tokens";
+import { WorkspaceMembersTable } from "../../db/schema/workspace-member";
 
 export const authServices = {
 
@@ -113,5 +114,19 @@ export const authServices = {
         }).returning();
 
         return createdToken;
+    },
+
+    async doesUserBelongToAWorkspace(userId: string) {
+        const workspace = await db.execute(sql`
+            SELECT
+                wm."workspaceId",
+                w.slug
+                FROM workspace_members wm
+                JOIN workspace w
+                ON wm."workspaceId" = w.id
+                WHERE wm."userId" = ${userId}
+        `);
+
+        return workspace.rows[0];
     },
 };

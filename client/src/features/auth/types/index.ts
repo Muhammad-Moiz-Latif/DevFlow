@@ -2,7 +2,11 @@ type ApiResponse<T> = {
     success: boolean,
     message: string,
     data?: T,
-    access_token?: string
+    access_token?: string,
+    defaultWorkspaceId?: {
+        id : string,
+        slug : string
+    }
 };
 
 
@@ -18,3 +22,5 @@ export type LoginResponse = ApiResponse<{
 export type SignUpResponse = ApiResponse<{
     userId: string
 }>;
+
+export type VerifyEmailResponse = ApiResponse<{}>;

@@ -34,6 +34,7 @@ export function AuthShell({
 
                 <div className="text-xs text-muted-foreground text-center">{footer}</div>
             </div>
+            
 
             {/* Right: visual panel */}
             <div className="hidden lg:flex flex-1 border-l border-border bg-sidebar relative overflow-hidden">

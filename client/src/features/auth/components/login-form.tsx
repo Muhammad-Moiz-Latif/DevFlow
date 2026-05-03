@@ -5,6 +5,8 @@ import useLogin from "../query/useLogin";
 import { useState } from "react";
 import { useAuth } from "../../../context/authContext";
 import axios from "axios";
+import { successToast } from "../../../components/ui/CustomToasts";
+import { useNavigate } from "react-router";
 
 const LoginSchema = z.object({
     email: z.
@@ -19,7 +21,7 @@ const LoginSchema = z.object({
 export type LoginSchemaType = z.infer<typeof LoginSchema>;
 
 export const LoginForm = () => {
-
+    const navigate = useNavigate();
     const { mutate, isPending } = useLogin();
     const [errorMessage, setErrorMessage] = useState("");
     const { setAuth } = useAuth();
@@ -31,17 +33,28 @@ export const LoginForm = () => {
     });
 
     const onSubmit: SubmitHandler<LoginSchemaType> = async (data) => {
+        setErrorMessage("");
         mutate(data, {
             onSuccess: (response) => {
                 if (response.success && response.data && response.access_token) {
+                    successToast(`Welcome back, ${response.data.username}`);
+                    reset();
                     setAuth({
-
                         _id: response.data?._id,
                         access_token: response.access_token,
                         img: response.data?.img,
                         username: response.data?.username
-                    })
-                    reset();
+                    });
+                    console.log(response.defaultWorkspaceId)
+                    if (!response.defaultWorkspaceId?.id) {
+                        return setTimeout(() => {
+                            navigate('/create-workspace');
+                        }, 1000);
+                    };
+                    setTimeout(() => {
+                        navigate(`/w/${response.defaultWorkspaceId?.slug}`);
+                    }, 1000);
+
                 }
             },
             onError: (error: unknown) => {
