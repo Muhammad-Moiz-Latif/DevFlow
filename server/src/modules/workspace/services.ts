@@ -3,9 +3,11 @@ import { db } from "../../config/db";
 import { WorkspaceTable } from "../../db/schema/workspaces";
 import { WorkspaceMembersTable } from "../../db/schema/workspace-member";
 import { ProjectTable } from "../../db/schema/projects";
+import { IssueTable } from "../../db/schema/issues";
 
 
 export const workspaceServices = {
+
     async createWorkSpaceAndAdminMember(name: string, slug: string, image: string | null, ownerId: string) {
         const workspace = await db.transaction(async (tx) => {
             const [newWorkspace] = await tx.insert(WorkspaceTable).values({
@@ -83,5 +85,14 @@ export const workspaceServices = {
         return member;
     },
 
-   
+    async getMyIssuesFromWorkspace(userId: string, workspaceId: string) {
+        const myissues = await db.select().from(IssueTable).where(and(
+            eq(IssueTable.workspace_id, workspaceId),
+            eq(IssueTable.assignee_id, userId)
+        ));
+
+        return myissues;
+    },
+
+
 };

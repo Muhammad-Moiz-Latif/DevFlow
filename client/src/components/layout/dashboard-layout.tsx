@@ -5,6 +5,7 @@ import { Outlet } from "react-router";
 
 export const DashboardLayout = () => {
     const [isRetracted, setIsRetracted] = useState(false);
+
     return (
         <main className="max-w-screen min-h-screen">
             <Navbar isRetracted={isRetracted} />

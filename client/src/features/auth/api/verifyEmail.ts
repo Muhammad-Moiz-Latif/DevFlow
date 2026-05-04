@@ -1,5 +1,5 @@
 import { publicApi } from "../../../lib/axios"
-import type { VerifyEmailResponse } from "../types"
+import type { DefaultResponse } from "../types"
 
 interface VerifyEmailDataType {
     userId: string,
@@ -7,6 +7,6 @@ interface VerifyEmailDataType {
 };
 
 export const VerifyEmail = async (data: VerifyEmailDataType) => {
-    const response = await publicApi.post<VerifyEmailResponse>('/auth/verify-email', data);
+    const response = await publicApi.post<DefaultResponse>('/auth/verify-email', data);
     return response.data;
 };

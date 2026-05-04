@@ -7,6 +7,8 @@ import { useAuth } from "../../../context/authContext";
 import axios from "axios";
 import { successToast } from "../../../components/ui/CustomToasts";
 import { useNavigate } from "react-router";
+import { Eye, EyeOff } from "lucide-react";
+import { useAuthStore } from "../../../stores/auth-store";
 
 const LoginSchema = z.object({
     email: z.
@@ -24,7 +26,9 @@ export const LoginForm = () => {
     const navigate = useNavigate();
     const { mutate, isPending } = useLogin();
     const [errorMessage, setErrorMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const { setAuth } = useAuth();
+    const { setAuth: setAuthStore } = useAuthStore();
     const { register, formState: { errors }, handleSubmit, reset } = useForm({
         // resolver is the translation layer between react-hook-form and the zod validation system - 
         // whenever form is submitted / changed react-hook-form passes the values over to the loginSchema for validation
@@ -45,7 +49,12 @@ export const LoginForm = () => {
                         img: response.data?.img,
                         username: response.data?.username
                     });
-                    console.log(response.defaultWorkspaceId)
+                    setAuthStore({
+                        _id: response.data?._id,
+                        image: response.data?.img,
+                        username: response.data?.username
+                    }, response.access_token);
+
                     if (!response.defaultWorkspaceId?.id) {
                         return setTimeout(() => {
                             navigate('/create-workspace');
@@ -90,14 +99,24 @@ export const LoginForm = () => {
             </div>
             <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-foreground/90">Password</label>
-                <input
-                    className="w-full h-9 px-3 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
-                    type="password"
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    {...register("password")}
+                <div className="relative">
+                    <input
+                        className="w-full h-9 px-3 pr-10 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        autoComplete="current-password"
+                        {...register("password")}
 
-                />
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword((visible) => !visible)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                </div>
                 {errors.password && <h1 className="text-xs text-red-600 tracking-tight">{errors.password.message}</h1>}
             </div>
 

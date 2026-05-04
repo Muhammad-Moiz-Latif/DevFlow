@@ -11,6 +11,7 @@ export const projectControllers = {
             const workspaceId = req.params.workspaceId as string;
             const userId = req.user?.id;
 
+
             if (!workspaceId || !userId) {
                 return res.status(401).json({
                     success: false,
@@ -165,7 +166,7 @@ export const projectControllers = {
                 message: "Project has been deleted successfully!"
             });
 
-            
+
         } catch (error) {
             console.error(error);
             return res.status(500).json({

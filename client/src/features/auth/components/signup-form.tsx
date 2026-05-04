@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera } from "lucide-react";
+import { Camera, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod"
@@ -28,6 +28,8 @@ export type SignUpSchemaType = z.infer<typeof SignUpSchema>;
 
 export const SignUpForm = () => {
     const [previewUrl, setPreviewUrl] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
     const { register, reset, formState: { errors }, handleSubmit, watch } = useForm({
         resolver: zodResolver(SignUpSchema)
@@ -130,26 +132,46 @@ export const SignUpForm = () => {
             {/* PASSWORD FIELD */}
             <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-foreground/90">Password</label>
-                <input
-                    className="w-full h-9 px-3 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
-                    type="password"
-                    placeholder="••••••••"
-                    {...register("password")}
+                <div className="relative">
+                    <input
+                        className="w-full h-9 px-3 pr-10 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        {...register("password")}
 
-                />
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword((visible) => !visible)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                </div>
                 {errors.password && <h1 className="text-xs text-red-600 tracking-tight">{errors.password.message}</h1>}
             </div>
 
             {/* CONFIRM PASSWORD FIELD */}
             <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-foreground/90">Confirm password</label>
-                <input
-                    className="w-full h-9 px-3 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
-                    type="password"
-                    placeholder="••••••••"
-                    {...register("confirmPassword")}
+                <div className="relative">
+                    <input
+                        className="w-full h-9 px-3 pr-10 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        {...register("confirmPassword")}
 
-                />
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((visible) => !visible)}
+                        aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                </div>
                 {errors.confirmPassword && <h1 className="text-xs text-red-600 tracking-tight">{errors.confirmPassword.message}</h1>}
             </div>
 

@@ -14,3 +14,4 @@ router.patch("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceContr
 
 router.delete("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.deleteWorkspace);
 
+router.get('/:workspaceId/my-issues', verifyJWT, workspaceControllers.getMyIssues);

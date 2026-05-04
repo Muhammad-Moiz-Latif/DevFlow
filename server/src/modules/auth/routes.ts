@@ -20,7 +20,7 @@ router.post("/reset-password", authController.resetPassword);
 
 
 // GENERAL ENDPOINTS
-router.get("/refresh-access-token", authController.refreshAccessToken);
+router.post("/refresh-access-token", authController.refreshAccessToken);
 
 router.get("/logout", authController.handleLogout);
 

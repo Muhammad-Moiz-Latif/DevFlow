@@ -3,7 +3,7 @@ import { LandingPage } from "./routes/landing-page";
 import { SignupPage } from "./routes/signup";
 import { LoginPage } from "./routes/login";
 import { DashboardLayout } from "../components/layout/dashboard-layout";
-import { Dashboard } from "./routes/dashboard";
+import { Dashboard } from "./routes/workspace/workspaceSlug/index";
 import { CreateWorkspacePage } from "../app/routes/create-workspace-page";
 import { VerifyEmailPage } from "./routes/verify-email";
 

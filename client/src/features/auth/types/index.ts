@@ -23,4 +23,4 @@ export type SignUpResponse = ApiResponse<{
     userId: string
 }>;
 
-export type VerifyEmailResponse = ApiResponse<{}>;
+export type DefaultResponse = ApiResponse<{}>;

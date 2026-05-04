@@ -175,4 +175,35 @@ export const workspaceControllers = {
         };
     },
 
+    async getMyIssues(req: Request, res: Response) {
+        try {
+            const workspaceId = req.params.workspaceId as string;
+            const userId = req.user?.id;
+
+            const doesWorkspaceExist = await workspaceServices.getWorkspaceViaId(workspaceId);
+
+            if (!doesWorkspaceExist) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Workspace not found"
+                });
+            };
+
+            const myIssues = await workspaceServices.getMyIssuesFromWorkspace(userId!, workspaceId);
+
+            return res.status(200).json({
+                success: true,
+                message: "Retreived all issues from this workspace",
+                data: myIssues
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
+    },
+
 };
