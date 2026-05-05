@@ -1,5 +1,5 @@
 import { publicApi } from "../../../lib/axios"
-import type { DefaultResponse } from "../types"
+import type { DefaultResponse } from "../../types"
 
 interface VerifyEmailDataType {
     userId: string,

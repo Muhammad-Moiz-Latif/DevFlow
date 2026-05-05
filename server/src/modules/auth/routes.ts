@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authController } from "./controllers";
 import { upload } from "../../middlewares/multer";
+import { verifyJWT } from "../../middlewares/verifyJWT";
 export const router = Router();
 
 // REGISTRATION ENDPOINTS
@@ -20,9 +21,12 @@ router.post("/reset-password", authController.resetPassword);
 
 
 // GENERAL ENDPOINTS
-router.post("/refresh-access-token", authController.refreshAccessToken);
+router.get("/refresh-access-token", authController.refreshAccessToken);
+
+router.get("/me", verifyJWT, authController.getMe);
 
 router.get("/logout", authController.handleLogout);
+
 
 
 

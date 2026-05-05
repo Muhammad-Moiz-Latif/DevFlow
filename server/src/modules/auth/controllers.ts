@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { authServices } from './services';
 import uploadImage from '../../utils/upload-image';
 import jwt from 'jsonwebtoken';
+import 'dotenv/config';
 import { sendEmailToken } from '../../utils/send-email';
 
 export const authController = {
@@ -195,6 +196,8 @@ export const authController = {
 
             const payload = {
                 id: user?.id,
+                username: user.name,
+                img: user.img
             };
 
             const access_token = jwt.sign(payload, access_secret, { expiresIn: "15m" });
@@ -321,7 +324,6 @@ export const authController = {
     async refreshAccessToken(req: Request, res: Response) {
         try {
             const { refresh_token } = req.cookies;
-
             if (!refresh_token) {
                 return res.status(401).json({
                     success: false,
@@ -338,19 +340,41 @@ export const authController = {
                 }
 
                 const access_token = jwt.sign(
-                    { id: decoded.id },
-                    process.env.access_secret!,
+                    { id: decoded.id, username: decoded.username, img: decoded.img },
+                    process.env.ACCESS_TOKEN_SECRET!,
                     { expiresIn: "15m" }
                 );
-
                 return res.status(200).json({
                     success: true,
                     message: "Access token refreshed",
                     data: {
-                        userId: decoded.id
+                        userId: decoded.id,
+                        username: decoded.username,
+                        img: decoded.img
                     },
                     access_token,
                 });
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
+    },
+
+    async getMe(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+
+            const user = await authServices.getUserViaId(userId!);
+
+            return res.status(200).json({
+                success: true,
+                message: "Returned your info successfully",
+                data: user
             });
 
         } catch (error) {

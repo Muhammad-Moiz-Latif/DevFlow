@@ -1,6 +1,6 @@
 import { publicApi } from "../../../lib/axios";
 import type { SignUpSchemaType } from "../components/signup-form";
-import type { SignUpResponse } from "../types";
+import type { SignUpResponse } from "../../types";
 
 export const SignUp = async (data: SignUpSchemaType) => {
     const formdata = new FormData();

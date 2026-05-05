@@ -7,6 +7,7 @@ export const publicApi = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true
 });
 
 export const privateApi = axios.create({
@@ -14,7 +15,7 @@ export const privateApi = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true,
+    withCredentials: true
 });
 
 
@@ -32,13 +33,11 @@ privateApi.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        if ((error.response?.status === 401 || error.response?.status === 404) && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true
-
             try {
-                const response = await publicApi.post('/auth/refresh-access-token', null, { withCredentials: true });
-                const newAccessToken = response.data.accessToken;
-
+                const response = await publicApi.get('/auth/refresh-access-token');
+                const newAccessToken = response.data.access_token;
                 useAuthStore.getState().setAccessToken(newAccessToken);
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
@@ -49,6 +48,6 @@ privateApi.interceptors.response.use(
             }
         }
 
-        return Promise.reject(error)
+        return Promise.reject(error);
     }
 )

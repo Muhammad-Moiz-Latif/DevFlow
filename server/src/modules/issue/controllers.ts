@@ -34,6 +34,7 @@ export const IssueControllers = {
                 });
             };
 
+
             const createdIssue = await issueServices.createIssue({
                 workspace_id: workspaceId,
                 project_id: projectId,
@@ -46,9 +47,11 @@ export const IssueControllers = {
                 createdBy
             });
 
+            await issueServices.addToActivityLogs(createdIssue?.id!, workspaceId, createdBy, "ISSUE_CREATED");
+
             return res.status(201).json({
                 success: true,
-                message: "Issue created successfully",
+                message: "Issue created successfully and saved in activity logs",
                 data: createdIssue
             });
 
@@ -161,7 +164,7 @@ export const IssueControllers = {
                     workspace_id: workspaceId
                 });
             };
-            
+
             return res.status(200).json({
                 success: true,
                 message: "Issue updated successfully",

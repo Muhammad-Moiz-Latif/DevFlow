@@ -6,7 +6,7 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     const header = req.headers.authorization;
     const access_token_secret = process.env.ACCESS_TOKEN_SECRET!;
     if (!header) {
-        return res.status(404).json({
+        return res.status(401).json({
             success: false,
             message: "Unauthorized access, authorization header is missing"
         });
@@ -16,7 +16,7 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     const token = bearerToken[1];
 
     if (!token) {
-        return res.status(404).json({
+        return res.status(401).json({
             success: false,
             message: "Unauthorized access, access token is missing"
         });

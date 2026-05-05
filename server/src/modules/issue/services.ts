@@ -1,8 +1,12 @@
 import { db } from "../../config/db";
 import { eq, and, count, sql } from "drizzle-orm";
 import { IssueTable } from "../../db/schema/issues";
+import { ActivityLogsTable, LogType } from "../../db/schema/activity-logs";
 
 type CreateIssue = Omit<typeof IssueTable.$inferInsert, 'id' | 'created_at' | 'updated_at' | 'order'>;
+
+type ActivityLogType = typeof LogType.enumValues[number];
+
 
 export const issueServices = {
 
@@ -166,5 +170,18 @@ export const issueServices = {
         `);
 
         return issues.rows;
+    },
+
+    async addToActivityLogs(issueId: string, workspaceId: string, actorId: string, type: ActivityLogType, oldValue?: string, newValue?: string) {
+        const [activity] = await db.insert(ActivityLogsTable).values({
+            issue_id: issueId,
+            actor_id: actorId,
+            workspace_id: workspaceId,
+            type,
+            old_value: oldValue ?? "",
+            new_value: newValue ?? ""
+        }).returning();
+
+        return activity;
     },
 };

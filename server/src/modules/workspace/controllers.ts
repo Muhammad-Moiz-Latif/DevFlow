@@ -92,6 +92,36 @@ export const workspaceControllers = {
         };
     },
 
+    async getWorkspaceViaSlug(req: Request, res: Response) {
+        try {
+            const workspaceSlug = req.params.workspaceSlug as string;
+            const userId = req.user?.id;
+
+            console.log("slug: ", workspaceSlug)
+
+            if (!workspaceSlug || !userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Unauthorized access"
+                });
+            };
+
+            const workspace = await workspaceServices.getWorkspaceViaSlug(workspaceSlug);
+
+            return res.status(200).json({
+                success: true,
+                message: "Retrieved workspace successfully!",
+                data: workspace
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
+    },
+
     async updateWorkspace(req: Request, res: Response) {
         try {
 
@@ -195,6 +225,35 @@ export const workspaceControllers = {
                 success: true,
                 message: "Retreived all issues from this workspace",
                 data: myIssues
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
+    },
+
+    async getActivityLogs(req: Request, res: Response) {
+        try {
+            const workspaceId = req.params.workspaceId as string;
+            const doesWorkspaceExist = await workspaceServices.getWorkspaceViaId(workspaceId);
+
+            if (!doesWorkspaceExist) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Workspace not found"
+                });
+            };
+
+            const activityLogs = await workspaceServices.getAllActivityLogsOfWorkspace(workspaceId);
+
+            return res.status(200).json({
+                success: true,
+                message: "Returned activity logs successfully",
+                data: activityLogs
             });
 
         } catch (error) {

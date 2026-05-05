@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { db } from "../../config/db";
 import { WorkspaceTable } from "../../db/schema/workspaces";
 import { WorkspaceMembersTable } from "../../db/schema/workspace-member";
@@ -41,6 +41,14 @@ export const workspaceServices = {
     async getWorkspaceViaId(id: string) {
         const [workspace] = await db.select().from(WorkspaceTable).where(
             eq(WorkspaceTable.id, id)
+        );
+
+        return workspace;
+    },
+
+    async getWorkspaceViaSlug(slug: string) {
+        const [workspace] = await db.select().from(WorkspaceTable).where(
+            eq(WorkspaceTable.slug, slug)
         );
 
         return workspace;
@@ -92,6 +100,31 @@ export const workspaceServices = {
         ));
 
         return myissues;
+    },
+
+    async getAllActivityLogsOfWorkspace(workspaceId: string) {
+        const activityLogs = await db.execute(sql`
+            SELECT
+                al.id,
+                al."issueId",
+                al."workspaceId",
+                al."logType",
+                al."oldValue",
+                al."newValue",
+                al."createdAt",
+                json_build_object (
+                    'id', u.id,
+                    'username', u.name,
+                    'email', u.email,
+                    'img', u.img
+                ) AS actor
+            FROM "activity-logs" al
+            JOIN users u
+            ON al."actorId" = u.id
+            WHERE al."workspaceId" = ${workspaceId}
+        `);
+
+        return activityLogs.rows;
     },
 
 

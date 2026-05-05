@@ -1,7 +1,19 @@
 import { TrendingUp, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { PriorityBadge, StatusBadge, Avatar } from "../../../../components/ui/badges";
+import { useMyIssues } from "../../../../features/workspace/query/useMyIssues";
+import { useParams } from "react-router";
+import { useCurrentWorkspace } from "../../../../features/workspace/query/useCurrentWorkspace";
+import { useAuthStore } from "../../../../stores/auth-store";
 
 export function Dashboard() {
+    const { user } = useAuthStore();
+    const { workspaceSlug } = useParams();
+    const { data: workspaceData, isPending } = useCurrentWorkspace(workspaceSlug!);
+    const { data: allIssues } = useMyIssues(user?._id!, workspaceData?.data?.id!);
+    if (!user || isPending || !workspaceData?.data) {
+        return <h1>Loading...</h1>
+    }
+    console.log(allIssues);
     return (
         <div className="p-6 max-w-6xl mx-auto">
             <div className="mb-8">
