@@ -54,7 +54,7 @@ export const LoginForm = () => {
                         image: response.data?.img,
                         username: response.data?.username
                     }, response.access_token);
-
+                    console.log(response);
                     if (!response.defaultWorkspaceId?.id) {
                         return setTimeout(() => {
                             navigate('/create-workspace');

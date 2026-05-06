@@ -127,6 +127,6 @@ export const authServices = {
                 WHERE wm."userId" = ${userId}
         `);
 
-        return workspace.rows[0];
+        return workspace.rows;
     },
 };

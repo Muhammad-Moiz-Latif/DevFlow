@@ -9,6 +9,7 @@ export function Dashboard() {
     const { user } = useAuthStore();
     const { workspaceSlug } = useParams();
     const { data: workspaceData, isPending } = useCurrentWorkspace(workspaceSlug!);
+    console.log(user);
     const { data: allIssues } = useMyIssues(user?._id!, workspaceData?.data?.id!);
     if (!user || isPending || !workspaceData?.data) {
         return <h1>Loading...</h1>

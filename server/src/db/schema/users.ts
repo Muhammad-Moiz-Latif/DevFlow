@@ -1,4 +1,5 @@
 import { pgTable, pgEnum, index } from 'drizzle-orm/pg-core';
+import { WorkspaceTable } from './workspaces';
 
 export const AuthType = pgEnum("AuthType", ["CREDENTIALS", "GOOGLE", "BOTH"]);
 export const AccountStatus = pgEnum("accountStatus", ["DENIED", "PENDING", "SUCCESS"]);
@@ -11,7 +12,8 @@ export const UserTable = pgTable("users", (t) => ({
     email: t.varchar("email", { length: 255 }),
     password: t.varchar("password", { length: 255 }),
     img: t.varchar("img").default(""),
-    createdAt: t.timestamp("createdAt").defaultNow().notNull()
+    createdAt: t.timestamp("createdAt").defaultNow().notNull(),
+    lastWorkspaceId: t.varchar("lastWorkspaceId").default("")
 }), table => ({
     emailIndex: index("emailIdx").on(table.email),
     nameIndex: index("nameIdx").on(table.name)

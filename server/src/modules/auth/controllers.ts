@@ -220,10 +220,7 @@ export const authController = {
                     createdAt: user.createdAt
                 },
                 access_token,
-                defaultWorkspaceId: doesUserBelongToAWorkspace ? {
-                    id: doesUserBelongToAWorkspace.workspaceId,
-                    slug: doesUserBelongToAWorkspace.slug
-                } : null
+                defaultWorkspaceId: doesUserBelongToAWorkspace
             });
 
         } catch (error) {
