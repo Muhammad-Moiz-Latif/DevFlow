@@ -1,14 +1,10 @@
-import { string } from "zod";
 
 type ApiResponse<T> = {
     success: boolean,
     message: string,
     data?: T,
     access_token?: string,
-    defaultWorkspaceId?: {
-        id: string,
-        slug: string
-    }
+    defaultWorkspaceSlug?: string
 };
 
 
@@ -42,6 +38,30 @@ type IssueType = {
     updatedAt: Date
 };
 
+type AllWorkspaceType = {
+    role: string,
+    workspace: {
+        name: string,
+        slug: string
+    }
+};
+
+type ActivityLogType = {
+    id: string,
+    issueId: string,
+    workspaceId: string,
+    logType: 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED' | 'COMMENT_ADDED' | 'COMMENT_DELETED' | 'ISSUE_CREATED',
+    oldValue: string,
+    newValue: string,
+    createdAt: Date,
+    actor: {
+        id: string,
+        username: string,
+        email: string,
+        img: string
+    }
+};
+
 export type MyIssuesResponseType = ApiResponse<[IssueType]>;
 
 export type GetWorkspaceResponseType = ApiResponse<{
@@ -51,3 +71,7 @@ export type GetWorkspaceResponseType = ApiResponse<{
     owner_id: string,
     createdAt: Date
 }>;
+
+export type getAllActivityLogsOfWorkspaceType = ApiResponse<[ActivityLogType]>;
+
+export type getUserWorkspacesResponseType = ApiResponse<[AllWorkspaceType]>;

@@ -13,7 +13,7 @@ export const UserTable = pgTable("users", (t) => ({
     password: t.varchar("password", { length: 255 }),
     img: t.varchar("img").default(""),
     createdAt: t.timestamp("createdAt").defaultNow().notNull(),
-    lastWorkspaceId: t.varchar("lastWorkspaceId").default("")
+    lastWorkspaceId: t.uuid("lastWorkspaceId")
 }), table => ({
     emailIndex: index("emailIdx").on(table.email),
     nameIndex: index("nameIdx").on(table.name)

@@ -127,5 +127,23 @@ export const workspaceServices = {
         return activityLogs.rows;
     },
 
+    async getAllUserWorkspaces(userId: string) {
+        const workspaces = await db.execute(sql`
+            SELECT
+                wm."role" ,
+                json_build_object (
+                    'name', w.name,
+                    'slug', w.slug
+                ) AS Workspace
+
+            FROM "workspace_members" wm 
+            JOIN workspace w 
+            ON wm."workspaceId" = w.id
+            WHERE wm."userId" = ${userId}
+        `);
+
+        return workspaces.rows;
+    }
+
 
 };

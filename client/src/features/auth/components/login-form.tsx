@@ -3,7 +3,6 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod"
 import useLogin from "../query/useLogin";
 import { useState } from "react";
-import { useAuth } from "../../../context/authContext";
 import axios from "axios";
 import { successToast } from "../../../components/ui/CustomToasts";
 import { useNavigate } from "react-router";
@@ -27,7 +26,6 @@ export const LoginForm = () => {
     const { mutate, isPending } = useLogin();
     const [errorMessage, setErrorMessage] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const { setAuth } = useAuth();
     const { setAuth: setAuthStore } = useAuthStore();
     const { register, formState: { errors }, handleSubmit, reset } = useForm({
         // resolver is the translation layer between react-hook-form and the zod validation system - 
@@ -42,26 +40,21 @@ export const LoginForm = () => {
             onSuccess: (response) => {
                 if (response.success && response.data && response.access_token) {
                     successToast(`Welcome back, ${response.data.username}`);
+                    console.log(response.defaultWorkspaceSlug);
                     reset();
-                    setAuth({
-                        _id: response.data?._id,
-                        access_token: response.access_token,
-                        img: response.data?.img,
-                        username: response.data?.username
-                    });
                     setAuthStore({
                         _id: response.data?._id,
                         image: response.data?.img,
                         username: response.data?.username
                     }, response.access_token);
-                    console.log(response);
-                    if (!response.defaultWorkspaceId?.id) {
+                    
+                    if (!response.defaultWorkspaceSlug) {
                         return setTimeout(() => {
                             navigate('/create-workspace');
                         }, 1000);
                     };
                     setTimeout(() => {
-                        navigate(`/w/${response.defaultWorkspaceId?.slug}`);
+                        navigate(`/w/${response.defaultWorkspaceSlug}`);
                     }, 1000);
 
                 }

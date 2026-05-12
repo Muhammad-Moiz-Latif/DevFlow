@@ -117,16 +117,41 @@ export const authServices = {
     },
 
     async doesUserBelongToAWorkspace(userId: string) {
+
+        // 1) user's who have never been on a workspace but are part of some workspace
+
+        // 2) user's who have an existing id in user's defaultWorkspaceId
+
+        // 3) user's who have not created any workspace or are part of any
+
+
         const workspace = await db.execute(sql`
+            SELECT 
+                u."lastWorkspaceId" AS "workspaceId",
+                w.slug
+            FROM users u
+            JOIN workspace w
+            ON u."lastWorkspaceId" = w.id
+            WHERE u.id = ${userId}
+        `);
+
+        if (workspace.rows[0]) return workspace.rows[0]
+
+        const memberShip = await db.execute(sql`
             SELECT
                 wm."workspaceId",
                 w.slug
-                FROM workspace_members wm
-                JOIN workspace w
-                ON wm."workspaceId" = w.id
-                WHERE wm."userId" = ${userId}
+            FROM "workspace_members" wm
+            JOIN workspace w
+            ON wm."workspaceId" = w.id
+            WHERE wm."userId" = ${userId}
+            ORDER BY wm."joinedAt" ASC
+            LIMIT 1
         `);
 
-        return workspace.rows;
+        if (memberShip.rows[0]) return memberShip.rows[0];
+
+        return null;
+
     },
 };

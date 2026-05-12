@@ -36,6 +36,20 @@
       "when": 1778092847384,
       "tag": "0004_careful_amazoness",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778132122957,
+      "tag": "0005_foamy_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778132223068,
+      "tag": "0006_perfect_timeslip",
+      "breakpoints": true
     }
   ]
 }
