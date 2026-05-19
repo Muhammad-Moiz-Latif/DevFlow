@@ -106,6 +106,29 @@ export const projectControllers = {
         };
     },
 
+    async getProjectViaSlug(req: Request, res: Response) {
+        try {
+
+            const projectSlug = req.params.projectSlug as string;
+            const workspaceId = req.params.workspaceId as string;
+
+            const project = await projectServices.getProjectViaSlug(workspaceId, projectSlug);
+
+            return res.status(200).json({
+                success: true,
+                message: "Retreived project successfully!",
+                data: project
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
+    },
+
     async updateProject(req: Request, res: Response) {
         try {
 

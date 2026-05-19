@@ -12,6 +12,8 @@ router.get('/project', verifyJWT, projectControllers.getAllProjects);
 
 router.get('/project/:projectId', verifyJWT, projectControllers.getProject);
 
+router.get('/project/via-slug/:projectSlug', verifyJWT, projectControllers.getProjectViaSlug);
+
 router.patch('/project/:projectId', verifyJWT, allowedRoles(['ADMIN', 'MEMBER']), projectControllers.updateProject);
 
-router.delete("/project/:projectId", verifyJWT, allowedRoles(['ADMIN']));
+router.delete("/project/:projectId", verifyJWT, allowedRoles(['ADMIN']), projectControllers.deleteProject);

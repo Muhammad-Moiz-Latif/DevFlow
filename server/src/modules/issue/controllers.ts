@@ -68,7 +68,6 @@ export const IssueControllers = {
         try {
             const projectId = req.params.projectId as string;
             const workspaceId = req.params.workspaceId as string;
-
             const doesProjectExist = await projectServices.getProject(workspaceId, projectId);
 
             if (!doesProjectExist) {

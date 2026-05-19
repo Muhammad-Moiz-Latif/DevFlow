@@ -95,6 +95,7 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
                 {navItems.map(({ icon: Icon, label, id }) => (
                     <button
                         key={id}
+                        onClick={() => navigate(id)}
                         className={`w-full flex items-center gap-3 px-3 h-9 rounded-md text-sm transition-colors ${isRetracted ? "justify-center" : ""
                             } text-muted-foreground hover:text-foreground hover:bg-surface group`}
                         title={isRetracted ? label : ""}

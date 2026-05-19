@@ -33,6 +33,15 @@ export const projectServices = {
         return project;
     },
 
+    async getProjectViaSlug(workspaceId: string, projectSlug: string) {
+        const [project] = await db.select().from(ProjectTable).where(and(
+            eq(ProjectTable.workspace_id, workspaceId),
+            eq(ProjectTable.slug, projectSlug)
+        ));
+
+        return project;
+    },
+
     async updateProject(workspaceId: string, projectId: string, data: Partial<typeof ProjectTable.$inferInsert>) {
         let updatedData: typeof data = {};
         if (data.name !== undefined) updatedData.name = data.name;
@@ -56,6 +65,5 @@ export const projectServices = {
 
         return deleteProject;
     },
-
 
 };

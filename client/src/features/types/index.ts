@@ -16,13 +16,14 @@ export type LoginResponse = ApiResponse<{
     createdAt: string
 }>;
 
+
 export type SignUpResponse = ApiResponse<{
     userId: string
 }>;
 
 export type DefaultResponse = ApiResponse<{}>;
 
-type IssueType = {
+type MyIssueType = {
     id: string,
     project_id: string,
     workspace_id: string,
@@ -37,6 +38,30 @@ type IssueType = {
     createdAt: Date,
     updatedAt: Date
 };
+
+type IssueType = {
+    id: string,
+    title: string,
+    description: string,
+    status: 'TODO' | 'IN_PROGRESS' | "IN_REVIEW" | "DONE",
+    priority: "URGENT" | "HIGH" | "MEDIUM" | "LOW",
+    order: number,
+    dueDate: Date,
+    createdAt: Date,
+    updatedAt: Date,
+    assignee: {
+        id: string,
+        name: string,
+        email: string,
+        img: string
+    },
+    creator: {
+        id: string,
+        name: string,
+        email: string,
+        img: string
+    }
+}
 
 type AllWorkspaceType = {
     role: string,
@@ -62,7 +87,19 @@ type ActivityLogType = {
     }
 };
 
-export type MyIssuesResponseType = ApiResponse<[IssueType]>;
+type ProjectType = {
+    id: string,
+    workspace_id: string,
+    name: string,
+    description: string,
+    slug: string,
+    status: 'Active' | 'Archived',
+    created_by: string,
+    created_at: Date,
+    updated_at: Date
+};
+
+export type MyIssuesResponseType = ApiResponse<[MyIssueType]>;
 
 export type GetWorkspaceResponseType = ApiResponse<{
     id: string,
@@ -75,3 +112,9 @@ export type GetWorkspaceResponseType = ApiResponse<{
 export type getAllActivityLogsOfWorkspaceType = ApiResponse<[ActivityLogType]>;
 
 export type getUserWorkspacesResponseType = ApiResponse<[AllWorkspaceType]>;
+
+export type getAllProjectsInCurrentWorkspaceResponseType = ApiResponse<[ProjectType]>;
+
+export type getAllIssuesInCurrentProjectResponseType = ApiResponse<[IssueType]>;
+
+export type getProjectViaSlugResponseType = ApiResponse<ProjectType>;

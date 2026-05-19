@@ -6,6 +6,8 @@ import { DashboardLayout } from "../components/layout/dashboard-layout";
 import { Dashboard } from "./routes/workspace/workspaceSlug/index";
 import { CreateWorkspacePage } from "../app/routes/create-workspace-page";
 import { VerifyEmailPage } from "./routes/verify-email";
+import { AllProjects } from "./routes/workspace/workspaceSlug/projects";
+import { KanbanBoard } from "./routes/workspace/workspaceSlug/projects/KanbanBoard";
 
 
 export const router = createBrowserRouter([
@@ -39,15 +41,15 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'projects',
-                element: <h1>Project Layout</h1>,
                 children: [
                     {
                         index: true,
-                        element: <h1>List of all projects</h1>
+                        element: <AllProjects />
+
                     },
                     {
                         path: ":projectSlug",
-                        element: <h1>Kanban Board of that project</h1>
+                        element: <KanbanBoard />
                     }
                 ]
 

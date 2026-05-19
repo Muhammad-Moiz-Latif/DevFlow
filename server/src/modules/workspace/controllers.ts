@@ -275,7 +275,6 @@ export const workspaceControllers = {
         try {
             const workspaceId = req.params.workspaceId as string;
             const doesWorkspaceExist = await workspaceServices.getWorkspaceViaId(workspaceId);
-
             if (!doesWorkspaceExist) {
                 return res.status(400).json({
                     success: false,
