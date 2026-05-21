@@ -39,7 +39,7 @@ type MyIssueType = {
     updatedAt: Date
 };
 
-type IssueType = {
+export type IssueType = {
     id: string,
     title: string,
     description: string,
@@ -97,6 +97,11 @@ type ProjectType = {
     created_by: string,
     created_at: Date,
     updated_at: Date
+};
+
+export type KanbanColumnType = {
+    id: string,
+    title: string
 };
 
 export type MyIssuesResponseType = ApiResponse<[MyIssueType]>;
