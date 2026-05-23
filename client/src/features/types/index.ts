@@ -23,7 +23,7 @@ export type SignUpResponse = ApiResponse<{
 
 export type DefaultResponse = ApiResponse<{}>;
 
-type MyIssueType = {
+export type MyIssueType = {
     id: string,
     project_id: string,
     workspace_id: string,

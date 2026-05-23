@@ -97,8 +97,6 @@ export const workspaceControllers = {
             const workspaceSlug = req.params.workspaceSlug as string;
             const userId = req.user?.id;
 
-            console.log("slug: ", workspaceSlug)
-
             if (!workspaceSlug || !userId) {
                 return res.status(401).json({
                     success: false,

@@ -25,7 +25,7 @@ const KanbanColumn = ({ column, issues }: KanbanColumnProps) => {
         <div
             ref={ref}
             style={{ background: isDropTarget ? 'rgba(99,102,241,0.05)' : undefined }}
-            className="w-full"
+            className="w-full min-h-screen"
         >
             {/* Column Container */}
             <div className={`bg-linear-to-r ${colors.header} rounded-lg border border-border/50 px-3 py-2 mb-3`}>
@@ -43,7 +43,7 @@ const KanbanColumn = ({ column, issues }: KanbanColumnProps) => {
             {/* Issues Container */}
             <div className="flex-1 flex flex-col gap-2 overflow-y-auto">
                 {issues.length > 0 ? (
-                    issues.map((issue) => (
+                    issues.map((issue, index) => (
                         <IssueCard
                             key={issue.id}
                             id={issue.id}
@@ -51,6 +51,7 @@ const KanbanColumn = ({ column, issues }: KanbanColumnProps) => {
                             priority={issue.priority}
                             status={issue.status}
                             title={issue.title}
+                            index={index}
                         />
                     ))
                 ) : (

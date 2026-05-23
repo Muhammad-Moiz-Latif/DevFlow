@@ -1,5 +1,7 @@
 import { PriorityBadge } from "../../../components/ui/badges";
 import { useDraggable } from '@dnd-kit/react';
+import { useSortable } from '@dnd-kit/react/sortable';
+
 
 
 type IssuePropType = {
@@ -7,13 +9,15 @@ type IssuePropType = {
     title: string,
     description: string,
     status: string,
-    priority: string
+    priority: string,
+    index: number
 };
 
 
 const IssueCard = (props: IssuePropType) => {
-    const { ref, isDragging } = useDraggable({
+    const { ref, isDragging } = useSortable({
         id: props.id,
+        index: props.index
     });
 
 

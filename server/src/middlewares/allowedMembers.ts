@@ -9,9 +9,6 @@ export const allowedRoles = (roles: WorkspaceRole[]) => {
             const workspaceId = req.params.workspaceId as string;
             const userId = req.user?.id;
 
-            console.log('workspaceId: ', workspaceId);
-            console.log("userId: ", userId);
-
             if (!userId) {
                 return res.status(401).json({
                     success: false,
