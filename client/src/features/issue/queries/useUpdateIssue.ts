@@ -17,7 +17,6 @@ export const useUpdateIssue = (workspaceId: string, projectId: string) => {
             await queryClient.cancelQueries({ queryKey: ['all-issues', user?._id, workspaceId, projectId] });
             // Step 2: Snapshot the old data
             const previousIteration = queryClient.getQueryData(['all-issues', user?._id, workspaceId, projectId]);
-            console.log(previousIteration)
             // Step 3: Optimistically update the cache
             queryClient.setQueryData(['all-issues', user?._id, workspaceId, projectId], (oldData: { success: boolean, message: string, data: MyIssueType[] }) => {
                 if (!oldData) return oldData;

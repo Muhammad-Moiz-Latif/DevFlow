@@ -1,6 +1,6 @@
-import { PriorityBadge } from "../../../components/ui/badges";
-import { useDraggable } from '@dnd-kit/react';
+import { PriorityBadge, Avatar } from "../../../components/ui/badges";
 import { useSortable } from '@dnd-kit/react/sortable';
+import { Calendar } from "lucide-react";
 
 
 
@@ -10,9 +10,23 @@ type IssuePropType = {
     description: string,
     status: string,
     priority: string,
-    index: number
+    dueDate: Date,
+    assignedTo: {
+        id: string;
+        name: string;
+        email: string;
+        img: string;
+    },
+    index: number,
+    onClick?: () => void
 };
 
+function formatDueDate(date: Date): string {
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${month}/${day}`;
+}
 
 const IssueCard = (props: IssuePropType) => {
     const { ref, isDragging } = useSortable({
@@ -20,12 +34,13 @@ const IssueCard = (props: IssuePropType) => {
         index: props.index
     });
 
-
+    const formattedDate = props.dueDate ? formatDueDate(props.dueDate) : null;
 
     return (
-        <div
+        <button
             ref={ref}
-            className={`bg-surface-elevated border border-border rounded-lg p-2 hover:border-primary/50 transition-all hover:shadow-lg cursor-grab active:cursor-grabbing group ${isDragging ? 'opacity-50' : ''
+            onClick={props.onClick}
+            className={`w-full text-left bg-surface-elevated border border-border rounded-lg p-2.5 hover:border-primary/50 transition-all hover:shadow-lg cursor-grab active:cursor-grabbing group ${isDragging ? 'opacity-50' : ''
                 }`}
         >
             <div className="flex items-start justify-between gap-1.5 mb-1.5">
@@ -34,10 +49,21 @@ const IssueCard = (props: IssuePropType) => {
                 </h3>
                 <PriorityBadge priority={props.priority.toLowerCase() as "urgent" | "high" | "medium" | "low"} compact />
             </div>
-            <p className="text-xs text-muted-foreground line-clamp-1 leading-tight">
+            <p className="text-xs text-muted-foreground line-clamp-1 leading-tight mb-2">
                 {props.description}
             </p>
-        </div>
+            <div className="flex items-center justify-between">
+                {formattedDate && (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <Calendar className="size-3" />
+                        {formattedDate}
+                    </span>
+                )}
+                <div className="ml-auto">
+                    {props.assignedTo && <Avatar name={props.assignedTo.name} size={20} />}
+                </div>
+            </div>
+        </button>
     )
 }
 

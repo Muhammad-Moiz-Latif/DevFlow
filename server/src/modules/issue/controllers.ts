@@ -129,16 +129,11 @@ export const IssueControllers = {
 
     async updateIssue(req: Request, res: Response) {
         try {
-            const { title, description, priority, order, assignee_id, dueDate } = req.body;
+            const { title, description, priority, order, assignee_id, dueDate, status } = req.body;
             const projectId = req.params.projectId as string;
             const workspaceId = req.params.workspaceId as string;
             const issueId = req.params.issueId as string;
-            let status = "" as "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
-            if (req.body.status === 'INPROGRESS') {
-                status = 'IN_PROGRESS' as "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
-            } else if (req.body.status === 'INREVIEW') {
-                status = 'IN_REVIEW' as "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
-            };
+           
 
             const doesProjectExist = await projectServices.getProject(workspaceId, projectId);
 

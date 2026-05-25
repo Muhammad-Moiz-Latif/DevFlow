@@ -23,12 +23,13 @@ export const KanbanComponent = () => {
 
     const columns: KanbanColumnType[] = [
         { id: 'TODO', title: 'To Do' },
-        { id: 'INPROGRESS', title: 'In Progress' },
-        { id: 'INREVIEW', title: 'In Review' },
+        { id: 'IN_PROGRESS', title: 'In Progress' },
+        { id: 'IN_REVIEW', title: 'In Review' },
         { id: 'DONE', title: 'Done' }
     ];
 
     const issues: IssueType[] = issuesData?.data!;
+
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { source, target } = event.operation;
@@ -116,7 +117,6 @@ export const KanbanComponent = () => {
                 >
                     {columns.map((column) => {
                         const columnIssues = issues.filter(issue => issue.status === column.id);
-
                         return (
                             <KanbanColumn key={column.id} column={column} issues={columnIssues} />
                         );
