@@ -173,6 +173,7 @@ export const issueServices = {
     },
 
     async addToActivityLogs(issueId: string, workspaceId: string, actorId: string, type: ActivityLogType, oldValue?: string, newValue?: string) {
+        console.log('actorId', actorId);
         const [activity] = await db.insert(ActivityLogsTable).values({
             issue_id: issueId,
             actor_id: actorId,

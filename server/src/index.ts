@@ -10,7 +10,7 @@ import { router as WorkspaceInvitationRoutes } from './modules/invitations/route
 import { router as InvitationAcceptRoutes } from './modules/invitations/accept-routes';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
-
+import './redis/client';
 
 
 

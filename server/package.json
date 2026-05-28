@@ -12,13 +12,16 @@
   "description": "",
   "type": "module",
   "dependencies": {
+    "@types/redis": "^4.0.10",
     "bcrypt": "^6.0.0",
+    "bullmq": "^5.77.6",
     "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
+    "ioredis": "^5.11.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "nodemailer": "^8.0.4",
@@ -26,6 +29,7 @@
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.19.0",
     "postgres": "^3.4.8",
+    "redis": "^6.0.0",
     "slugify": "^1.6.8"
   },
   "devDependencies": {

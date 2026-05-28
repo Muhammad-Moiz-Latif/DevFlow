@@ -99,6 +99,19 @@ type ProjectType = {
     updated_at: Date
 };
 
+type WorkspaceMember = {
+    id: string,
+    role: 'ADMIN' | 'MEMBER' | 'VIEWER',
+    status: 'SUCCESS' | 'PENDING' | 'DENIED',
+    joinedAt: Date,
+    user: {
+        id: string,
+        name: string,
+        email: string,
+        img: string
+    }
+};
+
 export type KanbanColumnType = {
     id: string,
     title: string
@@ -123,3 +136,5 @@ export type getAllProjectsInCurrentWorkspaceResponseType = ApiResponse<[ProjectT
 export type getAllIssuesInCurrentProjectResponseType = ApiResponse<[IssueType]>;
 
 export type getProjectViaSlugResponseType = ApiResponse<ProjectType>;
+
+export type getWorkspaceMembersResponseType = ApiResponse<WorkspaceMember[]>;

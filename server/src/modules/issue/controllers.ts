@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { Queue, Worker } from 'bullmq';
 import { issueServices } from './services';
 import { projectServices } from '../projects/services';
 import { workspaceServices } from '../workspace/services';
@@ -133,9 +134,17 @@ export const IssueControllers = {
             const projectId = req.params.projectId as string;
             const workspaceId = req.params.workspaceId as string;
             const issueId = req.params.issueId as string;
-           
+            const userId = req.user?.id;
+            const formatDate = dueDate ? new Date(dueDate) : null;
 
             const doesProjectExist = await projectServices.getProject(workspaceId, projectId);
+
+            if (!userId) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Unauthorized"
+                });
+            }
 
             if (!doesProjectExist) {
                 return res.status(404).json({
@@ -146,6 +155,15 @@ export const IssueControllers = {
 
             const doesIssueExist = await issueServices.getIssue(workspaceId, projectId, issueId);
 
+            const myQueue = new Queue('foo');
+
+            async function addJobs() {
+                await myQueue.add('myJobName', { foo: 'bar' });
+                await myQueue.add('myJobName', { qux: 'baz' });
+            }
+
+            await addJobs();
+
             if (!doesIssueExist) {
                 return res.status(404).json({
                     success: false,
@@ -153,8 +171,30 @@ export const IssueControllers = {
                 });
             };
 
-            const issue = await issueServices.updateIssue(workspaceId, projectId, issueId, { title, description, status, priority, order, assignee_id, dueDate });
+            // send notification to previous assignee and add to activity logs
+            if (doesIssueExist.assignee_id && doesIssueExist.assignee_id != assignee_id) {
+                await sendNotification({
+                    type: "ISSUE_ASSIGNED",
+                    user_id: assignee_id,
+                    link: "some link",
+                    message: "get to work son",
+                    workspace_id: workspaceId
+                });
 
+                await issueServices.addToActivityLogs(issueId, workspaceId, assignee_id, 'ASSIGNEE_CHANGED');
+            };
+
+            // add to activity logs in case priority or status of issue changed
+            if (priority) {
+                await issueServices.addToActivityLogs(issueId, workspaceId, userId, 'PRIORITY_CHANGED', doesIssueExist.priority as string, priority as string);
+            } else if (status) {
+                await issueServices.addToActivityLogs(issueId, workspaceId, userId, 'STATUS_CHANGED', doesIssueExist.status as string, status as string);
+            };
+
+
+            const issue = await issueServices.updateIssue(workspaceId, projectId, issueId, { title, description, status, priority, order, assignee_id, dueDate: formatDate });
+
+            // send notification to current assignee
             if (assignee_id) {
                 await sendNotification({
                     type: "ISSUE_ASSIGNED",
