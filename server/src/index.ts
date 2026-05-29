@@ -11,6 +11,8 @@ import { router as InvitationAcceptRoutes } from './modules/invitations/accept-r
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import './redis/client';
+import './queues/notification.queue'
+import './workers/notification.worker'
 
 
 

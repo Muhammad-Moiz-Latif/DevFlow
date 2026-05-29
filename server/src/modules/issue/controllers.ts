@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { Queue, Worker } from 'bullmq';
+import { notificationQueue } from '../../queues/notification.queue';
 import { issueServices } from './services';
 import { projectServices } from '../projects/services';
 import { workspaceServices } from '../workspace/services';
@@ -155,14 +155,6 @@ export const IssueControllers = {
 
             const doesIssueExist = await issueServices.getIssue(workspaceId, projectId, issueId);
 
-            const myQueue = new Queue('foo');
-
-            async function addJobs() {
-                await myQueue.add('myJobName', { foo: 'bar' });
-                await myQueue.add('myJobName', { qux: 'baz' });
-            }
-
-            await addJobs();
 
             if (!doesIssueExist) {
                 return res.status(404).json({
@@ -173,12 +165,12 @@ export const IssueControllers = {
 
             // send notification to previous assignee and add to activity logs
             if (doesIssueExist.assignee_id && doesIssueExist.assignee_id != assignee_id) {
-                await sendNotification({
-                    type: "ISSUE_ASSIGNED",
-                    user_id: assignee_id,
-                    link: "some link",
-                    message: "get to work son",
-                    workspace_id: workspaceId
+
+                await notificationQueue.add('ISSUE_ASSIGNED', {
+                    userId: assignee_id,
+                    message: 'You have been assigned an issue',
+                    workspaceId,
+                    link: 'some link'
                 });
 
                 await issueServices.addToActivityLogs(issueId, workspaceId, assignee_id, 'ASSIGNEE_CHANGED');
@@ -196,12 +188,11 @@ export const IssueControllers = {
 
             // send notification to current assignee
             if (assignee_id) {
-                await sendNotification({
-                    type: "ISSUE_ASSIGNED",
-                    user_id: assignee_id,
-                    link: "some link",
-                    message: "get to work son",
-                    workspace_id: workspaceId
+                  await notificationQueue.add('ISSUE_ASSIGNED', {
+                    userId: assignee_id,
+                    message: 'You have been assigned an issue',
+                    workspaceId,
+                    link: 'some link'
                 });
             };
 

@@ -10,15 +10,15 @@ router.post('/create-workspace', upload.single("image"), verifyJWT, workspaceCon
 
 router.get('/get-user-workspaces', verifyJWT, workspaceControllers.getMyWorkspaces);
 
-router.get('/:workspaceId', verifyJWT, workspaceControllers.getWorkspace);
+router.get('/:workspaceId/my-issues', verifyJWT, workspaceControllers.getMyIssues);
+
+router.get('/:workspaceId/activity-logs', verifyJWT, workspaceControllers.getActivityLogs);
 
 router.get('/:workspaceSlug/bySlug', verifyJWT, workspaceControllers.getWorkspaceViaSlug);
+
+router.get('/:workspaceId', verifyJWT, workspaceControllers.getWorkspace);
 
 router.patch("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.updateWorkspace);
 
 router.delete("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.deleteWorkspace);
-
-router.get('/:workspaceId/my-issues', verifyJWT, workspaceControllers.getMyIssues);
-
-router.get('/:workspaceId/activity-logs', verifyJWT, workspaceControllers.getActivityLogs);
 
