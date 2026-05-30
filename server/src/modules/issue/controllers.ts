@@ -4,6 +4,7 @@ import { issueServices } from './services';
 import { projectServices } from '../projects/services';
 import { workspaceServices } from '../workspace/services';
 import { sendNotification } from '../../utils/send-notification';
+import { activityLogQueue } from '../../queues/activitylog.queue';
 
 export const IssueControllers = {
 
@@ -163,45 +164,69 @@ export const IssueControllers = {
                 });
             };
 
-            // send notification to previous assignee and add to activity logs
-            if (doesIssueExist.assignee_id && doesIssueExist.assignee_id != assignee_id) {
-
-                await notificationQueue.add('ISSUE_ASSIGNED', {
-                    userId: assignee_id,
-                    message: 'You have been assigned an issue',
-                    workspaceId,
-                    link: 'some link'
-                });
-
-                await issueServices.addToActivityLogs(issueId, workspaceId, assignee_id, 'ASSIGNEE_CHANGED');
-            };
-
-            // add to activity logs in case priority or status of issue changed
-            if (priority) {
-                await issueServices.addToActivityLogs(issueId, workspaceId, userId, 'PRIORITY_CHANGED', doesIssueExist.priority as string, priority as string);
-            } else if (status) {
-                await issueServices.addToActivityLogs(issueId, workspaceId, userId, 'STATUS_CHANGED', doesIssueExist.status as string, status as string);
-            };
-
-
             const issue = await issueServices.updateIssue(workspaceId, projectId, issueId, { title, description, status, priority, order, assignee_id, dueDate: formatDate });
 
-            // send notification to current assignee
-            if (assignee_id) {
-                  await notificationQueue.add('ISSUE_ASSIGNED', {
-                    userId: assignee_id,
-                    message: 'You have been assigned an issue',
-                    workspaceId,
-                    link: 'some link'
-                });
-            };
-
-            return res.status(200).json({
+            res.status(200).json({
                 success: true,
                 message: "Issue updated successfully",
                 data: issue
             });
 
+            // THE SIDE - EFFECTS
+
+            try {
+                // send notification to previous assignee and add to activity logs
+                if (doesIssueExist.assignee_id && doesIssueExist.assignee_id != assignee_id) {
+
+                    await notificationQueue.add('ISSUE_UNASSIGNED', {
+                        userId: doesIssueExist.assignee_id,
+                        message: 'You have been un_assigned from an issue',
+                        workspaceId,
+                        link: 'some link'
+                    });
+
+                    await activityLogQueue.add('ASSIGNEE_CHANGED', {
+                        issueId,
+                        workspaceId,
+                        actorId: assignee_id,
+                    });
+
+                };
+
+                // add to activity logs in case priority or status of issue changed
+                if (priority) {
+                    await activityLogQueue.add('PRIORITY_CHANGED', {
+                        issueId,
+                        workspaceId,
+                        actorId: userId,
+                        oldValue: doesIssueExist.priority as string,
+                        newValue: priority as string
+                    });
+
+                } else if (status) {
+                    await activityLogQueue.add('STATUS_CHANGED', {
+                        issueId,
+                        workspaceId,
+                        actorId: userId,
+                        oldValue: doesIssueExist.status as string,
+                        newValue: status as string
+                    });
+                };
+
+                // send notification to current assignee
+                if (assignee_id) {
+                    await notificationQueue.add('ISSUE_ASSIGNED', {
+                        userId: assignee_id,
+                        message: 'You have been assigned an issue',
+                        workspaceId,
+                        link: 'some link'
+                    });
+                };
+
+            } catch (error) {
+                console.error('Queue error : ', error);
+            }
+            
         } catch (error) {
             console.error(error);
             return res.status(500).json({

@@ -12,7 +12,9 @@ import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import './redis/client';
 import './queues/notification.queue'
+import './queues/activitylog.queue'
 import './workers/notification.worker'
+import './workers/activitylog.worker'
 
 
 

@@ -2,24 +2,22 @@
 import { Worker, type Job } from 'bullmq'
 import { redisConnection } from '../redis/client'
 import { sendNotification } from '../utils/send-notification'
+import { NotificationType } from '../db/schema/notifications'
+
+type notificationTypeEnum = typeof NotificationType.enumValues[number];
 
 const notificationWorker = new Worker('notification', async (job: Job) => {
 
-    console.log('Job received:', job.name, job.data)
+    const { userId } = job.data
 
-    if (job.name === 'ISSUE_ASSIGNED') {
-        const { userId, message } = job.data
-        console.log(`Sending assignment notification to user ${userId}: ${message}`)
-        // your actual sendNotification call goes here
-        await sendNotification({
-            type: "ISSUE_ASSIGNED",
-            user_id: userId,
-            link: "some link",
-            message: "get to work son",
-            workspace_id: job.data.workspaceId
-        });
-    }
-
+    // your actual sendNotification call goes here
+    await sendNotification({
+        type: job.name as notificationTypeEnum,
+        user_id: userId,
+        link: "some link",
+        message: "get to work son",
+        workspace_id: job.data.workspaceId
+    });
 
 }, { connection: redisConnection })
 

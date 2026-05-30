@@ -3,10 +3,13 @@ import { useDroppable } from "@dnd-kit/react";
 import type { IssueType, KanbanColumnType } from "../../types"
 import IssueCard from "./IssueCard";
 import { IssueDrawer } from "./IssueDrawer";
+import CreateIssueModal from "./CreateIssueModal";
 
 type KanbanColumnProps = {
     column: KanbanColumnType,
-    issues: IssueType[]
+    issues: IssueType[],
+    workspaceId: string,
+    projectId: string
 };
 
 const statusColorMap: Record<string, { dot: string; header: string }> = {
@@ -17,8 +20,9 @@ const statusColorMap: Record<string, { dot: string; header: string }> = {
 };
 
 
-const KanbanColumn = ({ column, issues }: KanbanColumnProps) => {
+const KanbanColumn = ({ column, issues, workspaceId, projectId }: KanbanColumnProps) => {
     const [selectedIssue, setSelectedIssue] = useState<IssueType | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const colors = statusColorMap[column.id];
     const { ref, isDropTarget } = useDroppable({
@@ -30,10 +34,16 @@ const KanbanColumn = ({ column, issues }: KanbanColumnProps) => {
             <div
                 ref={ref}
                 style={{ background: isDropTarget ? 'rgba(99,102,241,0.05)' : undefined }}
-                className="w-full min-h-screen"
+                className="w-full min-h-screen mt-5"
             >
                 {/* Column Container */}
-                <div className={`bg-linear-to-r ${colors.header} rounded-lg border border-border/50 px-3 py-2 mb-3`}>
+                <div className={`bg-linear-to-r relative ${colors.header} rounded-lg border border-border/50 px-3 py-2 mb-3`}>
+                    <div
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="size-5 border border-zinc-800 bg-background text-accent-foreground flex items-center justify-center absolute -top-2 left-1/2 hover:cursor-pointer hover:opacity-70"
+                    >
+                        +
+                    </div>
                     <div className="flex items-center gap-2 mb-0.5">
                         <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
                         <h2 className="font-semibold text-foreground text-xs">
@@ -71,6 +81,14 @@ const KanbanColumn = ({ column, issues }: KanbanColumnProps) => {
             </div>
             {selectedIssue && (
                 <IssueDrawer issue={selectedIssue} onClose={() => setSelectedIssue(null)} />
+            )}
+            {isCreateModalOpen && (
+                <CreateIssueModal
+                    workspaceId={workspaceId}
+                    projectId={projectId}
+                    status={column.id as 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'}
+                    onClose={() => setIsCreateModalOpen(false)}
+                />
             )}
         </>
     )

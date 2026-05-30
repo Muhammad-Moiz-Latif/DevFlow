@@ -50,6 +50,13 @@
       "when": 1778132223068,
       "tag": "0006_perfect_timeslip",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780138831821,
+      "tag": "0007_foamy_abomination",
+      "breakpoints": true
     }
   ]
 }
