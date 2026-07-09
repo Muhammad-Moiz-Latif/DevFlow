@@ -8,13 +8,13 @@ import { WorkspaceMembersTable } from "../../db/schema/workspace-member";
 
 export const authServices = {
 
-    async registerUser(name: string, email: string, password: string, img: string | null) {
-        const hashedPassword = await bcrypt.hash(password, 10);
+    async registerUser(name: string, email: string, img: string | null, password?: string, authType?: boolean) {
         const [User] = await db.insert(UserTable).values({
             name,
             email,
-            password: hashedPassword,
-            img
+            password: password ? await bcrypt.hash(password, 10) : null,
+            img,
+            authType: authType ? 'BOTH' : 'CREDENTIALS'
         }).returning();
 
         return User;

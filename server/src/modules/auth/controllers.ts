@@ -4,6 +4,7 @@ import uploadImage from '../../utils/upload-image';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { sendEmailToken } from '../../utils/send-email';
+import { oAuth2Client } from '../../config/oauth';
 
 export const authController = {
 
@@ -35,7 +36,7 @@ export const authController = {
                 });
             };
 
-            const createUser = await authServices.registerUser(name, email, password, imgURL);
+            const createUser = await authServices.registerUser(name, email, imgURL, password);
 
             if (!createUser) {
                 return res.status(500).json({
@@ -105,6 +106,138 @@ export const authController = {
                 json: "Internal server error"
             });
         }
+    },
+
+    async handleGoogleVerification(req: Request, res: Response) {
+        try {
+            const { code } = req.body;
+
+            // Exchange code for tokens (tokens.access_token, tokens.id_token, tokens.refresh_token)
+            const { tokens } = await oAuth2Client.getToken(code);
+
+            const ticket = await oAuth2Client.verifyIdToken({
+                idToken: tokens.id_token!,
+                audience: process.env.GOOGLE_CLIENT_ID!
+            });
+
+            const payload = ticket.getPayload();
+
+            // edge-case: if user already exists via credentials return to client and ask for merging both accounts
+            const doesUserAlreadyExist = await authServices.getUserViaEmail(payload?.email!);
+
+            if (doesUserAlreadyExist?.authType === 'CREDENTIALS') {
+                return res.status(200).json({
+                    success: true,
+                    message: 'This Google account is connected to your existing email. Would you like to link them for easier login?'
+                });
+            };
+
+            const access_secret = process.env.ACCESS_TOKEN_SECRET!;
+            const refresh_secret = process.env.REFRESH_TOKEN_SECRET!;
+            const doesUserBelongToAWorkspace = await authServices.doesUserBelongToAWorkspace(doesUserAlreadyExist?.id!);
+
+            // edge case: if user already exists via google/both we simply return that users data to client
+            if (doesUserAlreadyExist?.authType === 'GOOGLE' || doesUserAlreadyExist?.authType === 'BOTH') {
+
+                const access_token = jwt.sign(
+                    {
+                        id: doesUserAlreadyExist?.id,
+                        createUsername: doesUserAlreadyExist.name,
+                        img: doesUserAlreadyExist.img
+                    },
+                    access_secret,
+                    { expiresIn: "15m" }
+                );
+
+                const refresh_token = jwt.sign(
+                    {
+                        id: doesUserAlreadyExist?.id,
+                        createUsername: doesUserAlreadyExist.name,
+                        img: doesUserAlreadyExist.img
+                    },
+                    refresh_secret,
+                    { expiresIn: "1d" }
+                );
+
+                res.cookie("refresh_token", refresh_token, {
+                    httpOnly: true,
+                    sameSite: "lax",
+                    maxAge: 24 * 60 * 60 * 1000
+                });
+
+                return res.status(200).json({
+                    success: true,
+                    message: "createUser has been verified successfully!",
+                    data: {
+                        _id: doesUserAlreadyExist.id,
+                        username: doesUserAlreadyExist.name,
+                        img: doesUserAlreadyExist.img,
+                        email: doesUserAlreadyExist.email,
+                        createdAt: doesUserAlreadyExist.createdAt
+                    },
+                    access_token,
+                    defaultWorkspaceSlug: doesUserBelongToAWorkspace?.slug ?? null
+                });
+            };
+
+            // creating brand new user
+            const createUser = await authServices.registerUser(payload?.name!, payload?.email!, payload?.picture!, undefined, true);
+
+            if (!createUser) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Failed to create account"
+                });
+            };
+
+            const access_token = jwt.sign(
+                {
+                    id: createUser?.id,
+                    createUsername: createUser.name,
+                    img: createUser.img
+                },
+                access_secret,
+                { expiresIn: "15m" }
+            );
+
+            const refresh_token = jwt.sign(
+                {
+                    id: createUser?.id,
+                    createUsername: createUser.name,
+                    img: createUser.img
+                },
+                refresh_secret,
+                { expiresIn: "1d" }
+            );
+
+            res.cookie("refresh_token", refresh_token, {
+                httpOnly: true,
+                sameSite: "lax",
+                maxAge: 24 * 60 * 60 * 1000
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "createUser has been verified successfully!",
+                data: {
+                    _id: createUser.id,
+                    username: createUser.name,
+                    img: createUser.img,
+                    email: createUser.email,
+                    createdAt: createUser.createdAt
+                },
+                access_token,
+                defaultWorkspaceSlug: doesUserBelongToAWorkspace?.slug ?? null
+
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
     },
 
     async verifyEmailOTP(req: Request, res: Response) {

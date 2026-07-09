@@ -1,6 +1,7 @@
 import { Link } from "react-router";
-import { AuthShell, GoogleButton, Divider } from "../../components/ui/AuthShell";
+import { AuthShell, Divider } from "../../components/ui/AuthShell";
 import { LoginForm } from "../../features/auth/components/login-form";
+import GoogleLoginButton from "../../utils/googleLoginButton";
 
 
 export function LoginPage() {
@@ -16,7 +17,7 @@ export function LoginPage() {
                 </>
             }
         >
-            <GoogleButton label="Continue with Google" />
+            <GoogleLoginButton label="Continue with Google"/>
             <Divider text="or" />
 
             <LoginForm />

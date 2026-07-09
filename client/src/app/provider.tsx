@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { useEffect } from "react";
 import { useAuthStore } from "../stores/auth-store";
 import { privateApi } from "../lib/axios";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient();
 
@@ -40,8 +41,10 @@ export const CustomProvider = () => {
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
-                <Toaster />
-                <RouterProvider router={router} />
+                <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+                    <Toaster />
+                    <RouterProvider router={router} />
+                </GoogleOAuthProvider>
             </AuthProvider>
         </QueryClientProvider>
     )

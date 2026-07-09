@@ -21,6 +21,7 @@
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
+    "google-auth-library": "^10.9.0",
     "ioredis": "^5.11.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
@@ -30,7 +31,8 @@
     "pg": "^8.19.0",
     "postgres": "^3.4.8",
     "redis": "^6.0.0",
-    "slugify": "^1.6.8"
+    "slugify": "^1.6.8",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
