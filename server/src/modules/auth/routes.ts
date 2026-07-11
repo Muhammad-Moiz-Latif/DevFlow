@@ -29,6 +29,8 @@ router.get("/me", verifyJWT, authController.getMe);
 
 router.post("/google", authController.handleGoogleVerification);
 
+router.patch("/merge", authController.updateAUser);
+
 router.get("/logout", authController.handleLogout);
 
 

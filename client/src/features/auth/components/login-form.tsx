@@ -9,8 +9,7 @@ import { successToast } from "../../../components/ui/CustomToasts";
 import { useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "../../../stores/auth-store";
-import { publicApi } from "../../../lib/axios";
-import type { LoginResponse } from "../../types";
+
 
 const LoginSchema = z.object({
     email: z.

@@ -126,7 +126,7 @@ export const authController = {
             const doesUserAlreadyExist = await authServices.getUserViaEmail(payload?.email!);
 
             if (doesUserAlreadyExist?.authType === 'CREDENTIALS') {
-                return res.status(200).json({
+                return res.status(201).json({
                     success: true,
                     message: 'This Google account is connected to your existing email. Would you like to link them for easier login?'
                 });
@@ -239,6 +239,8 @@ export const authController = {
             });
         };
     },
+
+    async updateAUser(){},
 
     async verifyEmailOTP(req: Request, res: Response) {
         try {

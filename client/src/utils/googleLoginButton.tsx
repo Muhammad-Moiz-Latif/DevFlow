@@ -4,17 +4,25 @@ import type { LoginResponse } from "../features/types";
 import { errorToast, successToast } from "../components/ui/CustomToasts";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../stores/auth-store";
+import { useState } from "react";
 
 export default function GoogleLoginButton({ label }: { label: string }) {
     const navigate = useNavigate();
     const { setAuth: setAuthStore } = useAuthStore();
+    const [googleMerge, setGoogleMerge] = useState(false);
+
+    async function handleMerge() {
+
+    }
 
     const googleLogin = useGoogleLogin({
         flow: 'auth-code',
         onSuccess: async ({ code }) => {
             try {
                 const response = await publicApi.post<LoginResponse>('/auth/google', { code });
-                console.log(response.data);
+                if (response.status === 201) {
+                    setGoogleMerge(true);
+                }
                 if (response.data.success && response.data.access_token) {
                     successToast(`Welcome back, ${response.data.data?.username}`);
 
@@ -42,6 +50,17 @@ export default function GoogleLoginButton({ label }: { label: string }) {
             // Show error toast
         }
     });
+
+    if (googleMerge) return <div
+        className="h-screen w-full bg-black/40 backdrop-blur-xs flex justify-center items-center absolute top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 rounded-md z-30">
+        <div className="w-140 h-64 bg-gray-800 rounded-md p-4 text-sm text-center">
+            <p>This Google account is connected to your existing email. Would you like to link them for easier login?</p>
+            <div className="flex justify-center gap-3 items-center">
+                <button className="border px-10 py-2" onClick={() => handleMerge}>Yes</button>
+                <button className="border px-10 py-2" onClick={() => setGoogleMerge(false)}>No</button>
+            </div>
+        </div>
+    </div>
 
     return (
         <button

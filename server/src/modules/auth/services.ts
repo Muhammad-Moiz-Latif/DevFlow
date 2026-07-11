@@ -6,6 +6,15 @@ import type { emailTokenType } from "../../utils/send-email";
 import { verificationTokenTable } from "../../db/schema/tokens";
 import { WorkspaceMembersTable } from "../../db/schema/workspace-member";
 
+type User = {
+    name: string,
+    email: string,
+    img: string | null,
+    password: string,
+    authType: 'GOOGLE' | 'CREDENTIALS' | 'BOTH',
+    userId : string
+};
+
 export const authServices = {
 
     async registerUser(name: string, email: string, img: string | null, password?: string, authType?: boolean) {
@@ -26,6 +35,17 @@ export const authServices = {
             eq(UserTable.name, name)
         ));
         return getUser;
+    },
+
+    async updateUser(user: Partial<User>) {
+        const updateUser = await db.execute(sql`
+            UPDATE u
+            SET u.name = case
+            WHEN ${user.name} = '' then u.name
+            ELSE ${user.name}
+            FROM users u
+            WHERE u.id = ${user.userId}
+        `)
     },
 
     async getVerificationToken(userId: string, type: emailTokenType) {
