@@ -1,4 +1,4 @@
-import { db } from "../../config/db";
+import { db, pool } from "../../config/db";
 import bcrypt from 'bcrypt';
 import { UserTable } from "../../db/schema/users";
 import { and, eq, or, sql } from "drizzle-orm";
@@ -12,7 +12,6 @@ type User = {
     img: string | null,
     password: string,
     authType: 'GOOGLE' | 'CREDENTIALS' | 'BOTH',
-    userId : string
 };
 
 export const authServices = {
@@ -37,15 +36,25 @@ export const authServices = {
         return getUser;
     },
 
-    async updateUser(user: Partial<User>) {
-        const updateUser = await db.execute(sql`
-            UPDATE u
-            SET u.name = case
-            WHEN ${user.name} = '' then u.name
-            ELSE ${user.name}
-            FROM users u
-            WHERE u.id = ${user.userId}
-        `)
+    async updateUser(user: Partial<User>, userId: string) {
+        const keys = Object.keys(user);
+
+        const values = Object.values(user);
+
+        const setClause = keys.map((key, index) =>
+            `"${key}" = $${index + 1}`
+        ).join(',');
+
+
+        const result = await pool.query(
+            `UPDATE users
+            SET ${setClause}
+            WHERE id = $${keys.length + 1}
+            RETURNING *
+        `,
+            [...values, userId]);
+
+        return result.rows[0];
     },
 
     async getVerificationToken(userId: string, type: emailTokenType) {

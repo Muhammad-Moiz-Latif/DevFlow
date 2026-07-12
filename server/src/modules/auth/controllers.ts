@@ -128,7 +128,10 @@ export const authController = {
             if (doesUserAlreadyExist?.authType === 'CREDENTIALS') {
                 return res.status(201).json({
                     success: true,
-                    message: 'This Google account is connected to your existing email. Would you like to link them for easier login?'
+                    message: 'This Google account is connected to your existing email. Would you like to link them for easier login?',
+                    data: {
+                        _id: doesUserAlreadyExist.id
+                    }
                 });
             };
 
@@ -240,7 +243,72 @@ export const authController = {
         };
     },
 
-    async updateAUser(){},
+    async updateAUser(req: Request, res: Response) {
+        try {
+            const { userId } = req.body;
+
+            const updateUser = await authServices.updateUser({ authType: 'BOTH' }, userId);
+
+            if (!updateUser) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Could not update user"
+                });
+            };
+
+            const access_secret = process.env.ACCESS_TOKEN_SECRET!;
+            const refresh_secret = process.env.REFRESH_TOKEN_SECRET!;
+            const doesUserBelongToAWorkspace = await authServices.doesUserBelongToAWorkspace(userId);
+
+            const access_token = jwt.sign(
+                {
+                    id: updateUser.id,
+                    createUsername: updateUser.name,
+                    img: updateUser.img
+                },
+                access_secret,
+                { expiresIn: "15m" }
+            );
+
+            const refresh_token = jwt.sign(
+                {
+                    id: updateUser?.id,
+                    createUsername: updateUser.name,
+                    img: updateUser.img
+                },
+                refresh_secret,
+                { expiresIn: "1d" }
+            );
+
+            res.cookie("refresh_token", refresh_token, {
+                httpOnly: true,
+                sameSite: "lax",
+                maxAge: 24 * 60 * 60 * 1000
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Accounts have been successfully merged!",
+                data: {
+                    _id: updateUser.id,
+                    username: updateUser.name,
+                    img: updateUser.img,
+                    email: updateUser.email,
+                    createdAt: updateUser.createdAt
+                },
+                access_token,
+                defaultWorkspaceSlug: doesUserBelongToAWorkspace?.slug ?? null
+
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
+    },
 
     async verifyEmailOTP(req: Request, res: Response) {
         try {

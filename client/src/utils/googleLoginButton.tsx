@@ -9,10 +9,35 @@ import { useState } from "react";
 export default function GoogleLoginButton({ label }: { label: string }) {
     const navigate = useNavigate();
     const { setAuth: setAuthStore } = useAuthStore();
+    const [getUserId, setUserId] = useState("");
     const [googleMerge, setGoogleMerge] = useState(false);
 
     async function handleMerge() {
+        console.log('hey')
+        try {
+            const response = await publicApi.patch<LoginResponse>('/auth/merge', { userId: getUserId });
+           
+            if (response.data.success && response.data.access_token) {
+                successToast(`Welcome back, ${response.data.data?.username}`);
 
+                setAuthStore({
+                    _id: response.data.data?._id!,
+                    image: response.data.data?.img!,
+                    username: response.data.data?.username!,
+                }, response.data.access_token);
+
+                const workspaceSlug = response.data.defaultWorkspaceSlug;
+
+                if (!workspaceSlug) {
+                    setTimeout(() => navigate('/create-workspace'), 800);
+                } else {
+                    setTimeout(() => navigate(`/w/${workspaceSlug}`), 800);
+                }
+            }
+        } catch (error) {
+            console.error("Google login failed", error);
+            errorToast('Google login failed');
+        }
     }
 
     const googleLogin = useGoogleLogin({
@@ -21,6 +46,8 @@ export default function GoogleLoginButton({ label }: { label: string }) {
             try {
                 const response = await publicApi.post<LoginResponse>('/auth/google', { code });
                 if (response.status === 201) {
+                    console.log(response);
+                    setUserId(response.data.data?._id!);
                     setGoogleMerge(true);
                 }
                 if (response.data.success && response.data.access_token) {
@@ -56,7 +83,7 @@ export default function GoogleLoginButton({ label }: { label: string }) {
         <div className="w-140 h-64 bg-gray-800 rounded-md p-4 text-sm text-center">
             <p>This Google account is connected to your existing email. Would you like to link them for easier login?</p>
             <div className="flex justify-center gap-3 items-center">
-                <button className="border px-10 py-2" onClick={() => handleMerge}>Yes</button>
+                <button className="border px-10 py-2" onClick={() => handleMerge()}>Yes</button>
                 <button className="border px-10 py-2" onClick={() => setGoogleMerge(false)}>No</button>
             </div>
         </div>
