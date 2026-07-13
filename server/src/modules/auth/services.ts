@@ -1,10 +1,9 @@
 import { db, pool } from "../../config/db";
 import bcrypt from 'bcrypt';
 import { UserTable } from "../../db/schema/users";
-import { and, eq, or, sql } from "drizzle-orm";
+import { and, eq, not, or, sql } from "drizzle-orm";
 import type { emailTokenType } from "../../utils/send-email";
 import { verificationTokenTable } from "../../db/schema/tokens";
-import { WorkspaceMembersTable } from "../../db/schema/workspace-member";
 
 type User = {
     name: string,
@@ -14,15 +13,16 @@ type User = {
     authType: 'GOOGLE' | 'CREDENTIALS' | 'BOTH',
 };
 
+
 export const authServices = {
 
-    async registerUser(name: string, email: string, img: string | null, password?: string, authType?: boolean) {
+    async registerUser(name: string, email: string, img: string | null, authType: 'GOOGLE' | 'BOTH' | 'CREDENTIALS', password?: string) {
         const [User] = await db.insert(UserTable).values({
             name,
             email,
             password: password ? await bcrypt.hash(password, 10) : null,
             img,
-            authType: authType ? 'BOTH' : 'CREDENTIALS'
+            authType
         }).returning();
 
         return User;
@@ -114,8 +114,8 @@ export const authServices = {
     },
 
     async getUserViaCredentials(email: string, password: string) {
-        const [getUser] = await db.select().from(UserTable).where(eq(
-            UserTable.email, email
+        const [getUser] = await db.select().from(UserTable).where((
+            eq(UserTable.email, email)
         )).limit(1);
 
         if (!getUser) {
@@ -125,10 +125,10 @@ export const authServices = {
             }
         };
 
-        const validPassword = await bcrypt.compare(password, getUser.password!);
+        const validPassword = await bcrypt.compare(password, getUser.password! || "");
 
         if (!validPassword) {
-            return { isUser: false, user: null };
+            return { isUser: false, user: getUser };
         }
 
         return { isUser: true, user: getUser };

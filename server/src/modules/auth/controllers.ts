@@ -6,6 +6,7 @@ import 'dotenv/config';
 import { sendEmailToken } from '../../utils/send-email';
 import { oAuth2Client } from '../../config/oauth';
 
+
 export const authController = {
 
     async registerUser(req: Request, res: Response) {
@@ -111,6 +112,8 @@ export const authController = {
     async handleGoogleVerification(req: Request, res: Response) {
         try {
             const { code } = req.body;
+            const access_secret = process.env.ACCESS_TOKEN_SECRET!;
+            const refresh_secret = process.env.REFRESH_TOKEN_SECRET!;
 
             // Exchange code for tokens (tokens.access_token, tokens.id_token, tokens.refresh_token)
             const { tokens } = await oAuth2Client.getToken(code);
@@ -125,6 +128,60 @@ export const authController = {
             // edge-case: if user already exists via credentials return to client and ask for merging both accounts
             const doesUserAlreadyExist = await authServices.getUserViaEmail(payload?.email!);
 
+            // edge-case: no user with this email has been created yet so creating brand new user
+            if (!doesUserAlreadyExist) {
+
+                const createUser = await authServices.registerUser(payload?.name!, payload?.email!, payload?.picture!, 'GOOGLE', undefined);
+
+                if (!createUser) {
+                    return res.status(500).json({
+                        success: false,
+                        message: "Failed to create account"
+                    });
+                };
+
+                const access_token = jwt.sign(
+                    {
+                        id: createUser?.id,
+                        createUsername: createUser.name,
+                        img: createUser.img
+                    },
+                    access_secret,
+                    { expiresIn: "15m" }
+                );
+
+                const refresh_token = jwt.sign(
+                    {
+                        id: createUser?.id,
+                        createUsername: createUser.name,
+                        img: createUser.img
+                    },
+                    refresh_secret,
+                    { expiresIn: "1d" }
+                );
+
+                res.cookie("refresh_token", refresh_token, {
+                    httpOnly: true,
+                    sameSite: "lax",
+                    maxAge: 24 * 60 * 60 * 1000
+                });
+
+                return res.status(200).json({
+                    success: true,
+                    message: "createUser has been verified successfully!",
+                    data: {
+                        _id: createUser.id,
+                        username: createUser.name,
+                        img: createUser.img,
+                        email: createUser.email,
+                        createdAt: createUser.createdAt
+                    },
+                    access_token,
+                    defaultWorkspaceSlug: null
+                });
+            }
+
+            // edge-case: user with this email already created account via credentials so request for merging both google and credentials account
             if (doesUserAlreadyExist?.authType === 'CREDENTIALS') {
                 return res.status(201).json({
                     success: true,
@@ -135,8 +192,6 @@ export const authController = {
                 });
             };
 
-            const access_secret = process.env.ACCESS_TOKEN_SECRET!;
-            const refresh_secret = process.env.REFRESH_TOKEN_SECRET!;
             const doesUserBelongToAWorkspace = await authServices.doesUserBelongToAWorkspace(doesUserAlreadyExist?.id!);
 
             // edge case: if user already exists via google/both we simply return that users data to client
@@ -182,57 +237,6 @@ export const authController = {
                     defaultWorkspaceSlug: doesUserBelongToAWorkspace?.slug ?? null
                 });
             };
-
-            // creating brand new user
-            const createUser = await authServices.registerUser(payload?.name!, payload?.email!, payload?.picture!, undefined, true);
-
-            if (!createUser) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Failed to create account"
-                });
-            };
-
-            const access_token = jwt.sign(
-                {
-                    id: createUser?.id,
-                    createUsername: createUser.name,
-                    img: createUser.img
-                },
-                access_secret,
-                { expiresIn: "15m" }
-            );
-
-            const refresh_token = jwt.sign(
-                {
-                    id: createUser?.id,
-                    createUsername: createUser.name,
-                    img: createUser.img
-                },
-                refresh_secret,
-                { expiresIn: "1d" }
-            );
-
-            res.cookie("refresh_token", refresh_token, {
-                httpOnly: true,
-                sameSite: "lax",
-                maxAge: 24 * 60 * 60 * 1000
-            });
-
-            return res.status(200).json({
-                success: true,
-                message: "createUser has been verified successfully!",
-                data: {
-                    _id: createUser.id,
-                    username: createUser.name,
-                    img: createUser.img,
-                    email: createUser.email,
-                    createdAt: createUser.createdAt
-                },
-                access_token,
-                defaultWorkspaceSlug: doesUserBelongToAWorkspace?.slug ?? null
-
-            });
 
         } catch (error) {
             console.error(error);
@@ -384,13 +388,13 @@ export const authController = {
 
             const { isUser, user } = await authServices.getUserViaCredentials(email, password);
 
-
             if (!isUser || !user) {
                 return res.status(404).json({
                     success: false,
-                    message: "User does not exist"
+                    message: user ? "Please use Google Sign-In for this email" : "User does not exist"
                 });
             };
+
 
             const doesUserBelongToAWorkspace = await authServices.doesUserBelongToAWorkspace(user.id);
 

@@ -19,9 +19,8 @@ export const workspaceControllers = {
 
             const doesNamealreadyExist = await workspaceServices.getWorkspaceViaName(name);
 
-
             if (doesNamealreadyExist) {
-                return res.status(400).json({
+                return res.status(409).json({
                     success: false,
                     message: "Workspace name has already been taken, please try again"
                 });

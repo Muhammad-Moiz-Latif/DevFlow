@@ -5,18 +5,20 @@ import { errorToast, successToast } from "../components/ui/CustomToasts";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../stores/auth-store";
 import { useState } from "react";
+import { GeneralLoader } from "./loader";
 
 export default function GoogleLoginButton({ label }: { label: string }) {
     const navigate = useNavigate();
     const { setAuth: setAuthStore } = useAuthStore();
     const [getUserId, setUserId] = useState("");
     const [googleMerge, setGoogleMerge] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     async function handleMerge() {
-        console.log('hey')
         try {
+            setIsLoading(true);
             const response = await publicApi.patch<LoginResponse>('/auth/merge', { userId: getUserId });
-           
+
             if (response.data.success && response.data.access_token) {
                 successToast(`Welcome back, ${response.data.data?.username}`);
 
@@ -37,12 +39,15 @@ export default function GoogleLoginButton({ label }: { label: string }) {
         } catch (error) {
             console.error("Google login failed", error);
             errorToast('Google login failed');
+        } finally {
+            setIsLoading(false);
         }
     }
 
     const googleLogin = useGoogleLogin({
         flow: 'auth-code',
         onSuccess: async ({ code }) => {
+            setIsLoading(true);
             try {
                 const response = await publicApi.post<LoginResponse>('/auth/google', { code });
                 if (response.status === 201) {
@@ -50,7 +55,7 @@ export default function GoogleLoginButton({ label }: { label: string }) {
                     setUserId(response.data.data?._id!);
                     setGoogleMerge(true);
                 }
-                if (response.data.success && response.data.access_token) {
+                if (response.data.success && response.data.access_token && response.status === 200) {
                     successToast(`Welcome back, ${response.data.data?.username}`);
 
                     setAuthStore({
@@ -70,12 +75,15 @@ export default function GoogleLoginButton({ label }: { label: string }) {
             } catch (error) {
                 console.error("Google login failed", error);
                 errorToast('Google login failed');
+            } finally {
+                setIsLoading(false);
             }
         },
         onError: (error) => {
+            setIsLoading(false);
             console.error("Google OAuth error:", error);
             // Show error toast
-        }
+        },
     });
 
     if (googleMerge) return <div
@@ -88,6 +96,10 @@ export default function GoogleLoginButton({ label }: { label: string }) {
             </div>
         </div>
     </div>
+
+    if (isLoading) return <>
+        {<GeneralLoader label="Signing you in" />}
+    </>
 
     return (
         <button

@@ -1,6 +1,7 @@
-import { AuthShell, GoogleButton, Divider } from "../../components/ui/AuthShell";
+import { AuthShell, Divider } from "../../components/ui/AuthShell";
 import { Link } from "react-router";
 import { SignUpForm } from "../../features/auth/components/signup-form";
+import GoogleLoginButton from "../../utils/googleLoginButton";
 
 
 
@@ -15,7 +16,7 @@ export function SignupPage() {
                 </>
             }
         >
-            <GoogleButton label="Sign up with Google" />
+            <GoogleLoginButton label="Sign up with Google"/>
             <Divider text="or sign up with email" />
 
             <SignUpForm />
