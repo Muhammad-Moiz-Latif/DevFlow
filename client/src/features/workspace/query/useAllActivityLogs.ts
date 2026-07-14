@@ -6,6 +6,7 @@ export const useAllActivityLogs = (workspaceId: string) => {
     const { user } = useAuthStore();
     return useQuery({
         queryKey: ['activity-logs', workspaceId, user?._id],
-        queryFn: () => getAllActivityLogsOfWorkspace(workspaceId)
+        queryFn: () => getAllActivityLogsOfWorkspace(workspaceId),
+        enabled: !!workspaceId
     });
 };

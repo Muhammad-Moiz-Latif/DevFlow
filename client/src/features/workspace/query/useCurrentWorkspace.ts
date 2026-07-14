@@ -5,6 +5,6 @@ export const useCurrentWorkspace = (slug: string) => {
     return useQuery({
         queryKey: ['current-workspace', slug],
         queryFn: () => getWorkspaceDataViaSlug(slug),
-        staleTime: 5 * 60 * 1000
+        enabled: !!slug
     });
 };

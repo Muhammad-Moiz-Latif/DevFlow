@@ -2,12 +2,14 @@ import { useNavigate, useParams } from "react-router"
 import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
 import { useAllProjects } from "../query/useAllProjects";
 import { Loader2 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { CreateProjectModal } from "./createProject";
 
 export const ProjectPage = () => {
     const { workspaceSlug } = useParams();
     const navigate = useNavigate();
     const { data: workspaceData, isPending } = useCurrentWorkspace(workspaceSlug!);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const { data: projectsData, isPending: pendingProjects } = useAllProjects(workspaceData?.data?.id!);
     const { theProjects, activeProjects, archivedProjects } = useMemo(() => {
         if (!projectsData?.data) {
@@ -49,8 +51,17 @@ export const ProjectPage = () => {
 
     return (
         <div className="p-6">
+            {isCreateModalOpen && <CreateProjectModal setIsCreateModalOpen={setIsCreateModalOpen} workspaceId={workspaceData?.data?.id || ""}/>}
             <h6 className="text-xs">Workspace</h6>
-            <h1 className="text-2xl">Projects</h1>
+            <div
+                className="flex justify-between"
+            >
+                <h1 className="text-2xl">Projects</h1>
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="border border-muted-foreground px-3 py-1 rounded-md hover:opacity-50 hover:cursor-pointer"
+                >Create Project</button>
+            </div>
             <div className="flex gap-1 items-center">
                 <h1>{activeProjects} active</h1>
                 <h1>-</h1>

@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction } from "react";
+import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { Logout } from "../../features/auth/api/logout";
 import { errorToast, successToast } from "../ui/CustomToasts";
 import { useNavigate, useParams } from "react-router";
@@ -12,6 +12,7 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
     const { data, isPending } = useUserWorkspaces();
     const navigate = useNavigate();
 
+    const firstWorkspace = useMemo(() => data?.data![0], [data]);
     const allWorkspaces = data?.data!.map((workspace) => {
         return <option
             key={workspace.workspace.name}
@@ -40,8 +41,8 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
     };
 
     const navItems = [
-        { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-        { icon: ListTodo, label: "My Issues", id: "issues" },
+        { icon: LayoutDashboard, label: "Dashboard", id: `/w/${firstWorkspace?.workspace.slug}` },
+        { icon: ListTodo, label: "My Issues", id: "my-issues" },
         { icon: FolderKanban, label: "Projects", id: "projects" },
         { icon: Users, label: "Members", id: "members" },
         { icon: Bell, label: "Notifications", id: "notifications" },
@@ -92,11 +93,16 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
 
             {/* Navigation Items */}
             <nav className="flex-1 px-3 py-4 space-y-1">
+                <button
+                    className={`w-full flex items-center justify-center gap-3 px-3 h-9 rounded-md text-xl transition-colors ${isRetracted ? "justify-center" : ""
+                        } border border-muted-foreground cursor-pointer text-muted-foreground hover:text-foreground hover:bg-surface group`}
+                    onClick={()=>navigate('/create-workspace')}
+                >+</button>
                 {navItems.map(({ icon: Icon, label, id }) => (
                     <button
                         key={id}
                         onClick={() => navigate(id)}
-                        className={`w-full flex items-center gap-3 px-3 h-9 rounded-md text-sm transition-colors ${isRetracted ? "justify-center" : ""
+                        className={`w-full flex items-center cursor-pointer gap-3 px-3 h-9 rounded-md text-sm transition-colors ${isRetracted ? "justify-center" : ""
                             } text-muted-foreground hover:text-foreground hover:bg-surface group`}
                         title={isRetracted ? label : ""}
                     >

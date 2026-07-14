@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Building2, Mail, ArrowRight, Check, Sparkles } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useCreateWorkspace } from "../query/useCreateWorkspace";
+import { errorToast, successToast } from "../../../components/ui/CustomToasts";
+import { GeneralLoader } from "../../../utils/loader";
+import { useAuthStore } from "../../../stores/auth-store";
 
 
 const pendingInvites = [
@@ -11,6 +15,8 @@ const pendingInvites = [
 export function CreateWorkspace() {
     const [name, setName] = useState("");
     const [slug, setSlug] = useState("");
+    const { mutate, isPending } = useCreateWorkspace();
+    const navigate = useNavigate();
 
     const handleNameChange = (v: string) => {
         setName(v);
@@ -20,8 +26,21 @@ export function CreateWorkspace() {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!slug) return;
+        mutate(name, {
+            onSuccess: () => {
+                successToast('Workspace created!');
+                setTimeout(() => {
+                    navigate(`/w/${slug}`)
+                }, 1000);
+            },
+            onError: () => errorToast('Could not create workspace')
+        });
         // navigate({ to: "/w/$workspaceSlug", params: { workspaceSlug: slug } });
     };
+
+    if (isPending) return (
+        <GeneralLoader label="Creating your workspace" />
+    );
 
     return (
         <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 py-12 relative overflow-hidden">
@@ -30,12 +49,18 @@ export function CreateWorkspace() {
             }} />
 
             <div className="w-full max-w-2xl">
-                <Link to="/" className="inline-flex items-center gap-2 mb-8 group">
-                    <div className="size-7 rounded-md bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-semibold text-xs">
-                        DF
-                    </div>
-                    <span className="text-sm font-semibold tracking-tight">DevFlow</span>
-                </Link>
+                <div className="flex justify-between">
+                    <button onClick={() => navigate(-1)} className="inline-flex hover:cursor-pointer items-center gap-2 mb-8 group">
+                        <div className="size-7 rounded-md bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-semibold text-xs">
+                            DF
+                        </div>
+                        <span className="text-sm font-semibold tracking-tight">DevFlow</span>
+                    </button>
+                    <button onClick={() => navigate(-1)} className="inline-flex hover:cursor-pointer items-center gap-2 mb-8 group">
+                        Go back
+                    </button>
+                </div>
+
 
                 <div className="mb-8">
                     <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium mb-3">
