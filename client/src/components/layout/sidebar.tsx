@@ -34,7 +34,7 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
             successToast("You have been logged out");
             setTimeout(() => {
                 navigate('/login');
-            }, 1000);
+            }, 1500);
         } else {
             errorToast("An error occurred");
         }

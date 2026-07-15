@@ -118,7 +118,7 @@ export const KanbanComponent = () => {
                     {columns.map((column) => {
                         const columnIssues = issues.filter(issue => issue.status === column.id);
                         return (
-                            <KanbanColumn key={column.id} column={column} issues={columnIssues} />
+                            <KanbanColumn key={column.id} column={column} issues={columnIssues} workspaceId={workspaceData?.data?.id!} projectId={projectData?.data?.id!} />
                         );
                     })}
                 </DragDropProvider>

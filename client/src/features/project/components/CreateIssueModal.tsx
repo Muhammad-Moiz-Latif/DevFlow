@@ -1,26 +1,22 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { X } from "lucide-react";
 import type { createIssueType } from "../../issue/apis/createissue";
-import { useParams } from "react-router";
-import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
-import { useWorkspaceMembers } from "../../members/query/useWorkspaceMembers";
-import { useAuthStore } from "../../../stores/auth-store";
-import { useCurrentProject } from "../query/useCurrentProject";
+import { useCreateIssue } from "../../issue/queries/useCreateIssue";
+import { errorToast, successToast } from "../../../components/ui/CustomToasts";
+
 
 type CreateIssueModalProps = {
     workspaceId: string;
     projectId: string;
     status: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE';
-    onClose: () => void;
-    onSubmit?: (data: createIssueType) => void;
+    setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 const CreateIssueModal = ({
     workspaceId,
     projectId,
     status,
-    onClose,
-    onSubmit,
+    setIsCreateModalOpen,
 }: CreateIssueModalProps) => {
     const [formData, setFormData] = useState({
         title: "",
@@ -30,12 +26,7 @@ const CreateIssueModal = ({
         due_date: "",
     });
 
-    const { workspaceSlug, projectSlug } = useParams();
-    const { user } = useAuthStore();
-    const { data: workspaceData } = useCurrentWorkspace(workspaceSlug!);
-    const { data: projectData } = useCurrentProject(projectSlug!, workspaceData?.data?.id!);
-    const { data: workspaceMembers } = useWorkspaceMembers(workspaceData?.data?.id!);
-
+    const { mutate, isPending } = useCreateIssue(workspaceId, projectId);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -67,9 +58,17 @@ const CreateIssueModal = ({
                 due_date: formData.due_date ? new Date(formData.due_date) : undefined,
             },
         };
-        console.log(payload);
-        onSubmit?.(payload);
-        onClose();
+
+        mutate(payload, {
+            onSuccess: () => {
+                successToast("Created issue");
+                setTimeout(() => setIsCreateModalOpen(false), 1000);
+            },
+            onError: () => {
+                errorToast('Could not create issue');
+                setTimeout(() => setIsCreateModalOpen(false), 1000);
+            }
+        })
     };
 
     return (
@@ -77,7 +76,6 @@ const CreateIssueModal = ({
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/50"
-                onClick={onClose}
             />
 
             {/* Modal */}
@@ -86,8 +84,8 @@ const CreateIssueModal = ({
                 <div className="flex items-center justify-between p-4 border-b border-border/30">
                     <h2 className="text-lg font-semibold text-foreground">Create New Issue</h2>
                     <button
-                        onClick={onClose}
-                        className="p-1 hover:bg-accent/10 rounded-md transition-colors"
+                        onClick={() => setIsCreateModalOpen(false)}
+                        className="p-1 hover:bg-accent/10 hover:cursor-pointer rounded-md transition-colors"
                     >
                         <X className="w-5 h-5 text-muted-foreground" />
                     </button>
@@ -192,8 +190,8 @@ const CreateIssueModal = ({
                 {/* Footer */}
                 <div className="flex items-center justify-end gap-3 p-4 border-t border-border/30">
                     <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-foreground bg-background border border-border/50 rounded-md hover:bg-accent/5 transition-colors"
+                        onClick={() => setIsCreateModalOpen(false)}
+                        className="px-4 py-2 hover:cursor-pointer text-sm font-medium text-foreground bg-background border border-border/50 rounded-md hover:bg-accent/5 transition-colors"
                     >
                         Cancel
                     </button>
@@ -201,7 +199,7 @@ const CreateIssueModal = ({
                         onClick={handleSubmit}
                         className="px-4 py-2 text-sm font-medium text-background bg-accent rounded-md hover:bg-accent/90 transition-colors"
                     >
-                        Create Issue
+                        {isPending ? "Creating..." : "Create Issue"}
                     </button>
                 </div>
             </div>

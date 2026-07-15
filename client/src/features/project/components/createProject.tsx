@@ -1,15 +1,34 @@
 import { ArrowRight } from "lucide-react";
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { useNavigate } from "react-router";
+import { useCreateProject } from "../query/useCreateProject";
+import { successToast } from "../../../components/ui/CustomToasts";
 
 export const CreateProjectModal = ({ setIsCreateModalOpen, workspaceId }: { setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>, workspaceId: string }) => {
-    const navigate = useNavigate();
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const { mutate, isPending } = useCreateProject(workspaceId);
 
-    function handleSubmit() {
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
 
+        mutate({
+            data: {
+                name,
+                description,
+                workspaceId
+            }
+        }, {
+            onSuccess: () => {
+                successToast('Project created successfully'),
+                    setTimeout(() => { setIsCreateModalOpen(false) }, 1000)
+            },
+            onError: () => {
+                successToast('Project could not be created'),
+                    setTimeout(() => { setIsCreateModalOpen(false) }, 1000)
+            }
+        })
     };
+
     return (
         <div
             className="w-full h-screen rounded-md absolute inset-0 bg-black/50 backdrop-blur-xs flex justify-center items-center"
@@ -36,7 +55,7 @@ export const CreateProjectModal = ({ setIsCreateModalOpen, workspaceId }: { setI
                     </p>
                 </div>
 
-                <form className="bg-card border border-border rounded-lg p-6 mb-6">
+                <form className="bg-card border border-border rounded-lg p-6 mb-6" onSubmit={handleSubmit}>
 
                     <div className="space-y-4">
                         <div>
@@ -69,7 +88,7 @@ export const CreateProjectModal = ({ setIsCreateModalOpen, workspaceId }: { setI
                         // disabled={!slug}
                         className="mt-5 hover:cursor-pointer inline-flex items-center justify-center gap-2 w-full h-10 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
                     >
-                        Create project
+                        {isPending ? "Creating..." : "Create project"}
                         <ArrowRight className="size-4" />
                     </button>
                 </form>

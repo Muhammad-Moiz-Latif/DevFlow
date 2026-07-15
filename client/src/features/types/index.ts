@@ -99,6 +99,7 @@ type ProjectType = {
     updated_at: Date
 };
 
+
 type WorkspaceMember = {
     id: string,
     role: 'ADMIN' | 'MEMBER' | 'VIEWER',
@@ -138,3 +139,5 @@ export type getAllIssuesInCurrentProjectResponseType = ApiResponse<[IssueType]>;
 export type getProjectViaSlugResponseType = ApiResponse<ProjectType>;
 
 export type getWorkspaceMembersResponseType = ApiResponse<WorkspaceMember[]>;
+
+export type getCreateProjectResponseType = ApiResponse<{ projectId: string }>;

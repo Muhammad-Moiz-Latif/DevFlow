@@ -95,7 +95,6 @@ export function Dashboard() {
         return { openIssues, urgentIssues, completedIssues };
     }, [allIssues?.data]);
 
-
     if (!user || isPending || !workspaceData?.data) {
         return (
             <div className="p-6 max-w-6xl mx-auto flex items-center justify-center min-h-screen">

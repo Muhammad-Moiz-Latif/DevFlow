@@ -6,6 +6,7 @@ export const useAllProjects = (workspaceId: string) => {
     const { user } = useAuthStore();
     return useQuery({
         queryKey: ['project', workspaceId, user?._id],
-        queryFn: () => getAllProjectsInCurrentWorkspace(workspaceId)
+        queryFn: () => getAllProjectsInCurrentWorkspace(workspaceId),
+        enabled: !!workspaceId
     });
 };

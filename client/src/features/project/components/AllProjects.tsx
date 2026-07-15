@@ -26,10 +26,10 @@ export const ProjectPage = () => {
                     className="w-80 h-28 bg-zinc-900 hover:cursor-pointer hover:opacity-75 rounded-md p-3 border border-zinc-800"
                 >
                     <div className="flex justify-between">
-                        <h1 className="text-xl">{project.name}</h1>
+                        <h1 className="text-xl truncate">{project.name}</h1>
                         <h1 className="text-xs">{project.status}</h1>
                     </div>
-                    <p>{project.description}</p>
+                    <p className="truncate">{project.description}</p>
                 </div>
             )
         });
@@ -67,7 +67,7 @@ export const ProjectPage = () => {
                 <h1>-</h1>
                 <h1>{archivedProjects} archived</h1>
             </div>
-            <div className="mt-5">
+            <div className="mt-5 flex gap-3 flex-wrap">
                 {theProjects}
             </div>
         </div>

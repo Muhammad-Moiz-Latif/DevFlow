@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router";
 import { useCreateWorkspace } from "../query/useCreateWorkspace";
 import { errorToast, successToast } from "../../../components/ui/CustomToasts";
 import { GeneralLoader } from "../../../utils/loader";
-import { useAuthStore } from "../../../stores/auth-store";
 
 
 const pendingInvites = [

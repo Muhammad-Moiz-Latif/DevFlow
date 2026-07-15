@@ -87,7 +87,7 @@ const KanbanColumn = ({ column, issues, workspaceId, projectId }: KanbanColumnPr
                     workspaceId={workspaceId}
                     projectId={projectId}
                     status={column.id as 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE'}
-                    onClose={() => setIsCreateModalOpen(false)}
+                    setIsCreateModalOpen={setIsCreateModalOpen}
                 />
             )}
         </>
