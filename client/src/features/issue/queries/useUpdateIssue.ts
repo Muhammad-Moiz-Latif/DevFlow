@@ -12,7 +12,6 @@ export const useUpdateIssue = (workspaceId: string, projectId: string) => {
         mutationFn: (data: Partial<MyIssueType>) => updateIssue({ workspaceId, projectId, issueData: data }),
 
         onMutate: async (data) => {
-            console.log(data);
             // Step 1: Cancel any ongoing queries for this data
             await queryClient.cancelQueries({ queryKey: ['all-issues', user?._id, workspaceId, projectId] });
             // Step 2: Snapshot the old data

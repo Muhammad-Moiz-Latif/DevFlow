@@ -5,6 +5,7 @@ export const useWorkspaceMembers = (workspaceId: string) => {
     return useQuery({
         queryKey: ['workspace-members', workspaceId],
         queryFn: () => getWorkspaceMembers(workspaceId),
-        staleTime: 4 * 60 * 1000
+        staleTime: 4 * 60 * 1000,
+        enabled: !!workspaceId
     });
 };

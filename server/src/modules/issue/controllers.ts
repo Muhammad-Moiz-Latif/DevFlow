@@ -26,6 +26,7 @@ export const IssueControllers = {
 
             const parsedDueDate = due_date ? new Date(due_date) : null;
 
+
             if (assignee_id) {
                 await sendNotification({
                     type: "ISSUE_ASSIGNED",
@@ -136,7 +137,7 @@ export const IssueControllers = {
             const workspaceId = req.params.workspaceId as string;
             const issueId = req.params.issueId as string;
             const userId = req.user?.id;
-            const formatDate = dueDate ? new Date(dueDate) : null;
+            const formatDate = dueDate ? new Date(dueDate) : undefined;
 
             const doesProjectExist = await projectServices.getProject(workspaceId, projectId);
 
@@ -226,7 +227,7 @@ export const IssueControllers = {
             } catch (error) {
                 console.error('Queue error : ', error);
             }
-            
+
         } catch (error) {
             console.error(error);
             return res.status(500).json({
@@ -291,7 +292,6 @@ export const IssueControllers = {
             };
 
             const myIssues = await issueServices.getMyIssues(workspaceId, userId);
-
             return res.status(200).json({
                 success: true,
                 message: "Retreived issues successfully!",

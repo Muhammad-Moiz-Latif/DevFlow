@@ -141,3 +141,19 @@ export type getProjectViaSlugResponseType = ApiResponse<ProjectType>;
 export type getWorkspaceMembersResponseType = ApiResponse<WorkspaceMember[]>;
 
 export type getCreateProjectResponseType = ApiResponse<{ projectId: string }>;
+
+export type getMyIssuesResponseType = ApiResponse<[{
+    id: string,
+    title: string,
+    description: string,
+    status: 'TODO' | 'IN_PROGRESS' | "IN_REVIEW" | "DONE",
+    priority: "URGENT" | "HIGH" | "MEDIUM" | "LOW",
+    order: number,
+    dueDate: Date,
+    createdAt: Date,
+    updatedAt: Date,
+    project: {
+        name: string,
+        id: string
+    }
+}]>;

@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import type { createIssueType } from "../../issue/apis/createissue";
 import { useCreateIssue } from "../../issue/queries/useCreateIssue";
 import { errorToast, successToast } from "../../../components/ui/CustomToasts";
+import { useWorkspaceMembers } from "../../members/query/useWorkspaceMembers";
 
 
 type CreateIssueModalProps = {
@@ -27,11 +28,23 @@ const CreateIssueModal = ({
     });
 
     const { mutate, isPending } = useCreateIssue(workspaceId, projectId);
+    const { data } = useWorkspaceMembers(workspaceId);
+    const membersData = data?.data!.map(member => {
+        return (
+            <option
+                key={member.id}
+                value={member.user.id}
+            >
+                {member.user.name}
+            </option >
+        )
+    });
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
         const { name, value } = e.target;
+
         setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -163,14 +176,14 @@ const CreateIssueModal = ({
                         <label className="text-sm font-medium text-foreground">
                             Assignee (optional)
                         </label>
-                        <input
-                            type="text"
-                            name="assignee_id"
+                        <select
                             value={formData.assignee_id}
                             onChange={handleChange}
-                            placeholder="Assignee ID"
-                            className="w-full px-3 py-2 bg-background border border-border/50 rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
-                        />
+                            name="assignee_id"
+                            className="flex w-full px-3 py-2 border border-border/50 rounded-md">
+                            <option value={undefined}>null</option>
+                            {membersData}
+                        </select>
                         <p className="text-xs text-muted-foreground">
                             You can improve this by fetching team members
                         </p>
@@ -197,7 +210,7 @@ const CreateIssueModal = ({
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-4 py-2 text-sm font-medium text-background bg-accent rounded-md hover:bg-accent/90 transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-background bg-accent-foreground rounded-md hover:bg-accent/90 hover:cursor-pointer transition-colors"
                     >
                         {isPending ? "Creating..." : "Create Issue"}
                     </button>

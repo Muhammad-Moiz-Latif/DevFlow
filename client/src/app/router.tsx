@@ -8,6 +8,7 @@ import { CreateWorkspacePage } from "../app/routes/create-workspace-page";
 import { VerifyEmailPage } from "./routes/verify-email";
 import { AllProjects } from "./routes/workspace/workspaceSlug/projects";
 import { KanbanBoard } from "./routes/workspace/workspaceSlug/projects/KanbanBoard";
+import { MyIssuesPage } from "./routes/workspace/workspaceSlug/myIssues";
 
 
 export const router = createBrowserRouter([
@@ -56,7 +57,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "my-issues",
-                element: <h1>My issues page</h1>
+                element: <MyIssuesPage/>
             },
             {
                 path: "members",

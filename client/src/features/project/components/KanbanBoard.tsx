@@ -2,7 +2,7 @@ import { useParams } from "react-router"
 import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
 import { useCurrentProject } from "../query/useCurrentProject";
 import { useIssuesInCurrentProject } from "../query/useIssuesInCurrentProject";
-import type { IssueType, KanbanColumnType, MyIssueType } from "../../types";
+import type { IssueType, KanbanColumnType } from "../../types";
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { isSortable } from '@dnd-kit/react/sortable';
 import KanbanColumn from "./KanbanColumn";
