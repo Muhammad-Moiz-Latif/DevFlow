@@ -3,7 +3,6 @@ import { notificationQueue } from '../../queues/notification.queue';
 import { issueServices } from './services';
 import { projectServices } from '../projects/services';
 import { workspaceServices } from '../workspace/services';
-import { sendNotification } from '../../utils/send-notification';
 import { activityLogQueue } from '../../queues/activitylog.queue';
 
 export const IssueControllers = {
@@ -28,7 +27,7 @@ export const IssueControllers = {
 
 
             if (assignee_id) {
-                await sendNotification({
+                await notificationQueue.add('ISSUE_ASSIGNED', {
                     type: "ISSUE_ASSIGNED",
                     user_id: assignee_id,
                     link: "some link",
@@ -50,7 +49,12 @@ export const IssueControllers = {
                 createdBy
             });
 
-            await issueServices.addToActivityLogs(createdIssue?.id!, workspaceId, createdBy, "ISSUE_CREATED");
+            await activityLogQueue.add('ISSUE_CREATED', {
+                issueId: createdIssue?.id,
+                workspaceId,
+                actorId: createdBy,
+                type: "ISSUE_CREATED"
+            });
 
             return res.status(201).json({
                 success: true,

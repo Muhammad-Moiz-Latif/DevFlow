@@ -7,11 +7,10 @@ export const notificationQueue = new Queue('notification', {
         // will retry the job a set no of times
         attempts: 3,
         backoff: {
-            type: 'exponential',
-            delay: 1000
+            type: 'custom'
         },
         // jobs will be removed or saved based on whether they get completed or not
-        removeOnComplete: true,
+        removeOnComplete: false,
         removeOnFail: false
     },
 });

@@ -7,24 +7,36 @@ type LogTypeEnum = typeof LogType.enumValues[number];
 
 const activityLogWorker = new Worker('activity-log', async (job: Job<any, any, string>) => {
 
-    console.log('Job received: ', job.name, job.data);
+    await issueServices.addToActivityLogs({ issueId: job.data.issueId, workspaceId: job.data.workspaceId, actorId: job.data.actorId, logType: job.name as LogTypeEnum, oldValue: job.data.oldValue ?? null, newValue: job.data.newValue ?? null });
 
-    if (job.name === 'ASSIGNEE_CHANGED') {
-        await issueServices.addToActivityLogs(job.data.issueId, job.data.workspaceId, job.data.actorId, job.name as LogTypeEnum);
-    } else if (job.name === 'PRIORITY_CHANGED') {
-        await issueServices.addToActivityLogs(job.data.issueId, job.data.workspaceId, job.data.actorId, job.name as LogTypeEnum, job.data.oldValue, job.data.newValue);
-    } else if (job.name === 'STATUS_CHANGED') {
-        await issueServices.addToActivityLogs(job.data.issueId, job.data.workspaceId, job.data.actorId, job.name as LogTypeEnum, job.data.oldValue, job.data.newValue);
+}, {
+    connection: redisConnection
+    , settings: {
+        backoffStrategy: (attemptsMade, type, err, job) => {
+            const base = 1000;   // your existing 1000ms
+            const max = 30000;   // hard ceiling, don't let it grow forever
+            const cap = Math.min(max, base * 2 ** attemptsMade);
+            return Math.random() * cap; // Full Jitter
+        },
     }
-
-}, { connection: redisConnection });
+});
 
 activityLogWorker.on('completed', (job) => {
     console.log(`Job ${job.id} completed successfully`)
 });
 
 activityLogWorker.on('failed', (job, error) => {
-    console.error(`Job ${job?.id} failed with error: ${error.message}`)
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    console.error(`Job ${job?.id ?? 'unknown'} failed`);
+    console.error('Job name:', job?.name);
+    console.error('Job data:', job?.data);
+    console.error('Error message:', errorMessage);
+
+    if (errorStack) {
+        console.error('Error stack:', errorStack);
+    }
 });
 
 export default activityLogWorker;

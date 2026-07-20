@@ -19,7 +19,16 @@ const notificationWorker = new Worker('notification', async (job: Job) => {
         workspace_id: job.data.workspaceId
     });
 
-}, { connection: redisConnection })
+}, {
+    connection: redisConnection, settings: {
+        backoffStrategy: (attemptsMade, type, err, job) => {
+            const base = 1000;   // your existing 1000ms
+            const max = 30000;   // hard ceiling, don't let it grow forever
+            const cap = Math.min(max, base * 2 ** attemptsMade);
+            return Math.random() * cap; // Full Jitter
+        },
+    }
+});
 
 notificationWorker.on('completed', (job) => {
     console.log(`Job ${job.id} completed successfully`)

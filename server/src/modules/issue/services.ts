@@ -1,4 +1,4 @@
-import { db } from "../../config/db";
+import { db, pool } from "../../config/db";
 import { eq, and, count, sql } from "drizzle-orm";
 import { IssueTable } from "../../db/schema/issues";
 import { ActivityLogsTable, LogType } from "../../db/schema/activity-logs";
@@ -6,6 +6,17 @@ import { ActivityLogsTable, LogType } from "../../db/schema/activity-logs";
 type CreateIssue = Omit<typeof IssueTable.$inferInsert, 'id' | 'created_at' | 'updated_at' | 'order'>;
 
 type ActivityLogType = typeof LogType.enumValues[number];
+
+type ActivityLogs = {
+    workspaceId: string;
+    issueId: string;
+    actorId: string;
+    id?: string | undefined;
+    createdAt?: Date | undefined;
+    logType?: "STATUS_CHANGED" | "PRIORITY_CHANGED" | "ASSIGNEE_CHANGED" | "COMMENT_ADDED" | "COMMENT_DELETED" | "ISSUE_CREATED" | undefined;
+    oldValue?: string | null | undefined;
+    newValue?: string | null | undefined;
+};
 
 
 export const issueServices = {
@@ -172,17 +183,23 @@ export const issueServices = {
         return issues.rows;
     },
 
-    async addToActivityLogs(issueId: string, workspaceId: string, actorId: string, type: ActivityLogType, oldValue?: string, newValue?: string) {
-        console.log('actorId', actorId);
-        const [activity] = await db.insert(ActivityLogsTable).values({
-            issue_id: issueId,
-            actor_id: actorId,
-            workspace_id: workspaceId,
-            type,
-            old_value: oldValue ?? "",
-            new_value: newValue ?? ""
-        }).returning();
+    async addToActivityLogs(data: ActivityLogs) {
+        const keys = Object.keys(data);
+        const values = Object.values(data);
+        const column_query = keys.map((key) => (
+            `"${key}"`
+        )).join(',');
+        const value_query = keys.map((_, index) => (
+            `$${index + 1}`
+        )).join(',');
 
-        return activity;
+        const activity = await pool.query(`
+                INSERT INTO "activity-logs"
+                (${column_query})
+                VALUES (${value_query})
+                RETURNING *
+            `, [...values]);
+
+        return activity.rows[0];
     },
 };

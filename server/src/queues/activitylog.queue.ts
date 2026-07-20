@@ -5,11 +5,10 @@ export const activityLogQueue = new Queue('activity-log', {
     connection: redisConnection,
     defaultJobOptions: {
         attempts: 3,
-        removeOnComplete: true,
+        removeOnComplete: false,
         removeOnFail: false,
         backoff: {
-            type: 'exponential',
-            delay: 1000
+            type: 'custom'
         }
     }
 });

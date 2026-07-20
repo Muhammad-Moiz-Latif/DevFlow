@@ -11,7 +11,7 @@ export const ActivityLogsTable = pgTable("activity-logs", (t) => ({
     workspace_id: t.uuid("workspaceId").references(() => WorkspaceTable.id, { onDelete: "cascade" }).notNull(),
     actor_id: t.uuid("actorId").references(() => UserTable.id).notNull(),
     type: LogType("logType").default("ISSUE_CREATED").notNull(),
-    old_value: t.text("oldValue").notNull(),
-    new_value: t.text("newValue").notNull(),
+    old_value: t.text("oldValue"),
+    new_value: t.text("newValue"),
     createdAt: t.timestamp("createdAt").defaultNow().notNull()
 }));
