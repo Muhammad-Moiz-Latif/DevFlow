@@ -19,6 +19,8 @@ export const MyNotifications = () => {
         )
     };
 
+    const unreadNotifications = notifications.filter((notification) => !notification.isRead).length;
+
 
     return (
         <div className="px-6 py-6 lg:px-8">
@@ -33,6 +35,9 @@ export const MyNotifications = () => {
                         <p className="mt-3 text-sm text-muted-foreground">
                             {notifications.length} total notifications
                         </p>
+                        {unreadNotifications > 0 && <p className="mt-3 text-sm text-muted-foreground">
+                            {unreadNotifications} unread
+                        </p>}
                     </div>
                 </div>
             </div>

@@ -170,8 +170,7 @@ export const workspaceServices = {
     async updateMyNotification(userId: string, notificationId: string) {
         const result = await pool.query(`
             UPDATE notifications
-            SET ("isRead")
-            VALUES ($1)
+            SET "isRead" = $1
             WHERE "userId" = $2
             AND id = $3
             `, [true, userId, notificationId]);
