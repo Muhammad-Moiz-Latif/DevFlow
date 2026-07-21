@@ -18,6 +18,10 @@ router.get('/:workspaceSlug/bySlug', verifyJWT, workspaceControllers.getWorkspac
 
 router.get('/:workspaceId', verifyJWT, workspaceControllers.getWorkspace);
 
+router.get('/:workspaceId/notifications', verifyJWT, workspaceControllers.getMyNotifications);
+
+router.patch('/:workspaceId/notifications/:notificationId/update', verifyJWT, workspaceControllers.updateMyNotification);
+
 router.patch("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.updateWorkspace);
 
 router.delete("/:workspaceId", verifyJWT, allowedRoles(['ADMIN']), workspaceControllers.deleteWorkspace);

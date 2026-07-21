@@ -202,6 +202,99 @@ export const workspaceControllers = {
         };
     },
 
+    async getMyNotifications(req: Request, res: Response) {
+        try {
+            const workspaceId = req.params.workspaceId as string;
+
+            const userId = req.user?.id;
+
+            if (!userId) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Forbidden access"
+                })
+            };
+
+            const doesWorkspaceExist = await workspaceServices.getWorkspaceViaId(workspaceId);
+
+            if (!doesWorkspaceExist) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Workspace does not exist"
+                });
+            };
+
+            const notifications = await workspaceServices.getMyNotifications(userId, workspaceId);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Retrieved notifications successfully!',
+                data: notifications
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
+    },
+
+    async updateMyNotification(req: Request, res: Response) {
+        try {
+            const workspaceId = req.params.workspaceId as string;
+            const notificationId = req.params.notificationId as string;
+            const userId = req.user?.id;
+
+            if (!userId) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Forbidden access"
+                })
+            };
+
+            const doesWorkspaceExist = await workspaceServices.getWorkspaceViaId(workspaceId);
+
+            if (!doesWorkspaceExist) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Workspace does not exist"
+                });
+            };
+
+            const notification = await workspaceServices.getMyNotification(userId, notificationId);
+
+            if (!notification) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Notification does not exist'
+                });
+            };
+
+            if (notification.isRead) {
+                return res.status(200).json({
+                    success: true,
+                    message: 'Already updated'
+                });
+            };
+
+            await workspaceServices.updateMyNotification(userId, notificationId);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Updated notifications successfully!',
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            });
+        };
+    },
+
     async getMyIssues(req: Request, res: Response) {
         try {
             const workspaceId = req.params.workspaceId as string;

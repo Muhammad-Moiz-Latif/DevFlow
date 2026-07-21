@@ -9,6 +9,8 @@ import { VerifyEmailPage } from "./routes/verify-email";
 import { AllProjects } from "./routes/workspace/workspaceSlug/projects";
 import { KanbanBoard } from "./routes/workspace/workspaceSlug/projects/KanbanBoard";
 import { MyIssuesPage } from "./routes/workspace/workspaceSlug/myIssues";
+import { MembersPage } from "./routes/workspace/workspaceSlug/members";
+import { NotificationsPage } from "./routes/workspace/workspaceSlug/notifications";
 
 
 export const router = createBrowserRouter([
@@ -57,15 +59,15 @@ export const router = createBrowserRouter([
             },
             {
                 path: "my-issues",
-                element: <MyIssuesPage/>
+                element: <MyIssuesPage />
             },
             {
                 path: "members",
-                element: <h1>List all members page</h1>
+                element: <MembersPage />
             },
             {
                 path: "notifications",
-                element: <h1>This is the notifications page</h1>
+                element: <NotificationsPage />
             }
         ]
     },

@@ -30,8 +30,8 @@ export const IssueControllers = {
                 await notificationQueue.add('ISSUE_ASSIGNED', {
                     type: "ISSUE_ASSIGNED",
                     user_id: assignee_id,
-                    link: "some link",
-                    message: "get to work son",
+                    link: "localhost:3000/api/notification",
+                    message: "You have been assigned an issue",
                     workspace_id: workspaceId
                 });
             };

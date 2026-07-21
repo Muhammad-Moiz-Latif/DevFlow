@@ -100,7 +100,7 @@ type ProjectType = {
 };
 
 
-type WorkspaceMember = {
+export type WorkspaceMember = {
     id: string,
     role: 'ADMIN' | 'MEMBER' | 'VIEWER',
     status: 'SUCCESS' | 'PENDING' | 'DENIED',
@@ -142,6 +142,17 @@ export type getWorkspaceMembersResponseType = ApiResponse<WorkspaceMember[]>;
 
 export type getCreateProjectResponseType = ApiResponse<{ projectId: string }>;
 
+export type NotificationItem = {
+    id: string,
+    "notification-type": 'ISSUE_ASSIGNED' | 'ISSUE_UNASSIGNED' | 'COMMENT_ON_ISSUE' | 'MENTIONED' | 'INVITE_ACCEPTED' | 'INVITE_ISSUED' | 'REMOVED',
+    message: string,
+    link: string,
+    isRead: boolean,
+    userId: string,
+    workspaceId: string,
+    createdAt: Date
+};
+
 export type getMyIssuesResponseType = ApiResponse<[{
     id: string,
     title: string,
@@ -157,3 +168,5 @@ export type getMyIssuesResponseType = ApiResponse<[{
         id: string
     }
 }]>;
+
+export type getMyNotificationsResponseType = ApiResponse<NotificationItem[]>;

@@ -1,5 +1,5 @@
 import { eq, and, sql } from "drizzle-orm";
-import { db } from "../../config/db";
+import { db, pool } from "../../config/db";
 import { WorkspaceTable } from "../../db/schema/workspaces";
 import { WorkspaceMembersTable } from "../../db/schema/workspace-member";
 import { ProjectTable } from "../../db/schema/projects";
@@ -143,7 +143,42 @@ export const workspaceServices = {
         `);
 
         return workspaces.rows;
-    }
+    },
+
+    async getMyNotifications(userId: string, workspaceId: string) {
+        const result = await pool.query(`
+            SELECT *
+            FROM notifications
+            WHERE "userId" = $1
+            AND "workspaceId" = $2
+            `, [userId, workspaceId]);
+
+        return result.rows;
+    },
+
+    async getMyNotification(userId: string, notificationId: string) {
+        const result = await pool.query(`
+            SELECT *
+            FROM notifications
+            WHERE "userId" = $1
+            AND "id" = $2
+            `, [userId, notificationId]);
+
+        return result.rows[0];
+    },
+
+    async updateMyNotification(userId: string, notificationId: string) {
+        const result = await pool.query(`
+            UPDATE notifications
+            SET ("isRead")
+            VALUES ($1)
+            WHERE "userId" = $2
+            AND id = $3
+            `, [true, userId, notificationId]);
+        return result.rows[0];
+    },
+
+
 
 
 };

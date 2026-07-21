@@ -8,15 +8,13 @@ type notificationTypeEnum = typeof NotificationType.enumValues[number];
 
 const notificationWorker = new Worker('notification', async (job: Job) => {
 
-    const { userId } = job.data
-
     // your actual sendNotification call goes here
     await sendNotification({
         type: job.name as notificationTypeEnum,
-        user_id: userId,
+        user_id: job.data.user_id,
         link: "some link",
         message: "get to work son",
-        workspace_id: job.data.workspaceId
+        workspace_id: job.data.workspace_id
     });
 
 }, {

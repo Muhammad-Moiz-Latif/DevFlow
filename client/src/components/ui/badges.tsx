@@ -52,7 +52,7 @@ export function RoleBadge({ role }: { role: "Admin" | "Member" | "Viewer" }) {
         Viewer: "bg-muted text-muted-foreground",
     };
     return (
-        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${styles[role]}`}>
+        <span className={`inline-flex px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wide ${styles[role]}`}>
             {role}
         </span>
     );
