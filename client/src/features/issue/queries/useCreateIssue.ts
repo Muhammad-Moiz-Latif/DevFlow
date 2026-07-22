@@ -9,7 +9,8 @@ export const useCreateIssue = (workspaceId: string, projectId: string) => {
         mutationKey: ['create-issue', workspaceId, projectId, user?._id],
         mutationFn: (data: createIssueType) => createIssue(data),
         onSettled: () => {
-            client.invalidateQueries({ queryKey: ['all-issues', user?._id, workspaceId, projectId] })
+            client.invalidateQueries({ queryKey: ['all-issues', user?._id, workspaceId, projectId] });
+            client.invalidateQueries({ queryKey: ['notifications', user?._id, workspaceId] })
         }
     });
 };

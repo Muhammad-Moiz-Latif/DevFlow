@@ -51,30 +51,7 @@ export const MyNotifications = () => {
                 </div>
 
                 <div className="divide-y divide-border/80">
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-                    <h1>Test</h1>
-
+                   
                     {notifications.length > 0 ? (
 
                         notifications.map((notification) => (

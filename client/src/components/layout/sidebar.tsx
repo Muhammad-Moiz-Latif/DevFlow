@@ -5,11 +5,16 @@ import { useNavigate, useParams } from "react-router";
 import { useAuthStore } from "../../stores/auth-store";
 import { useUserWorkspaces } from "../../features/workspace/query/useAllUserWorkspaces";
 import { ChevronLeft, LayoutDashboard, ListTodo, FolderKanban, Users, Bell, LogOut, ChevronRight, CircleDot } from "lucide-react";
+import { useMyNotifications } from "../../features/members/query/useMyNotifications";
+import { useCurrentWorkspace } from "../../features/workspace/query/useCurrentWorkspace";
 
 export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean, setIsRetracted: Dispatch<SetStateAction<boolean>> }) => {
     const { clearAuth } = useAuthStore();
     const { workspaceSlug } = useParams();
     const { data, isPending } = useUserWorkspaces();
+    const { data: currentWorkspaceData } = useCurrentWorkspace(workspaceSlug!);
+    const { data: MyNotifications } = useMyNotifications(currentWorkspaceData?.data?.id!);
+    const unreadNotifications = MyNotifications?.data?.filter((notifications) => !notifications.isRead).length;
     const navigate = useNavigate();
 
     const firstWorkspace = useMemo(() => data?.data![0], [data]);
@@ -96,7 +101,7 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
                 <button
                     className={`w-full flex items-center justify-center gap-3 px-3 h-9 rounded-md text-xl transition-colors ${isRetracted ? "justify-center" : ""
                         } border border-muted-foreground cursor-pointer text-muted-foreground hover:text-foreground hover:bg-surface group`}
-                    onClick={()=>navigate('/create-workspace')}
+                    onClick={() => navigate('/create-workspace')}
                 >+</button>
                 {navItems.map(({ icon: Icon, label, id }) => (
                     <button
@@ -108,6 +113,9 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
                     >
                         <Icon className="size-4 flex-shrink-0" />
                         {!isRetracted && <span className="truncate">{label}</span>}
+                        {(id === 'notifications' && unreadNotifications! > 0) && <div className="relative size-4.5">
+                            <div className="size-full bg-primary absolute animate-ping z-0  rounded-full"></div>
+                            <h1 className="size-full bg-primary rounded-full z-10 text-white flex justify-center items-center text-xs">{unreadNotifications}</h1></div>}
                     </button>
                 ))}
             </nav>
