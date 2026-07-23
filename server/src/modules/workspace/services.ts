@@ -145,13 +145,42 @@ export const workspaceServices = {
         return workspaces.rows;
     },
 
-    async getMyNotifications(userId: string, workspaceId: string) {
+    async getMyInfiniteNotifications(userId: string, workspaceId: string, cursor: string | undefined, isRead?: boolean | undefined) {
+
+        var conditions: any = ['"userId" = $1 AND "workspaceId" = $2'];
+        var values: any[] = [userId, workspaceId];
+        const limit = 10;
+        if (isRead !== undefined) {
+            conditions = [...conditions, '"isRead" = $3'];
+            values.push(isRead);
+        };
+        
+        conditions = conditions.join(" AND ");
+
+        // the newest batch of notifications
+        if (!cursor) {
+            const result = await pool.query(`
+            SELECT *
+            FROM notifications
+            WHERE ${conditions}
+            ORDER BY "createdAt" DESC
+            LIMIT $${values.length + 1}
+            `, [...values, limit]);
+
+            return result.rows;
+        };
+
+        // the newest batch after the previous set of notifications
         const result = await pool.query(`
             SELECT *
             FROM notifications
             WHERE "userId" = $1
             AND "workspaceId" = $2
-            `, [userId, workspaceId]);
+            AND "createdAt" < (SELECT "createdAt" FROM notifications
+                WHERE id=$3)
+            ORDER BY "createdAt" DESC
+            LIMIT $4
+            `, [userId, workspaceId, cursor, 10]);
 
         return result.rows;
     },

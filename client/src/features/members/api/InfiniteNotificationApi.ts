@@ -1,12 +1,11 @@
 import { privateApi } from "../../../lib/axios"
 import type { getMyNotificationsResponseType } from "../../types";
 
-export const NotificationsApi = async (workspaceId: string) => {
+export const InfiniteNotificationsApi = async (workspaceId: string, pageParam: string | undefined) => {
     const response = await privateApi.get<getMyNotificationsResponseType>(`/workspace/${workspaceId}/notifications`, {
         params: {
-            isRead: false
+            cursor: pageParam
         }
     });
-    
     return response.data;
 };

@@ -12,8 +12,8 @@ const notificationWorker = new Worker('notification', async (job: Job) => {
     await sendNotification({
         type: job.name as notificationTypeEnum,
         user_id: job.data.user_id,
-        link: "some link",
-        message: "get to work son",
+        link: job.data.link,
+        message: job.data.message,
         workspace_id: job.data.workspace_id
     });
 

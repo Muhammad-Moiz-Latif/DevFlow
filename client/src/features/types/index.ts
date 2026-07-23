@@ -169,4 +169,7 @@ export type getMyIssuesResponseType = ApiResponse<[{
     }
 }]>;
 
-export type getMyNotificationsResponseType = ApiResponse<NotificationItem[]>;
+export type getMyNotificationsResponseType = ApiResponse<{
+    notifications: NotificationItem[],
+    nextCursor: string | undefined
+}>;

@@ -1,13 +1,14 @@
 import { useNavigate, useParams } from "react-router"
 import { useCurrentWorkspace } from "../../features/workspace/query/useCurrentWorkspace";
-import { useMyNotifications } from "../../features/members/query/useMyNotifications";
 import { type Dispatch, type SetStateAction } from "react";
 import { DropdownRow } from "./DropdownRow";
+import { useMyInfiniteNotifications } from "../../features/members/query/useMyInfiniteNotifications";
 
 export const NotificationDropdown = ({ setIsDropDownActive }: { setIsDropDownActive: Dispatch<SetStateAction<boolean>> }) => {
     const { workspaceSlug } = useParams();
     const { data: useCurrentWorkspaceData } = useCurrentWorkspace(workspaceSlug!);
-    const { data: MyNotifications, isPending } = useMyNotifications(useCurrentWorkspaceData?.data?.id!);
+    const { data: MyInfiniteNotifications, isPending } = useMyInfiniteNotifications(useCurrentWorkspaceData?.data?.id!);
+    const dropdownData = MyInfiniteNotifications?.pages.flatMap((data) => data.data?.notifications ?? []).slice(0, 4) ?? [];
     const navigate = useNavigate();
     if (isPending) {
         return (
@@ -16,9 +17,6 @@ export const NotificationDropdown = ({ setIsDropDownActive }: { setIsDropDownAct
             </div>
         );
     };
-
-
-    const dropdownData = MyNotifications?.data?.filter((notification) => !notification.isRead).slice(0, 4) ?? [];
 
     return (
         <div className="w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border/80 bg-popover/95 shadow-[0_24px_80px_-32px_rgba(0,0,0,0.9)] backdrop-blur-xl">

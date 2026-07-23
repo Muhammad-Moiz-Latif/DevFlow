@@ -205,6 +205,8 @@ export const workspaceControllers = {
     async getMyNotifications(req: Request, res: Response) {
         try {
             const workspaceId = req.params.workspaceId as string;
+            const cursor = req.query.cursor as string | undefined;
+            const isRead = req.query.isRead as boolean | undefined;
 
             const userId = req.user?.id;
 
@@ -224,12 +226,15 @@ export const workspaceControllers = {
                 });
             };
 
-            const notifications = await workspaceServices.getMyNotifications(userId, workspaceId);
+            const notifications = await workspaceServices.getMyInfiniteNotifications(userId, workspaceId, cursor, isRead);
 
             return res.status(200).json({
                 success: true,
                 message: 'Retrieved notifications successfully!',
-                data: notifications
+                data: {
+                    notifications,
+                    nextCursor: notifications.length > 0 ? notifications[notifications.length - 1].id : null
+                }
             });
 
         } catch (error) {

@@ -47,13 +47,15 @@ export const NotificationRow = ({ data }: { data: NotificationItem }) => {
 
     useEffect(() => {
         if (visibility && !data.isRead) {
-           mutate();
+            setTimeout(() => {
+                mutate()
+            }, 800);
         };
-    }, [visibility, data.isRead])
+    }, [visibility, data.isRead, mutate])
 
 
     return (
-        <div ref={rowElement} className="grid grid-cols-[minmax(0,1fr)_140px_193px_48px] items-center gap-4 px-6 py-6 transition-colors hover:bg-white/1.5">
+        <div ref={rowElement} className={`grid grid-cols-[minmax(0,1fr)_140px_193px_48px] ${!data.isRead ? "bg-emerald-500/30" : "bg-transparent"} rounded-md items-center gap-4 px-6 py-6 transition-colors duration-500 hover:bg-white/1.5`}>
             <div className="min-w-0">
                 <h2 className="truncate text-[15px] font-semibold text-foreground">{data.message}</h2>
                 <p className="truncate text-xs text-muted-foreground">{data.link}</p>

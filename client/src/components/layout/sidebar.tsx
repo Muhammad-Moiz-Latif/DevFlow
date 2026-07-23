@@ -1,20 +1,20 @@
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { Logout } from "../../features/auth/api/logout";
 import { errorToast, successToast } from "../ui/CustomToasts";
 import { useNavigate, useParams } from "react-router";
 import { useAuthStore } from "../../stores/auth-store";
 import { useUserWorkspaces } from "../../features/workspace/query/useAllUserWorkspaces";
 import { ChevronLeft, LayoutDashboard, ListTodo, FolderKanban, Users, Bell, LogOut, ChevronRight, CircleDot } from "lucide-react";
-import { useMyNotifications } from "../../features/members/query/useMyNotifications";
 import { useCurrentWorkspace } from "../../features/workspace/query/useCurrentWorkspace";
+import { useMyInfiniteNotifications } from "../../features/members/query/useMyInfiniteNotifications";
 
 export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean, setIsRetracted: Dispatch<SetStateAction<boolean>> }) => {
     const { clearAuth } = useAuthStore();
     const { workspaceSlug } = useParams();
     const { data, isPending } = useUserWorkspaces();
     const { data: currentWorkspaceData } = useCurrentWorkspace(workspaceSlug!);
-    const { data: MyNotifications } = useMyNotifications(currentWorkspaceData?.data?.id!);
-    const unreadNotifications = MyNotifications?.data?.filter((notifications) => !notifications.isRead).length;
+    const { data: MyInfiniteNotifications } = useMyInfiniteNotifications(currentWorkspaceData?.data?.id!);
+    const unreadNotifications = MyInfiniteNotifications?.pages.flatMap((data) => data.data?.notifications).filter((notification) => !notification?.isRead) ?? [];
     const navigate = useNavigate();
 
     const firstWorkspace = useMemo(() => data?.data![0], [data]);
@@ -113,9 +113,9 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
                     >
                         <Icon className="size-4 flex-shrink-0" />
                         {!isRetracted && <span className="truncate">{label}</span>}
-                        {(id === 'notifications' && unreadNotifications! > 0) && <div className="relative size-4.5">
+                        {(id === 'notifications' && unreadNotifications.length > 0) && <div className="relative size-4.5">
                             <div className="size-full bg-primary absolute animate-ping z-0  rounded-full"></div>
-                            <h1 className="size-full bg-primary rounded-full z-10 text-white flex justify-center items-center text-xs">{unreadNotifications}</h1></div>}
+                            <h1 className="size-full bg-primary rounded-full z-10 text-white flex justify-center items-center text-xs">{unreadNotifications.length}</h1></div>}
                     </button>
                 ))}
             </nav>

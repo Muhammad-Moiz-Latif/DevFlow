@@ -5,7 +5,7 @@ export const activityLogQueue = new Queue('activity-log', {
     connection: redisConnection,
     defaultJobOptions: {
         attempts: 3,
-        removeOnComplete: false,
+        removeOnComplete: true,
         removeOnFail: false,
         backoff: {
             type: 'custom'

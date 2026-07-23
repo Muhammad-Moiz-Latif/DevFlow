@@ -1,15 +1,31 @@
 import { useParams } from "react-router";
-import { useMyNotifications } from "../query/useMyNotifications"
 import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
 import { NotificationRow } from "./notificationRow";
 import { Bell } from "lucide-react";
+import { useMyInfiniteNotifications } from "../query/useMyInfiniteNotifications";
+import { useEffect, useRef } from "react";
 
 export const MyNotifications = () => {
     const { workspaceSlug } = useParams();
     const { data: workspaceData } = useCurrentWorkspace(workspaceSlug!);
     const workspaceId = workspaceData?.data?.id ?? "";
-    const { data: notificationsData, isPending } = useMyNotifications(workspaceId);
-    const notifications = notificationsData?.data ?? [];
+    const { data: infiniteNotificationsData, fetchNextPage, hasNextPage, isPending, isFetchingNextPage } = useMyInfiniteNotifications(workspaceId);
+    const loadRef = useRef<HTMLHeadingElement | null>(null);
+    const notifications = infiniteNotificationsData?.pages.flatMap((data) => data.data?.notifications ?? []) ?? [];
+    
+    useEffect(() => {
+        if (!loadRef.current) return;
+
+        const intersectionObserver = new IntersectionObserver(([loadRef]) => {
+            if (loadRef.isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            };
+        }, { threshold: 1 });
+
+        intersectionObserver.observe(loadRef.current);
+
+        return () => intersectionObserver.disconnect();
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
     if (isPending) {
         return (
@@ -51,12 +67,14 @@ export const MyNotifications = () => {
                 </div>
 
                 <div className="divide-y divide-border/80">
-                   
-                    {notifications.length > 0 ? (
 
-                        notifications.map((notification) => (
-                            <NotificationRow key={notification.id} data={notification} />
-                        ))
+                    {notifications.length > 0 ? (
+                        <div className="p-2">
+                            {notifications.map((notification) => (
+                                <NotificationRow key={notification.id} data={notification} />
+                            ))}
+                            <h1 ref={loadRef} className="w-full text-center">{hasNextPage ? (isFetchingNextPage ? "Loading more..." : "Load more notifications") : "End of the line"}</h1>
+                        </div>
                     ) : (
                         <div className="px-6 py-16 text-center text-sm text-muted-foreground">
                             No notifications yet.

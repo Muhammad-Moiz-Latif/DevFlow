@@ -14,7 +14,6 @@ export const DropdownRow = ({ data, setIsDropDownActive }: { data: NotificationI
     const { mutate } = useUpdateNotification(workspaceId, data.id);
     const navigate = useNavigate();
 
-
     useEffect(() => {
         const element = rowElement.current;
         if (!element) return;
@@ -33,7 +32,9 @@ export const DropdownRow = ({ data, setIsDropDownActive }: { data: NotificationI
 
     useEffect(() => {
         if (visibility && !data.isRead) {
-            mutate();
+            setTimeout(() => {
+                mutate();
+            }, 1000)
         };
     }, [visibility, data.isRead])
 
@@ -47,7 +48,8 @@ export const DropdownRow = ({ data, setIsDropDownActive }: { data: NotificationI
                 setIsDropDownActive(false);
                 navigate(data.link);
             }}
-            className="w-full px-4 py-3 text-left transition-colors hover:bg-white/5"
+            className={`w-full px-4 py-3 text-left transition-colors duration-500 hover:bg-white/5 ${!data.isRead ? "bg-emerald-500/30" : "bg-transparent"
+                }`}
         >
             <p className="line-clamp-2 text-sm font-medium leading-5 text-foreground">
                 {data.message}

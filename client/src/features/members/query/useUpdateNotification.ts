@@ -11,36 +11,79 @@ export const useUpdateNotification = (workspaceId: string, notificationId: strin
         mutationFn: () => updateMyNotification(workspaceId, notificationId),
 
         onMutate: async () => {
-            queryClient.cancelQueries({ queryKey: ['notifications', user?._id, workspaceId] });
-            const previousIteration = queryClient.getQueryData(['notifications', user?._id, workspaceId]);
-            queryClient.setQueryData(['notifications', user?._id, workspaceId], (oldData: {
-                success: boolean,
-                message: string,
-                data: NotificationItem[],
+            // queryClient.cancelQueries({ queryKey: ['notifications', user?._id, workspaceId] });
+            queryClient.cancelQueries({ queryKey: ['infinitenotifications', user?._id, workspaceId] });
+            // const previousBellIteration = queryClient.getQueryData(['notifications', user?._id, workspaceId]);
+            const previousInfiniteIteration = queryClient.getQueryData(['infinitenotifications', user?._id, workspaceId]);
+
+            // queryClient.setQueryData(['notifications', user?._id, workspaceId], (oldData: {
+            //     success: boolean,
+            //     message: string,
+            //     data: {
+            //         notifications: NotificationItem[],
+            //         nextCursor: string | undefined
+            //     },
+            // }) => {
+            //     if (!oldData) return oldData;
+            //     return {
+            //         ...oldData,
+            //         data: oldData.data.notifications.filter((notification) => notification.id != notificationId)
+            //     }
+            // });
+
+            queryClient.setQueryData(['infinitenotifications', user?._id, workspaceId], (old: {
+                pageParams: string[],
+                pages: {
+                    success: boolean,
+                    message: string,
+                    data: {
+                        notifications: NotificationItem[],
+                        nextCursor: string | undefined
+                    }
+                }[]
             }) => {
-                if (!oldData) return oldData;
+                if (!old) return old;
                 return {
-                    ...oldData,
-                    data: oldData.data.map((notification) => {
-                        return notification.id === notificationId
-                            ? { ...notification, isRead: true }
-                            : notification
+                    ...old,
+                    pages: old.pages.map((page: {
+                        success: boolean,
+                        message: string,
+                        data: {
+                            notifications: NotificationItem[],
+                            nextCursor: string | undefined
+                        }
+                    }) => {
+                        return {
+                            ...page,
+                            data: {
+                                ...page.data, notifications: page.data.notifications.map((notification: NotificationItem) =>
+                                    notification.id === notificationId ? { ...notification, isRead: true } : notification
+                                )
+                            }
+                        }
                     })
-                }
+                };
             });
 
-            return { previousIteration }
+            return { previousInfiniteIteration }
         },
 
         onError: (_err, _vars, context) => {
             // Rollback using the backup
-            if (context?.previousIteration) {
-                queryClient.setQueryData(['notifications', user?._id, workspaceId], context.previousIteration);
-            }
+            // if (context?.previousBellIteration) {
+            //     queryClient.setQueryData(['notifications', user?._id, workspaceId], context.previousBellIteration);
+            // };
+            if (context?.previousInfiniteIteration) {
+                queryClient.setQueryData(['infinitenotifications', user?._id, workspaceId], context.previousInfiniteIteration);
+            };
+
         },
 
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ['notifications', user?._id, workspaceId] })
+            // queryClient.invalidateQueries({ queryKey: ['notifications', user?._id, workspaceId] });
+            queryClient.invalidateQueries({
+                queryKey: ['infinitenotifications', user?._id, workspaceId]
+            })
         }
     });
 };

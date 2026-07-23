@@ -3,15 +3,14 @@ import { useState } from "react";
 import { NotificationDropdown } from "../ui/NotificationDropdown";
 import { useParams } from "react-router";
 import { useCurrentWorkspace } from "../../features/workspace/query/useCurrentWorkspace";
-import { useMyNotifications } from "../../features/members/query/useMyNotifications";
+import { useMyInfiniteNotifications } from "../../features/members/query/useMyInfiniteNotifications";
 
 export const Navbar = ({ isRetracted }: { isRetracted: boolean }) => {
     const [isDropdownActive, setIsDropDownActive] = useState(false);
     const { workspaceSlug } = useParams();
     const { data: useCurrentWorkspaceData } = useCurrentWorkspace(workspaceSlug!);
-    const { data: MyNotifications } = useMyNotifications(useCurrentWorkspaceData?.data?.id!);
-
-    const unreadNotifications = MyNotifications?.data?.filter((notification) => !notification.isRead).length ?? 0;
+    const { data: MyInfiniteNotifications } = useMyInfiniteNotifications(useCurrentWorkspaceData?.data?.id!);
+    const unreadNotifications = MyInfiniteNotifications?.pages.flatMap((data) => data.data?.notifications).filter((notification) => !notification?.isRead) ?? [];
 
     return (
         <nav className={`fixed top-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-md border-b border-border/60 transition-all duration-300 ${isRetracted ? "left-24" : "left-56"}`}>
@@ -35,7 +34,7 @@ export const Navbar = ({ isRetracted }: { isRetracted: boolean }) => {
                         <button onClick={() => setIsDropDownActive((prev) => !prev)} className="relative p-2 hover:bg-surface hover:cursor-pointer transition-colors rounded-md text-muted-foreground hover:text-foreground group">
                             <Bell className="size-5" />
                             {
-                                unreadNotifications > 0 && <div className="absolute top-1 right-1 size-2  bg-primary rounded-full flex justify-center items-center">
+                                unreadNotifications.length > 0 && <div className="absolute top-1 right-1 size-2  bg-primary rounded-full flex justify-center items-center">
                                     <span className="absolute size-full animate-ping bg-primary rounded-full" />
                                 </div>
                             }

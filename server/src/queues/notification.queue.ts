@@ -10,7 +10,7 @@ export const notificationQueue = new Queue('notification', {
             type: 'custom'
         },
         // jobs will be removed or saved based on whether they get completed or not
-        removeOnComplete: false,
+        removeOnComplete: true,
         removeOnFail: false
     },
 });
