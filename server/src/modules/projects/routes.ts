@@ -6,7 +6,7 @@ import { allowedRoles } from "../../middlewares/allowedMembers";
 
 export const router = Router({ mergeParams: true });
 
-router.post('/project/create-project', verifyJWT, allowedRoles(['ADMIN', 'MEMBER']), projectControllers.createProjectInsideWorkspace);
+router.post('/project/create-project', verifyJWT, allowedRoles(['ADMIN']), projectControllers.createProjectInsideWorkspace);
 
 router.get('/project', verifyJWT, projectControllers.getAllProjects);
 

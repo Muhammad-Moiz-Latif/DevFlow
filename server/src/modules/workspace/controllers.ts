@@ -2,6 +2,7 @@ import uploadImage from "../../utils/upload-image";
 import slugify from 'slugify';
 import { workspaceServices } from "./services";
 import type { Response, Request } from 'express';
+import { generalQueue } from "../../queues/general.queue";
 
 export const workspaceControllers = {
 
@@ -104,6 +105,12 @@ export const workspaceControllers = {
             };
 
             const workspace = await workspaceServices.getWorkspaceViaSlug(workspaceSlug);
+
+            // SIDE-AFFECT: Updates users lastworkspaceId parameter
+            await generalQueue.add('UPDATE_USER_WORKSPACE', {
+                workspaceId: workspace?.id,
+                userId
+            });
 
             return res.status(200).json({
                 success: true,

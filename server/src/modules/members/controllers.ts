@@ -1,10 +1,11 @@
+import type { tryCatch } from "bullmq";
 import { sendNotification } from "../../utils/send-notification";
 import { workspaceServices } from "../workspace/services";
 import { memberServices } from "./services";
 import type { Request, Response } from "express";
 
 export const memberControllers = {
-    
+
     async getAllWorkspaceMembers(req: Request, res: Response) {
         try {
             const workspaceId = req.params.workspaceId as string;
@@ -115,5 +116,33 @@ export const memberControllers = {
                 message: "Internal server error"
             });
         }
-    }
+    },
+
+    async inviteMemberToWorkspace(req: Request, res: Response) {
+        try {
+            const workspaceId = req.params.workspaceId as string;
+            const userId = req.user?.id;
+
+            const doesWorkspaceExist = await workspaceServices.getWorkspaceViaId(workspaceId);
+
+            if (!doesWorkspaceExist) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Workspace does not exist"
+                });
+            };
+            
+
+            // EDGE CASE: If a user with this email already has an account, send notification to that account
+
+            // EDGE CASE: If no account then send to his gmail
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+            })
+        }
+    },
 };

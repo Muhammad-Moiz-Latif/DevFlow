@@ -11,6 +11,7 @@ type User = {
     img: string | null,
     password: string,
     authType: 'GOOGLE' | 'CREDENTIALS' | 'BOTH',
+    lastWorkspaceId: string | null
 };
 
 
@@ -161,6 +162,9 @@ export const authServices = {
             FROM users u
             JOIN workspace w
             ON u."lastWorkspaceId" = w.id
+            JOIN workspace_members wm
+            ON w.id = wm."workspaceId"
+            AND wm."userId" = u.id
             WHERE u.id = ${userId}
         `);
 

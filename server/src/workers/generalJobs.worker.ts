@@ -1,18 +1,16 @@
 import { Worker, type Job } from "bullmq";
+import { authServices } from "../modules/auth/services";
 import { redisConnection } from "../redis/client";
-import { issueServices } from "../modules/issue/services";
-import { LogType } from "../db/schema/activity-logs";
 
-type LogTypeEnum = typeof LogType.enumValues[number];
-
-// Job<DataType, ReturnType, NameType> — BullMQ's generic shape
-const activityLogWorker = new Worker('activity-log', async (job: Job<any, any, string>) => {
-
-    await issueServices.addToActivityLogs({ issueId: job.data.issueId, workspaceId: job.data.workspaceId, actorId: job.data.actorId, logType: job.name as LogTypeEnum, oldValue: job.data.oldValue ?? null, newValue: job.data.newValue ?? null });
-
+export const generalWorker = new Worker('general', async (job) => {
+    const job_type = job.name;
+    const userId = job.data.userId;
+    if (job_type === 'UPDATE_USER_WORKSPACE') {
+        await authServices.updateUser({ lastWorkspaceId: job.data.workspaceId }, userId);
+    };
 }, {
-    connection: redisConnection
-    , settings: {
+    connection: redisConnection,
+    settings: {
         backoffStrategy: (attemptsMade, type, err, job) => {
             const base = 1000;   // your existing 1000ms
             const max = 30000;   // hard ceiling, don't let it grow forever
@@ -22,11 +20,11 @@ const activityLogWorker = new Worker('activity-log', async (job: Job<any, any, s
     }
 });
 
-activityLogWorker.on('completed', (job) => {
-    console.log(`Job ${job.id} completed successfully`)
+generalWorker.on('completed', (job) => {
+    console.log(`Job ${job.name} bearing Id ${job.id} completed successfully`)
 });
 
-activityLogWorker.on('failed', (job, error) => {
+generalWorker.on('failed', (job, error) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -39,5 +37,3 @@ activityLogWorker.on('failed', (job, error) => {
         console.error('Error stack:', errorStack);
     }
 });
-
-export default activityLogWorker;

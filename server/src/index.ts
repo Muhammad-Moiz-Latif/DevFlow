@@ -13,8 +13,10 @@ import passport from 'passport';
 import './redis/client';
 import './queues/notification.queue'
 import './queues/activitylog.queue'
+import './queues/general.queue'
 import './workers/notification.worker'
 import './workers/activitylog.worker'
+import './workers/generalJobs.worker'
 
 
 

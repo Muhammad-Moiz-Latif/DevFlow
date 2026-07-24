@@ -3,11 +3,14 @@ import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
 import { useWorkspaceMembers } from "../query/useWorkspaceMembers";
 import { MemberDetailRow } from "./memberRow";
 import { Users2, Plus } from "lucide-react";
+import { useState } from "react";
+import { InviteMemberModal } from "./inviteMemberModal";
 
 export const WorkspaceMembers = () => {
     const { workspaceSlug } = useParams();
     const { data: currentWorkspaceData } = useCurrentWorkspace(workspaceSlug!);
     const { data: MembersData, isPending } = useWorkspaceMembers(currentWorkspaceData?.data?.id!);
+    const [isInviteModalVisible, setInviteModalVisibility] = useState(false);
 
 
 
@@ -39,9 +42,11 @@ export const WorkspaceMembers = () => {
                             </p>
                         </div>
                     </div>
+                    {isInviteModalVisible && <InviteMemberModal setInviteModalVisibility={setInviteModalVisibility}/>}
 
                     <button
                         type="button"
+                        onClick={() => setInviteModalVisibility((prev) => !prev)}
                         className="flex items-center gap-3 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[0_10px_30px_-12px_oklch(0.72_0.18_280/0.65)] transition-transform hover:-translate-y-0.5 hover:bg-primary/90"
                     >
                         <Plus className="size-5" strokeWidth={2.25} />
