@@ -14,5 +14,3 @@ router.get("/", verifyJWT, memberControllers.getAllWorkspaceMembers);
 router.delete('/:memberId', verifyJWT, allowedRoles(['ADMIN']), memberControllers.deleteWorkspaceMember);
 
 router.patch('/:memberId/role', verifyJWT, allowedRoles(['ADMIN']), memberControllers.updateWorkspaceMember);
-
-// router.post('/inviteMember',verifyJWT,allowedRoles(['ADMIN']));

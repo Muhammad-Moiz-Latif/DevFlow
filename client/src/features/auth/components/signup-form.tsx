@@ -5,7 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod"
 import { useSignUp } from "../query/useSignUp";
 import axios from "axios";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 const SignUpSchema = z.object({
     username: z.string().min(8, "Minimum 8 characters are required").max(25, "username is too long"),
@@ -31,6 +31,8 @@ export const SignUpForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+    const { email, fromInvite } = location.state || {};
     const { register, reset, formState: { errors }, handleSubmit, watch } = useForm({
         resolver: zodResolver(SignUpSchema)
     });
@@ -102,7 +104,7 @@ export const SignUpForm = () => {
                     className="w-full h-9 px-3 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
                     type="email"
                     {...register("email")}
-                    placeholder="you@gmail.com"
+                    placeholder={email ?? "you@gmail.com"}
                 />
                 {errors.email && <h1 className="text-xs text-red-600 tracking-tight">{errors.email.message}</h1>}
             </div>

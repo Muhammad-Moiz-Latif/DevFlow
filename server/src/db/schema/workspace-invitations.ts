@@ -12,7 +12,7 @@ export const WorkspaceInvitationTable = pgTable("workspace_invitations", (t) => 
     token: t.varchar("token", { length: 255 }).notNull().unique(),
     invited_by: t.uuid("invitedBy").references(() => UserTable.id, { onDelete: "cascade" }).notNull(),
     expires_at: t.timestamp("expiresAt").notNull(),
-    accepted_at: t.timestamp("acceptedAt"),
+    accepted_at: t.timestamp("acceptedAt"), 
     created_at: t.timestamp("createdAt").defaultNow().notNull()
 }), (table) => ({
     pendingInviteUnique: uniqueIndex("workspace_invitations_workspace_email_pending_unique").on(table.workspace_id, table.email).where(sql`${table.accepted_at} IS NULL`),

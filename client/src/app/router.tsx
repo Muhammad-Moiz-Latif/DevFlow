@@ -11,6 +11,7 @@ import { KanbanBoard } from "./routes/workspace/workspaceSlug/projects/KanbanBoa
 import { MyIssuesPage } from "./routes/workspace/workspaceSlug/myIssues";
 import { MembersPage } from "./routes/workspace/workspaceSlug/members";
 import { NotificationsPage } from "./routes/workspace/workspaceSlug/notifications";
+import { AcceptMemberInvitationModal } from "../features/auth/components/accept-workspace-invitation-modal";
 
 
 export const router = createBrowserRouter([
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
     {
         path: '/create-workspace',
         element: <CreateWorkspacePage />
+    },
+    {
+        path: '/accept-invitation',
+        element: <AcceptMemberInvitationModal />
     },
     {
         path: '/w/:workspaceSlug',

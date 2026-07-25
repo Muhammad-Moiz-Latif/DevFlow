@@ -42,7 +42,7 @@ export const WorkspaceMembers = () => {
                             </p>
                         </div>
                     </div>
-                    {isInviteModalVisible && <InviteMemberModal setInviteModalVisibility={setInviteModalVisibility}/>}
+                    {isInviteModalVisible && <InviteMemberModal setInviteModalVisibility={setInviteModalVisibility} workspaceId={currentWorkspaceData?.data?.id ?? ""}/>}
 
                     <button
                         type="button"

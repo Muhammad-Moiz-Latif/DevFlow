@@ -1,4 +1,4 @@
-import { db } from "../../config/db";
+import { db, pool } from "../../config/db";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { WorkspaceInvitationTable } from "../../db/schema/workspace-invitations";
 import { WorkspaceMembersTable } from "../../db/schema/workspace-member";
@@ -57,11 +57,20 @@ export const invitationServices = {
     },
 
     async getWorkspaceInvitationByToken(token: string) {
-        const [invitation] = await db.select().from(WorkspaceInvitationTable).where(
-            eq(WorkspaceInvitationTable.token, token)
-        );
 
-        return invitation;
+        const invitation = await pool.query(`
+                SELECT wi.*,
+                    w.name AS "workspaceName",
+                    u.name as "ownerName"
+                FROM workspace_invitations wi
+                JOIN workspace w
+                ON wi."workspaceId" = w.id
+                JOIN users u
+                ON w."ownerId" = u.id
+                WHERE wi.token = $1
+            `, [token])
+
+        return invitation.rows[0];
     },
 
     async getWorkspaceInvitationByEmail(workspaceId: string, email: string) {
@@ -101,6 +110,8 @@ export const invitationServices = {
 
     async acceptWorkspaceInvitation(workspaceId: string, invitationId: string, userId: string, role: InvitationRole) {
         return db.transaction(async (tx) => {
+
+            // Retrieve the notification
             const [invitation] = await tx.select().from(WorkspaceInvitationTable).where(and(
                 eq(WorkspaceInvitationTable.id, invitationId),
                 eq(WorkspaceInvitationTable.workspace_id, workspaceId),
@@ -111,17 +122,20 @@ export const invitationServices = {
                 return null;
             }
 
+            // Retrieve the user who accepts the notification
             const [user] = await tx.select().from(UserTable).where(eq(UserTable.id, userId)).limit(1);
 
             if (!user || !user.email || user.email.toLowerCase() !== invitation.email.toLowerCase()) {
                 throw new Error("Invitation email mismatch");
             }
 
+            // check if invited member is made part of the workspace
             const [existingMember] = await tx.select().from(WorkspaceMembersTable).where(and(
                 eq(WorkspaceMembersTable.workspace_id, workspaceId),
                 eq(WorkspaceMembersTable.user_id, userId)
             ));
 
+            // if not already a member make him one
             if (!existingMember) {
                 await tx.insert(WorkspaceMembersTable).values({
                     workspace_id: workspaceId,

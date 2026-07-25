@@ -2,7 +2,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { publicApi } from "../lib/axios";
 import type { LoginResponse } from "../features/types";
 import { errorToast, successToast } from "../components/ui/CustomToasts";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useAuthStore } from "../stores/auth-store";
 import { useState } from "react";
 import { GeneralLoader } from "./loader";
@@ -13,6 +13,11 @@ export default function GoogleLoginButton({ label }: { label: string }) {
     const [getUserId, setUserId] = useState("");
     const [googleMerge, setGoogleMerge] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const location = useLocation();
+    const { fromInvite } = location.state || {};
+    const invitationToken = sessionStorage.getItem('invitationToken');
+    console.log(invitationToken, fromInvite)
+
 
     async function handleMerge() {
         try {
@@ -65,8 +70,9 @@ export default function GoogleLoginButton({ label }: { label: string }) {
                     }, response.data.access_token);
 
                     const workspaceSlug = response.data.defaultWorkspaceSlug;
-
-                    if (!workspaceSlug) {
+                    if (invitationToken && fromInvite) {
+                        setTimeout(() => navigate(`/accept-invitation?token=${invitationToken}`), 800);
+                    } else if (!workspaceSlug) {
                         setTimeout(() => navigate('/create-workspace'), 800);
                     } else {
                         setTimeout(() => navigate(`/w/${workspaceSlug}`), 800);

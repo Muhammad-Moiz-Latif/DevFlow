@@ -11,4 +11,4 @@ router.post("/", verifyJWT, allowedRoles(["ADMIN"]), invitationControllers.sendW
 
 router.get("/", verifyJWT, allowedRoles(["ADMIN"]), invitationControllers.getWorkspaceInvitations);
 
-router.delete("/:invitationId", verifyJWT, allowedRoles(["ADMIN"]), invitationControllers.cancelWorkspaceInvitation);
+router.delete("/:invitationId", invitationControllers.cancelWorkspaceInvitation);

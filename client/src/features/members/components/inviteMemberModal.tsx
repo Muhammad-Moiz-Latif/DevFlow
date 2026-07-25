@@ -1,8 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import z from "zod";
 import { X, Mail } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
+import { useInviteMember } from "../query/useInviteMember";
+import { errorToast, successToast } from "../../../components/ui/CustomToasts";
 
 const InviteMemberSchema = z.object({
     email: z
@@ -16,18 +18,45 @@ const InviteMemberSchema = z.object({
 
 export type InviteMemberSchemaType = z.infer<typeof InviteMemberSchema>;
 
-export const InviteMemberModal = ({ setInviteModalVisibility }: { setInviteModalVisibility: Dispatch<SetStateAction<boolean>> }) => {
+export const InviteMemberModal = ({ setInviteModalVisibility, workspaceId }: { setInviteModalVisibility: Dispatch<SetStateAction<boolean>>, workspaceId: string }) => {
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors },
     } = useForm<InviteMemberSchemaType>({
         resolver: zodResolver(InviteMemberSchema),
         defaultValues: { role: "MEMBER" },
     });
+    const { mutate, isPending } = useInviteMember()
 
     const onSubmit = async (data: InviteMemberSchemaType) => {
-        // future mutation 
+        mutate({
+            workspaceId,
+            data
+        }, {
+            onSuccess: (data) => {
+                if (data.status === 200) {
+                    successToast("The user is aready a member of this workspace")
+                } else if (data.status === 209) {
+                    successToast("An active email has already been sent to this user")
+                } else if (data.status === 201) {
+                    successToast("Email sent successfully!")
+                };
+
+                reset();
+                setTimeout(() => {
+                    setInviteModalVisibility((prev) => !prev)
+                }, 1000);
+            },
+            onError: () => {
+                reset();
+                errorToast("Could not send email"),
+                    setTimeout(() => {
+                        setInviteModalVisibility((prev) => !prev)
+                    }, 1000);
+            }
+        });
     };
 
     return (
@@ -109,10 +138,10 @@ export const InviteMemberModal = ({ setInviteModalVisibility }: { setInviteModal
                         </button>
                         <button
                             type="submit"
-                            // disabled={isPending}
+                            disabled={isPending}
                             className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:cursor-pointer hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                            Send Invite
+                            {isPending ? "Sending invite..." : "Send Invite"}
                         </button>
                     </div>
                 </form>

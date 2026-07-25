@@ -173,3 +173,20 @@ export type getMyNotificationsResponseType = ApiResponse<{
     notifications: NotificationItem[],
     nextCursor: string | undefined
 }>;
+
+export type getWorkspaceInvitationResponse = ApiResponse<{
+    id: string,
+    workspaceId: string,
+    email: string,
+    role: 'ADMIN' | 'MEMBER' | 'VIEWER',
+    token: string,
+    invitedBy: string,
+    expiresAt: Date,
+    acceptedAt: Date,
+    createdAt: Date,
+    workspaceName: string,
+    InvitedUserExists: boolean,
+    currentEmail: string | undefined,
+    userStatus: 'NO_ACCOUNT' | 'SAME_ACCOUNT' | 'DIFFERENT_ACCOUNT',
+    ownerName: string
+}>
