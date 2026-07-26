@@ -32,7 +32,8 @@ export const SignUpForm = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const { email, fromInvite } = location.state || {};
+    const invitationToken = sessionStorage.getItem('invitationToken');
+    const { email } = location.state || {};
     const { register, reset, formState: { errors }, handleSubmit, watch } = useForm({
         resolver: zodResolver(SignUpSchema)
     });
@@ -60,7 +61,7 @@ export const SignUpForm = () => {
             onSuccess: (response) => {
                 if (response.success) {
                     sessionStorage.setItem("pendingVerificationUserId", response.data?.userId!);
-                    navigate('/verify-email', { state: { userId: response.data?.userId } });
+                    navigate('/verify-email', { state: { userId: response.data?.userId, fromInvite: invitationToken ? true : false } });
                     reset();
                 }
             },

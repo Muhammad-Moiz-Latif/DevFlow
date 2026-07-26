@@ -10,6 +10,7 @@ import { SignInRequiredState } from "./invitations-states/SignInRequiredState";
 import { DifferentAccountState } from "./invitations-states/DifferentAccountState";
 import { Logout } from "../api/logout";
 import { NoAccountState } from "./invitations-states/NoAccountState";
+import { useAcceptInvite } from "../../members/query/useAcceptInvite";
 
 type InvitationDataType = {
     id: string,
@@ -36,6 +37,7 @@ export const AcceptMemberInvitationModal = () => {
     const { clearAuth } = useAuthStore();
     const [isWarned, setWarning] = useState(false);
     const navigate = useNavigate();
+    const { mutate, isPending } = useAcceptInvite();
     const { accessToken } = useAuthStore();
 
     // Redirect logic moved into an effect — navigation is a side effect,
@@ -85,7 +87,9 @@ export const AcceptMemberInvitationModal = () => {
     // The invited member has an account , we are requresting him to login to it
     if (invitationData?.userStatus === 'SAME_ACCOUNT' && !accessToken) {
         return (
-            <SignInRequiredState workspaceName={invitationData.workspaceName} onRedirect={() => navigate('/login')} />
+            <SignInRequiredState workspaceName={invitationData.workspaceName}
+                onRedirect={() => navigate('/login', { state: { email: invitationData.email, fromInvite: true } })}
+            />
         )
     };
 
@@ -115,9 +119,30 @@ export const AcceptMemberInvitationModal = () => {
             />
         )
     }
-    
-    const handleAccept = async () => {
 
+    const handleAccept = async () => {
+        mutate(token, {
+            onSuccess: (data) => {
+                successToast('Redirecting to workspace');
+                setTimeout(() => {
+                    navigate(`/w/${data.data?.workspaceSlug}`);
+                }, 1000);
+            },
+
+            onError: (error) => {
+                if (axios.isAxiosError(error)) {
+                    if (error.status === 400) {
+                        errorToast('This invitations has expired');
+                        setTimeout(() => {
+                            accessToken ? navigate(-1) : navigate('/login')
+                        }, 1000);
+                    }
+                };
+            },
+            onSettled: () => {
+                sessionStorage.removeItem('invitationToken');
+            }
+        })
     };
 
     if (isLoading) {
@@ -149,10 +174,12 @@ export const AcceptMemberInvitationModal = () => {
                         Decline
                     </button>
                     <button
+
+                        disabled={isPending}
                         onClick={handleAccept}
                         className="rounded-lg bg-indigo-600 hover:cursor-pointer px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
                     >
-                        Accept Invite
+                        {isPending ? "Accepting..." : "Accept Invite"}
                     </button>
                 </div>
             </div>

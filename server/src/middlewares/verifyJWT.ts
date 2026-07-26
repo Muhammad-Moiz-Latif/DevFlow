@@ -5,6 +5,7 @@ import "dotenv/config";
 export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     const header = req.headers.authorization;
     const access_token_secret = process.env.ACCESS_TOKEN_SECRET!;
+
     if (!header) {
         return res.status(401).json({
             success: false,

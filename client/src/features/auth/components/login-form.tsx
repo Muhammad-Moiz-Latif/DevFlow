@@ -1,12 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useGoogleLogin } from '@react-oauth/google';
 import z from "zod"
 import useLogin from "../query/useLogin";
 import { useState } from "react";
 import axios from "axios";
 import { successToast } from "../../../components/ui/CustomToasts";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "../../../stores/auth-store";
 
@@ -29,6 +28,9 @@ export const LoginForm = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const { setAuth: setAuthStore } = useAuthStore();
+    const location = useLocation();
+    const invitationToken = sessionStorage.getItem('invitationToken');
+    const { email, fromInvite } = location.state || {};
     const { register, formState: { errors }, handleSubmit, reset } = useForm({
         // resolver is the translation layer between react-hook-form and the zod validation system - 
         // whenever form is submitted / changed react-hook-form passes the values over to the loginSchema for validation
@@ -36,21 +38,23 @@ export const LoginForm = () => {
         resolver: zodResolver(LoginSchema)
     });
 
-
     const onSubmit: SubmitHandler<LoginSchemaType> = async (data) => {
         setErrorMessage("");
         mutate(data, {
             onSuccess: (response) => {
                 if (response.success && response.data && response.access_token) {
                     successToast(`Welcome back, ${response.data.username}`);
-                    console.log(response.defaultWorkspaceSlug);
                     reset();
                     setAuthStore({
                         _id: response.data?._id,
                         image: response.data?.img,
                         username: response.data?.username
                     }, response.access_token);
-
+                    if (fromInvite && invitationToken) {
+                        return setTimeout(() => {
+                            navigate(`/accept-invitation?token=${invitationToken}`);
+                        }, 1000);
+                    }
                     if (!response.defaultWorkspaceSlug) {
                         return setTimeout(() => {
                             navigate('/create-workspace');
@@ -88,7 +92,7 @@ export const LoginForm = () => {
                     className="w-full h-9 px-3 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
                     type="email"
                     {...register("email")}
-                    placeholder="you@company.com"
+                    placeholder={email ?? "you@company.com"}
                     autoComplete="email"
                 />
                 {errors.email && <h1 className="text-xs text-red-600 tracking-tight">{errors.email.message}</h1>}

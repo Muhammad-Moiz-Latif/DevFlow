@@ -190,3 +190,6 @@ export type getWorkspaceInvitationResponse = ApiResponse<{
     userStatus: 'NO_ACCOUNT' | 'SAME_ACCOUNT' | 'DIFFERENT_ACCOUNT',
     ownerName: string
 }>
+
+
+export type AcceptInvitationTypeResponse = ApiResponse<{ workspaceSlug: string }>;

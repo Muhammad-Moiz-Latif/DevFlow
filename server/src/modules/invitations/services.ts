@@ -117,7 +117,7 @@ export const invitationServices = {
                 eq(WorkspaceInvitationTable.workspace_id, workspaceId),
                 isNull(WorkspaceInvitationTable.accepted_at)
             ));
-
+            console.log('the invitation,',invitation)
             if (!invitation) {
                 return null;
             }

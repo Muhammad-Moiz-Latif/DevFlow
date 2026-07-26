@@ -37,7 +37,7 @@ export const authController = {
                 });
             };
 
-            const createUser = await authServices.registerUser(name, email, imgURL, password);
+            const createUser = await authServices.registerUser(name, email, imgURL, 'CREDENTIALS',password);
 
             if (!createUser) {
                 return res.status(500).json({

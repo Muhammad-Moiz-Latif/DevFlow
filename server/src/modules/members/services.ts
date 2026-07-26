@@ -21,7 +21,6 @@ export const memberServices = {
             JOIN users u
             ON m."userId" = u.id
             WHERE m."workspaceId" = ${workspaceId}
-            LIMIT 1
             `)
         return members.rows;
     },

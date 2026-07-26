@@ -11,6 +11,7 @@ export default function VerifyEmail() {
     const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
     const location = useLocation();
     const { mutate, isPending } = useVerifyEmail();
+    const invitationToken = sessionStorage.getItem('invitationToken');
     const userId = location.state.userId ?? sessionStorage.getItem('pendingVerificationUserId');
     const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
     const navigate = useNavigate();
@@ -70,7 +71,7 @@ export default function VerifyEmail() {
                     sessionStorage.removeItem('pendingVerificationUserId');
                     successToast("Email verified! Welcome to DevFlow"),
                         setTimeout(() => {
-                            navigate('/login');
+                            navigate('/login', { state: { fromInvite: invitationToken ? true : false } });
                         }, 1000);
                 };
             },

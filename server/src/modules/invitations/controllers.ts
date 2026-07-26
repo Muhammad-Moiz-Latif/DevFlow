@@ -274,23 +274,25 @@ export const invitationControllers = {
                 });
             }
 
-            if (new Date() > new Date(invitation.expires_at)) {
+            const workspace = await workspaceServices.getWorkspaceViaId(invitation.workspaceId);
+
+            if (new Date() > new Date(invitation.expiresAt)) {
                 return res.status(400).json({
                     success: false,
                     message: "Invitation has expired"
                 });
             }
 
-            if (invitation.accepted_at) {
+            if (invitation.acceptedAt) {
                 // 208 = Already reported
                 return res.status(208).json({
                     success: true,
                     message: "Invitation has been accepted already"
                 })
             }
-
+          
             const acceptedInvitation = await invitationServices.acceptWorkspaceInvitation(
-                invitation.workspace_id,
+                invitation.workspaceId,
                 invitation.id,
                 userId,
                 invitation.role
@@ -303,22 +305,22 @@ export const invitationControllers = {
                 });
             }
 
-            const inviter = await authServices.getUserViaId(invitation.invited_by);
+            const inviter = await authServices.getUserViaId(invitation.invitedBy);
 
             if (inviter) {
-                await sendNotification({
+                await notificationQueue.add('INVITE_ACCEPTED', {
                     type: "INVITE_ACCEPTED",
-                    link: `/workspace/${invitation.workspace_id}`,
+                    link: `/workspace/${invitation.workspaceId}`,
                     message: `Your invitation to ${invitation.email} has been accepted`,
                     user_id: inviter.id,
-                    workspace_id: invitation.workspace_id
+                    workspace_id: invitation.workspaceId
                 });
             }
 
             return res.status(200).json({
                 success: true,
                 message: "Invitation accepted successfully",
-                data: acceptedInvitation
+                data: { workspaceSlug: workspace?.slug }
             });
 
         } catch (error) {

@@ -8,6 +8,8 @@ import { isSortable } from '@dnd-kit/react/sortable';
 import KanbanColumn from "./KanbanColumn";
 import { useUpdateIssue } from "../../issue/queries/useUpdateIssue";
 
+type IssueStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
+const COLUMN_STATUSES: IssueStatus[] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
 
 export const KanbanComponent = () => {
     const { projectSlug, workspaceSlug } = useParams();
@@ -33,72 +35,52 @@ export const KanbanComponent = () => {
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { source, target } = event.operation;
-
         if (!source || !target || event.canceled || source.id === target.id) return;
-
-        // get filtered and sorted issues of the target column
-        const columnIssues = issuesData?.data!
-            .filter((issue) => issue.status === target.id)
+        const sourceIssue = issues.find((issue) => issue.id === source.id);
+        if (!sourceIssue) return;
+        // Resolve which column we're dropping into
+        const targetStatus: IssueStatus | undefined = isSortable(target)
+            ? (issues.find((issue) => issue.id === target.id)?.status as IssueStatus | undefined)
+            : COLUMN_STATUSES.includes(target.id as IssueStatus)
+                ? (target.id as IssueStatus)
+                : undefined;
+        if (!targetStatus) return;
+        const sameColumn = sourceIssue.status === targetStatus;
+        // Target column list without the dragged card (cache still has old status)
+        const columnIssues = issues
+            .filter((issue) => issue.status === targetStatus && issue.id !== source.id)
             .sort((a, b) => a.order - b.order);
-
-        // handle empty column
-        let newOrderValue = 0;
-
-
-        // get the index within the target column where the card landed
-        let requiredIndex = {
-            value: 0,
-            sameColumn: true
-        };
-
+        // Where the card landed in the target column
+        let insertIndex: number;
         if (isSortable(target)) {
-            requiredIndex.value = target.index;
-            requiredIndex.sameColumn = false;
-        } else if (isSortable(source)) {
-            requiredIndex.value = source.index;
-        };
-
-        if (!columnIssues || columnIssues.length === 0) {
+            insertIndex = target.index;
+        } else {
+            // Dropped on column background → append to bottom
+            insertIndex = columnIssues.length;
+        }
+        insertIndex = Math.max(0, Math.min(insertIndex, columnIssues.length));
+        let newOrderValue: number;
+        if (columnIssues.length === 0) {
             newOrderValue = 1;
-            mutate({
-                id: source.id as string,
-                status: target.id as "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE",
-                order: newOrderValue
-            });
-            return;
-        };
-
-        if (columnIssues![requiredIndex.value].id === source.id) return;
-
-        const previous_issue = columnIssues![requiredIndex.value - 1] || null;
-        const next_issue = columnIssues![requiredIndex.sameColumn ? requiredIndex.value + 1 : requiredIndex.value] || null;
-
-
-        // dropped at the very top
-        if (!previous_issue && next_issue) {
-            newOrderValue = next_issue.order / 2;
+        } else if (insertIndex === 0) {
+            // Top of column
+            newOrderValue = columnIssues[0].order / 2;
+        } else if (insertIndex >= columnIssues.length) {
+            // Bottom of column
+            newOrderValue = columnIssues[columnIssues.length - 1].order + 1;
+        } else {
+            // Between two cards
+            const previousIssue = columnIssues[insertIndex - 1];
+            const nextIssue = columnIssues[insertIndex];
+            newOrderValue = (previousIssue.order + nextIssue.order) / 2;
         }
-        // dropped at the very bottom
-        else if (!next_issue && previous_issue) {
-            newOrderValue = previous_issue.order + 1;
-        }
-        // dropped in the middle
-        else if (previous_issue && next_issue) {
-            newOrderValue = (previous_issue.order + next_issue.order) / 2;
-        }
-        console.log(columnIssues)
-        console.log('source:', source.id);
-        console.log('target:', target.id);
-        console.log('requiredIndex:', requiredIndex.value);
-        console.log('previous:', previous_issue);
-        console.log('next:', next_issue);
-        console.log('newOrderValue:', newOrderValue);
-
-        // TODO: PATCH request goes here
+        // Same slot in same column — nothing to update
+        //@ts-ignore
+        if (sameColumn && isSortable(target) && source.index === target.index) return;
         mutate({
             id: source.id as string,
-            status: target.id as "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE",
-            order: newOrderValue
+            status: targetStatus,
+            order: newOrderValue,
         });
     };
 

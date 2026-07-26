@@ -12,7 +12,7 @@ export const WorkspaceMembers = () => {
     const { data: MembersData, isPending } = useWorkspaceMembers(currentWorkspaceData?.data?.id!);
     const [isInviteModalVisible, setInviteModalVisibility] = useState(false);
 
-
+    console.log(MembersData)
 
     if (isPending) {
         return (
@@ -42,7 +42,7 @@ export const WorkspaceMembers = () => {
                             </p>
                         </div>
                     </div>
-                    {isInviteModalVisible && <InviteMemberModal setInviteModalVisibility={setInviteModalVisibility} workspaceId={currentWorkspaceData?.data?.id ?? ""}/>}
+                    {isInviteModalVisible && <InviteMemberModal setInviteModalVisibility={setInviteModalVisibility} workspaceId={currentWorkspaceData?.data?.id ?? ""} />}
 
                     <button
                         type="button"
