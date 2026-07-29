@@ -125,7 +125,8 @@ export type GetWorkspaceResponseType = ApiResponse<{
     name: string,
     img: string,
     owner_id: string,
-    createdAt: Date
+    createdAt: Date,
+    yourRole: 'ADMIN' | 'MEMBER' | 'VIEWER'
 }>;
 
 export type getAllActivityLogsOfWorkspaceType = ApiResponse<[ActivityLogType]>;

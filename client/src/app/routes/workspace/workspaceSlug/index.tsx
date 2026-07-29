@@ -76,7 +76,6 @@ export function Dashboard() {
     const { data: workspaceData, isPending } = useCurrentWorkspace(workspaceSlug!);
     const { data: allIssues, isPending: isIssuesPending } = useMyIssues(user?._id!, workspaceData?.data?.id!);
     const { data: allActivityLogs, isPending: isActivityPending } = useAllActivityLogs(workspaceData?.data?.id!);
-
     const { openIssues, urgentIssues, completedIssues } = useMemo(() => {
         if (!allIssues?.data) {
             return { openIssues: 0, urgentIssues: 0, completedIssues: 0 };

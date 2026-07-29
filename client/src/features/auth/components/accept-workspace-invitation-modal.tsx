@@ -39,6 +39,8 @@ export const AcceptMemberInvitationModal = () => {
     const navigate = useNavigate();
     const { mutate, isPending } = useAcceptInvite();
     const { accessToken } = useAuthStore();
+        console.log(accessToken, invitationData?.userStatus)
+
 
     // Redirect logic moved into an effect — navigation is a side effect,
     // it should never happen directly in the render body.
@@ -83,7 +85,6 @@ export const AcceptMemberInvitationModal = () => {
         getInvitationData();
     }, [token]);
 
-
     // The invited member has an account , we are requresting him to login to it
     if (invitationData?.userStatus === 'SAME_ACCOUNT' && !accessToken) {
         return (
@@ -123,6 +124,7 @@ export const AcceptMemberInvitationModal = () => {
     const handleAccept = async () => {
         mutate(token, {
             onSuccess: (data) => {
+                sessionStorage.removeItem('invitationToken');
                 successToast('Redirecting to workspace');
                 setTimeout(() => {
                     navigate(`/w/${data.data?.workspaceSlug}`);

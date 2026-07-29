@@ -9,7 +9,8 @@ type KanbanColumnProps = {
     column: KanbanColumnType,
     issues: IssueType[],
     workspaceId: string,
-    projectId: string
+    projectId: string,
+    yourRole: 'ADMIN' | 'MEMBER' | 'VIEWER' | undefined
 };
 
 const statusColorMap: Record<string, { dot: string; header: string }> = {
@@ -20,7 +21,7 @@ const statusColorMap: Record<string, { dot: string; header: string }> = {
 };
 
 
-const KanbanColumn = ({ column, issues, workspaceId, projectId }: KanbanColumnProps) => {
+const KanbanColumn = ({ column, issues, workspaceId, projectId, yourRole }: KanbanColumnProps) => {
     const [selectedIssue, setSelectedIssue] = useState<IssueType | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -33,17 +34,18 @@ const KanbanColumn = ({ column, issues, workspaceId, projectId }: KanbanColumnPr
         <>
             <div
                 ref={ref}
+                aria-disabled={true}
                 style={{ background: isDropTarget ? 'rgba(99,102,241,0.05)' : undefined }}
                 className="w-full min-h-screen mt-5"
             >
                 {/* Column Container */}
-                <div className={`bg-linear-to-r relative ${colors.header} rounded-lg border border-border/50 px-3 py-2 mb-3`}>
-                    <div
+                <div className={`bg-linear-to-r relative pointer-events-auto ${colors.header} rounded-lg border border-border/50 px-3 py-2 mb-3`}>
+                    {yourRole != 'VIEWER' && <div
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="size-5 border border-zinc-800 bg-background text-accent-foreground flex items-center justify-center absolute -top-2 left-1/2 hover:cursor-pointer hover:opacity-70"
+                        className="size-5 border  border-zinc-800 bg-background text-accent-foreground flex items-center justify-center absolute -top-2 left-1/2 hover:cursor-pointer hover:opacity-70"
                     >
                         +
-                    </div>
+                    </div>}
                     <div className="flex items-center gap-2 mb-0.5">
                         <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
                         <h2 className="font-semibold text-foreground text-xs">
@@ -56,7 +58,7 @@ const KanbanColumn = ({ column, issues, workspaceId, projectId }: KanbanColumnPr
                 </div>
 
                 {/* Issues Container */}
-                <div className="flex-1 flex flex-col gap-2 overflow-y-auto">
+                <div className={`flex-1 flex flex-col gap-2 overflow-y-auto ${yourRole === 'VIEWER' && "pointer-events-none"}`}>
                     {issues.length > 0 ? (
                         issues.map((issue, index) => (
                             <IssueCard

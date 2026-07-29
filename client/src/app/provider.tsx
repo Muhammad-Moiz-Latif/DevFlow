@@ -7,35 +7,40 @@ import { useEffect } from "react";
 import { useAuthStore } from "../stores/auth-store";
 import { privateApi } from "../lib/axios";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import axios from "axios";
 
 const queryClient = new QueryClient();
 
 export const CustomProvider = () => {
-    const accessToken = useAuthStore((state) => state.accessToken)
     const setAuth = useAuthStore((state) => state.setAuth)
     const clearAuth = useAuthStore((state) => state.clearAuth)
 
     useEffect(() => {
         async function getMyData() {
             try {
-                const token = useAuthStore.getState().accessToken;
-                if (!token) return;
                 const response = await privateApi.get('/auth/me');
                 if (response.data.success) {
+                    const currentToken = useAuthStore.getState().accessToken;
+                    if (!currentToken) {
+                        clearAuth();
+                        return;
+                    }
                     setAuth({
                         _id: response.data.data.id,
                         image: response.data.data.img,
                         username: response.data.data.name
-                    }, token)
+                    }, currentToken);
                 }
             } catch (error) {
-                console.error(error);
+                console.error('auth/me failed:', error);
+                if (axios.isAxiosError(error)) {
+                    console.log('status:', error.response?.status, 'data:', error.response?.data);
+                }
                 clearAuth();
             }
-        };
-
+        }
         getMyData();
-    }, [accessToken]);
+    }, []); // runs once on mount, not tied to accessToken
 
 
     return (

@@ -3,34 +3,23 @@ import { Logout } from "../../features/auth/api/logout";
 import { errorToast, successToast } from "../ui/CustomToasts";
 import { useNavigate, useParams } from "react-router";
 import { useAuthStore } from "../../stores/auth-store";
+
 import { useUserWorkspaces } from "../../features/workspace/query/useAllUserWorkspaces";
 import { ChevronLeft, LayoutDashboard, ListTodo, FolderKanban, Users, Bell, LogOut, ChevronRight, CircleDot } from "lucide-react";
 import { useCurrentWorkspace } from "../../features/workspace/query/useCurrentWorkspace";
 import { useMyInfiniteNotifications } from "../../features/members/query/useMyInfiniteNotifications";
+import { WorkspaceDropDown } from "../ui/WorkspaceDropdown";
 
 export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean, setIsRetracted: Dispatch<SetStateAction<boolean>> }) => {
     const { clearAuth } = useAuthStore();
     const { workspaceSlug } = useParams();
-    const { data, isPending } = useUserWorkspaces();
+    const { data } = useUserWorkspaces();
     const { data: currentWorkspaceData } = useCurrentWorkspace(workspaceSlug!);
     const { data: MyInfiniteNotifications } = useMyInfiniteNotifications(currentWorkspaceData?.data?.id!);
     const unreadNotifications = MyInfiniteNotifications?.pages.flatMap((data) => data.data?.notifications).filter((notification) => !notification?.isRead) ?? [];
     const navigate = useNavigate();
 
     const firstWorkspace = useMemo(() => data?.data![0], [data]);
-    const allWorkspaces = data?.data!.map((workspace) => {
-        return <option
-            key={workspace.workspace.name}
-            value={workspace.workspace.slug}
-        >
-            {workspace.workspace.name}
-        </option>
-    });
-
-    function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-        const selectedSlug = e.target.value;
-        navigate(`/w/${selectedSlug}`)
-    };
 
     async function handleLogout() {
         const { success } = await Logout();
@@ -81,19 +70,8 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
             </div>
 
             {/* Workspace Selector */}
-            <div className="p-4 border-b border-sidebar-border">
-                {isPending ? (
-                    <div className="text-xs text-muted-foreground text-center py-2">Loading...</div>
-                ) : (
-                    <select
-                        onChange={handleChange}
-                        value={workspaceSlug}
-                        className={`w-full h-9 px-2 rounded-md bg-surface border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all cursor-pointer ${isRetracted ? "text-center" : ""}`}
-                        title={isRetracted ? "Switch workspace" : ""}
-                    >
-                        {allWorkspaces}
-                    </select>
-                )}
+            <div className="p-4">
+                <WorkspaceDropDown />
             </div>
 
             {/* Navigation Items */}

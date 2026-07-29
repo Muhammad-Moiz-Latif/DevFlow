@@ -12,8 +12,6 @@ export const WorkspaceMembers = () => {
     const { data: MembersData, isPending } = useWorkspaceMembers(currentWorkspaceData?.data?.id!);
     const [isInviteModalVisible, setInviteModalVisibility] = useState(false);
 
-    console.log(MembersData)
-
     if (isPending) {
         return (
             <div className="w-full h-screen flex justify-center items-center">
@@ -44,14 +42,14 @@ export const WorkspaceMembers = () => {
                     </div>
                     {isInviteModalVisible && <InviteMemberModal setInviteModalVisibility={setInviteModalVisibility} workspaceId={currentWorkspaceData?.data?.id ?? ""} />}
 
-                    <button
+                    {currentWorkspaceData?.data?.yourRole === 'ADMIN' && <button
                         type="button"
                         onClick={() => setInviteModalVisibility((prev) => !prev)}
                         className="flex items-center gap-3 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[0_10px_30px_-12px_oklch(0.72_0.18_280/0.65)] transition-transform hover:-translate-y-0.5 hover:bg-primary/90"
                     >
                         <Plus className="size-5" strokeWidth={2.25} />
                         Invite member
-                    </button>
+                    </button>}
                 </div>
 
 

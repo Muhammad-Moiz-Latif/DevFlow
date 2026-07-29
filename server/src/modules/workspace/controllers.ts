@@ -104,7 +104,7 @@ export const workspaceControllers = {
                 });
             };
 
-            const workspace = await workspaceServices.getWorkspaceViaSlug(workspaceSlug);
+            const workspace = await workspaceServices.getWorkspaceViaSlug(workspaceSlug, userId);
 
             // SIDE-AFFECT: Updates users lastworkspaceId parameter
             await generalQueue.add('UPDATE_USER_WORKSPACE', {
@@ -348,6 +348,8 @@ export const workspaceControllers = {
                     message: "Unauthorized access"
                 });
             };
+
+            // all the workspaces the user is part of, albeit be as an admin, member or viewer
 
             const workspaces = await workspaceServices.getAllUserWorkspaces(userId);
 

@@ -46,12 +46,19 @@ export const workspaceServices = {
         return workspace;
     },
 
-    async getWorkspaceViaSlug(slug: string) {
-        const [workspace] = await db.select().from(WorkspaceTable).where(
-            eq(WorkspaceTable.slug, slug)
-        );
+    async getWorkspaceViaSlug(slug: string, userId: string) {
+        const updatedWorkspace = await pool.query(`
+                SELECT
+                    w.*,
+                    wm.role AS "yourRole"
+                FROM workspace w
+                JOIN workspace_members wm
+                ON w.id = wm."workspaceId"
+                WHERE w.slug = $1
+                AND wm."userId" = $2
+            `, [slug, userId]);
 
-        return workspace;
+        return updatedWorkspace.rows[0];
     },
 
     async updateWorkspace(workspaceId: string, data: Partial<typeof WorkspaceTable.$inferInsert>) {
@@ -142,6 +149,21 @@ export const workspaceServices = {
             WHERE wm."userId" = ${userId}
         `);
 
+        const lastWorkspace = await db.execute(sql`
+             SELECT
+                wm."role" ,
+                json_build_object (
+                    'name', w.name,
+                    'slug', w.slug
+                ) AS Workspace
+            FROM workspace_members wm 
+            JOIN workspace w   
+            ON wm."workspaceId" = w.id
+            JOIN users u
+            ON wm."userId" = ${userId}
+            WHERE wm."workspaceId" = u."lastWorkspaceId" 
+        `)
+
         return workspaces.rows;
     },
 
@@ -154,7 +176,7 @@ export const workspaceServices = {
             conditions = [...conditions, '"isRead" = $3'];
             values.push(isRead);
         };
-        
+
         conditions = conditions.join(" AND ");
 
         // the newest batch of notifications

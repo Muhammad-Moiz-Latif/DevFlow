@@ -20,5 +20,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
     accessToken: null,
     setAuth: (user, accessToken) => set({ user, accessToken }),
     setAccessToken: (accessToken) => set({ accessToken }),
-    clearAuth: () => set({ user: null, accessToken: null })
+    clearAuth: () => {
+        set({ user: null, accessToken: null }),
+        console.log('clearAuth called', new Error().stack)
+    }
 }))
