@@ -43,8 +43,10 @@ privateApi.interceptors.response.use(
 
                 return privateApi(originalRequest)
             } catch {
-                useAuthStore.getState().clearAuth()
-                window.location.href = '/login'
+                useAuthStore.getState().clearAuth();
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login'
+                }
             }
         }
 

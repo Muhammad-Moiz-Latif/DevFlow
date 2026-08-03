@@ -8,6 +8,7 @@ import { useAuthStore } from "../stores/auth-store";
 import { privateApi } from "../lib/axios";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import axios from "axios";
+import { SocketProvider } from "../context/socketContext";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ export const CustomProvider = () => {
     useEffect(() => {
         async function getMyData() {
             try {
+
                 const response = await privateApi.get('/auth/me');
                 if (response.data.success) {
                     const currentToken = useAuthStore.getState().accessToken;
@@ -36,6 +38,7 @@ export const CustomProvider = () => {
                 if (axios.isAxiosError(error)) {
                     console.log('status:', error.response?.status, 'data:', error.response?.data);
                 }
+
                 clearAuth();
             }
         }
@@ -46,10 +49,12 @@ export const CustomProvider = () => {
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
-                <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-                    <Toaster />
-                    <RouterProvider router={router} />
-                </GoogleOAuthProvider>
+                <SocketProvider>
+                    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+                        <Toaster />
+                        <RouterProvider router={router} />
+                    </GoogleOAuthProvider>
+                </SocketProvider>
             </AuthProvider>
         </QueryClientProvider>
     )

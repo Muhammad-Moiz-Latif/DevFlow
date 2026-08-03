@@ -56,7 +56,6 @@ export default function GoogleLoginButton({ label }: { label: string }) {
             try {
                 const response = await publicApi.post<LoginResponse>('/auth/google', { code });
                 if (response.status === 201) {
-                    console.log(response);
                     setUserId(response.data.data?._id!);
                     setGoogleMerge(true);
                 }

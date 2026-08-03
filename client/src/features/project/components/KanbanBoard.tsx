@@ -7,16 +7,47 @@ import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { isSortable } from '@dnd-kit/react/sortable';
 import KanbanColumn from "./KanbanColumn";
 import { useUpdateIssue } from "../../issue/queries/useUpdateIssue";
+import { useSocket } from "../../../context/socketContext";
+import { useEffect } from "react";
 
 type IssueStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
 const COLUMN_STATUSES: IssueStatus[] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
 
 export const KanbanComponent = () => {
     const { projectSlug, workspaceSlug } = useParams();
+    const socket = useSocket();
     const { data: workspaceData, isPending: isWorkspacePending } = useCurrentWorkspace(workspaceSlug!);
     const { data: projectData, isPending: isProjectPending } = useCurrentProject(projectSlug!, workspaceData?.data?.id!);
     const { mutate } = useUpdateIssue(workspaceData?.data?.id!, projectData?.data?.id!);
     const { data: issuesData, isPending: areIssuesPending } = useIssuesInCurrentProject(workspaceData?.data?.id!, projectData?.data?.id!);
+
+
+    useEffect(() => {
+        if (!socket || !projectData?.data?.id) return;
+
+        const handleConnect = () => {
+            console.log("connected");
+        };
+
+        if (socket.connected) {
+            handleConnect();
+        } else {
+            socket.on("connect", handleConnect);
+        }
+
+        socket.emit('join-specific-kanban-board', `${projectData?.data?.id}`);
+
+        socket.on('welcome', (data) => {
+            console.log(data);
+        })
+
+        return () => {
+            socket.off("connect", handleConnect);
+            socket.off("welcome", (data) => { console.log(data) });
+        };
+    }, [socket, projectData?.data?.id]);
+
+
     if (isWorkspacePending || isProjectPending || areIssuesPending) {
         return <div className="flex items-center justify-center h-96">
             <div className="text-muted-foreground">Loading issues...</div>

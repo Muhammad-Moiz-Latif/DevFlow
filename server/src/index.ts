@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import { router as AuthRoutes } from './modules/auth/routes';
 import { router as WorkspaceRoutes } from './modules/workspace/routes';
 import { router as ProjectRoutes } from './modules/projects/routes';
@@ -21,7 +23,18 @@ import './workers/generalJobs.worker'
 
 
 const app = express();
-
+const httpServer = createServer(app);
+export const io = new Server(httpServer, {
+    connectionStateRecovery: {
+        // the backup duration of the sessions and the packets
+        maxDisconnectionDuration: 2 * 60 * 1000,
+        // whether to skip middlewares upon successful recovery
+        skipMiddlewares: false,
+    },
+    cors: {
+        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    }
+});
 
 
 // express middleware which parses incoming JSON data from req into json object and stored in req.body
@@ -52,6 +65,17 @@ app.use('/api/workspace/:workspaceId/issue/:issueId', CommentRoutes);
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
+io.on('connection', (socket) => {
+    console.log('connected to server');
+    socket.on('join-specific-kanban-board', (customId) => {
+        socket.join(customId);
+        console.log(`Socket ${socket.id} joined room: ${customId}`);
+        const check = io.of("/").adapter.rooms.get(customId)?.size || 0;
+        console.log(check);
+        io.to(customId).emit('welcome', `Welcome to room ${customId}!`)
+    })
+})
+
+httpServer.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
 });
