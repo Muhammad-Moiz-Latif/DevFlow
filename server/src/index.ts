@@ -19,6 +19,7 @@ import './queues/general.queue'
 import './workers/notification.worker'
 import './workers/activitylog.worker'
 import './workers/generalJobs.worker'
+import { initializeSocket } from './sockets';
 
 
 
@@ -65,16 +66,7 @@ app.use('/api/workspace/:workspaceId/issue/:issueId', CommentRoutes);
 
 const PORT = 3000;
 
-io.on('connection', (socket) => {
-    console.log('connected to server');
-    socket.on('join-specific-kanban-board', (customId) => {
-        socket.join(customId);
-        console.log(`Socket ${socket.id} joined room: ${customId}`);
-        const check = io.of("/").adapter.rooms.get(customId)?.size || 0;
-        console.log(check);
-        io.to(customId).emit('welcome', `Welcome to room ${customId}!`)
-    })
-})
+initializeSocket(io);
 
 httpServer.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);

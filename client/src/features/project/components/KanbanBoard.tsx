@@ -7,8 +7,11 @@ import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { isSortable } from '@dnd-kit/react/sortable';
 import KanbanColumn from "./KanbanColumn";
 import { useUpdateIssue } from "../../issue/queries/useUpdateIssue";
+import { useOnlinePresence } from "../query/useOnlinePresense";
+import { useLiveCursors } from "../query/useLiveCursors";
+import { LiveCursors } from "./LiveCursors";
 import { useSocket } from "../../../context/socketContext";
-import { useEffect } from "react";
+import { useKanbanRoom } from "../query/useKanbanRoom";
 
 type IssueStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
 const COLUMN_STATUSES: IssueStatus[] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"];
@@ -20,33 +23,23 @@ export const KanbanComponent = () => {
     const { data: projectData, isPending: isProjectPending } = useCurrentProject(projectSlug!, workspaceData?.data?.id!);
     const { mutate } = useUpdateIssue(workspaceData?.data?.id!, projectData?.data?.id!);
     const { data: issuesData, isPending: areIssuesPending } = useIssuesInCurrentProject(workspaceData?.data?.id!, projectData?.data?.id!);
+    useKanbanRoom(projectData?.data?.id!);
+    const onlineUsers = useOnlinePresence(projectData?.data?.id!);
+    const userCoordinates = useLiveCursors(projectData?.data?.id!);
+    const combinedUsers = userCoordinates.map((user) => {
+        // 1. Find the matching coordinates for this specific user
+        const coordinates = onlineUsers.find(
+            (coord) => coord.socketId === user.socketId
+        );
 
-
-    useEffect(() => {
-        if (!socket || !projectData?.data?.id) return;
-
-        const handleConnect = () => {
-            console.log("connected");
+        // 2. Return a new object merging both sets of data
+        return {
+            ...user,                  // Spreads: id, username, img, socketId
+           ...coordinates// Adds y (defaults to 0 if not found)
         };
+    });
 
-        if (socket.connected) {
-            handleConnect();
-        } else {
-            socket.on("connect", handleConnect);
-        }
-
-        socket.emit('join-specific-kanban-board', `${projectData?.data?.id}`);
-
-        socket.on('welcome', (data) => {
-            console.log(data);
-        })
-
-        return () => {
-            socket.off("connect", handleConnect);
-            socket.off("welcome", (data) => { console.log(data) });
-        };
-    }, [socket, projectData?.data?.id]);
-
+    console.log(combinedUsers)
 
     if (isWorkspacePending || isProjectPending || areIssuesPending) {
         return <div className="flex items-center justify-center h-96">
@@ -115,14 +108,26 @@ export const KanbanComponent = () => {
         });
     };
 
+
+
     return (
         <div className="flex flex-col h-full p-4">
             {/* Header */}
-            <div className="mb-4">
-                <p className="text-xs text-muted-foreground mb-0.5">Projects</p>
-                <h1 className="text-2xl font-bold text-foreground">{projectData?.data?.name || 'Project'}</h1>
-            </div>
+            <div className="mb-4 flex justify-between items-center">
+                <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">Projects</p>
+                    <h1 className="text-2xl font-bold text-foreground">{projectData?.data?.name || 'Project'}</h1>
+                </div>
 
+                <div>
+                    {onlineUsers?.length! > 0 && <div className="flex">{
+                        onlineUsers?.map((user) => (
+                            <img src={user.img} className="size-7 rounded-full" />
+                        ))
+                    }</div>}
+                </div>
+            </div>
+            <LiveCursors combinedUsers={combinedUsers} currentSocketId={socket?.id!} />
             {/* Kanban Board */}
             <div className="flex gap-4 pb-2 flex-1 overflow-hidden">
                 <DragDropProvider

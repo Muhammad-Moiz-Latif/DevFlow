@@ -37,7 +37,7 @@ export const authController = {
                 });
             };
 
-            const createUser = await authServices.registerUser(name, email, imgURL, 'CREDENTIALS',password);
+            const createUser = await authServices.registerUser(name, email, imgURL, 'CREDENTIALS', password);
 
             if (!createUser) {
                 return res.status(500).json({
@@ -143,7 +143,7 @@ export const authController = {
                 const access_token = jwt.sign(
                     {
                         id: createUser?.id,
-                        createUsername: createUser.name,
+                        username: createUser.name,
                         img: createUser.img
                     },
                     access_secret,
@@ -153,7 +153,7 @@ export const authController = {
                 const refresh_token = jwt.sign(
                     {
                         id: createUser?.id,
-                        createUsername: createUser.name,
+                        username: createUser.name,
                         img: createUser.img
                     },
                     refresh_secret,
@@ -200,7 +200,7 @@ export const authController = {
                 const access_token = jwt.sign(
                     {
                         id: doesUserAlreadyExist?.id,
-                        createUsername: doesUserAlreadyExist.name,
+                        username: doesUserAlreadyExist.name,
                         img: doesUserAlreadyExist.img
                     },
                     access_secret,
@@ -210,7 +210,7 @@ export const authController = {
                 const refresh_token = jwt.sign(
                     {
                         id: doesUserAlreadyExist?.id,
-                        createUsername: doesUserAlreadyExist.name,
+                        username: doesUserAlreadyExist.name,
                         img: doesUserAlreadyExist.img
                     },
                     refresh_secret,
