@@ -18,7 +18,13 @@ type IssuePropType = {
         img: string;
     },
     index: number,
-    onClick?: () => void
+    onClick?: () => void,
+    collaborationLabel?: string,
+    collaborationUsers?: Array<{
+        socketId: string;
+        username: string;
+        img: string;
+    }>
 };
 
 function formatDueDate(date: Date): string {
@@ -47,7 +53,14 @@ const IssueCard = (props: IssuePropType) => {
                 <h3 className="text-xs font-semibold text-foreground line-clamp-2 flex-1 group-hover:text-primary transition-colors">
                     {props.title}
                 </h3>
-                <PriorityBadge priority={props.priority.toLowerCase() as "urgent" | "high" | "medium" | "low"} compact />
+                <div className="flex items-center gap-1">
+                    {props.collaborationLabel && (
+                        <span className="inline-flex items-center rounded-full border border-border/60 bg-background/85 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm">
+                            {props.collaborationLabel}
+                        </span>
+                    )}
+                    <PriorityBadge priority={props.priority.toLowerCase() as "urgent" | "high" | "medium" | "low"} compact />
+                </div>
             </div>
             <p className="text-xs text-muted-foreground line-clamp-1 leading-tight mb-2">
                 {props.description}

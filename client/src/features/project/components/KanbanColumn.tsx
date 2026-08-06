@@ -11,6 +11,7 @@ type KanbanColumnProps = {
     workspaceId: string,
     projectId: string,
     yourRole: 'ADMIN' | 'MEMBER' | 'VIEWER' | undefined
+    currentSocketId?: string
 };
 
 const statusColorMap: Record<string, { dot: string; header: string }> = {
