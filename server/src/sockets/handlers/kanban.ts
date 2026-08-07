@@ -7,7 +7,6 @@ type DragAndDropUser = { socketId: string, sourceId: string, targetId: string | 
 const roomPresence = new Map<string, Map<string, PresenceUser>>();
 const roomCoordinates = new Map<string, Map<string, CoordinateUser>>();
 const dragAndDropEvents = new Map<string, Map<string, DragAndDropUser>>();
-const dragMoveThrottle = new Map<string, number>();
 
 function removeFromRoom(socket: Socket, io: Server, roomId: string) {
     const presenceRoom = roomPresence.get(roomId);
@@ -18,7 +17,6 @@ function removeFromRoom(socket: Socket, io: Server, roomId: string) {
     presenceRoom.delete(socket.id);
     coordsRoom.delete(socket.id);
     dragdropEvents?.delete(socket.id);
-    dragMoveThrottle.delete(socket.id);
 
     if (presenceRoom.size === 0) {
         roomPresence.delete(roomId); // ✅ delete from the OUTER map
@@ -98,6 +96,7 @@ export const registerKanbanHandlers = (socket: Socket, io: Server) => {
     });
 
     socket.on('on-drag-start', ({ sourceId, targetId }) => {
+        console.log('in socket: ', socket.data.currentRoom);
         const roomId = socket.data.currentRoom;
         const socketId = socket.id;
         const room = dragAndDropEvents.get(roomId);
@@ -130,14 +129,6 @@ export const registerKanbanHandlers = (socket: Socket, io: Server) => {
         const socketId = socket.id;
         const room = dragAndDropEvents.get(roomId);
         if (!room) return;
-
-        const now = Date.now();
-        const lastEmit = dragMoveThrottle.get(socketId) ?? 0;
-        if (now - lastEmit < 75) {
-            return;
-        }
-
-        dragMoveThrottle.set(socketId, now);
 
         room.set(socketId, {
             socketId,

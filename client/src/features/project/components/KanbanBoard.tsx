@@ -2,7 +2,7 @@ import { useParams } from "react-router"
 import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
 import { useCurrentProject } from "../query/useCurrentProject";
 import { useIssuesInCurrentProject } from "../query/useIssuesInCurrentProject";
-import type { IssueType, KanbanColumnType } from "../../types";
+import type { IssueType, KanbanColumnType, MyIssueType } from "../../types";
 import { DragDropProvider, DragOverlay, type DragEndEvent, type DragMoveEvent, type DragStartEvent } from "@dnd-kit/react";
 import { isSortable } from '@dnd-kit/react/sortable';
 import KanbanColumn from "./KanbanColumn";
@@ -14,6 +14,8 @@ import { useSocket } from "../../../context/socketContext";
 import { useKanbanRoom } from "../query/useKanbanRoom";
 import { useEffect, useRef, useState } from "react";
 import IssueCard from "./IssueCard";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "../../../stores/auth-store";
 
 type IssueStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
 type DragDropType = {
@@ -27,6 +29,7 @@ const COLUMN_STATUSES: IssueStatus[] = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DON
 export const KanbanComponent = () => {
     const { projectSlug, workspaceSlug } = useParams();
     const socket = useSocket();
+    const { user } = useAuthStore();
     const [activeIssue, setActiveIssue] = useState<IssueType | null>(null);
     const { data: workspaceData, isPending: isWorkspacePending } = useCurrentWorkspace(workspaceSlug!);
     const { data: projectData, isPending: isProjectPending } = useCurrentProject(projectSlug!, workspaceData?.data?.id!);
@@ -36,6 +39,7 @@ export const KanbanComponent = () => {
     const onlineUsers = useOnlinePresence(projectData?.data?.id!);
     const userCoordinates = useLiveCursors(projectData?.data?.id!);
     const [dragDropEvents, setDragDropEvents] = useState<DragDropType[]>([]);
+    const queryClient = useQueryClient();
     const lastDragMoveEmitAt = useRef(0);
     const combinedUsers = userCoordinates.map((user) => {
         // 1. Find the matching coordinates for this specific user
@@ -91,6 +95,28 @@ export const KanbanComponent = () => {
             socket.off('update:drag-drop-event', handleDragDropData);
         };
     }, [socket]);
+
+    // listening for any live issue updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleLiveIssueUpdate = (update_issue: MyIssueType) => {
+            queryClient.setQueryData(['all-issues', user?._id, workspaceData?.data?.id, projectData?.data?.id], (oldData: { success: boolean, message: string, data: MyIssueType[] }) => {
+                return {
+                    ...oldData,
+                    data: oldData.data.map((issue) => {
+                        return issue.id === update_issue.id ? update_issue : issue
+                    })
+                }
+            });
+        };
+
+        socket.on("update:issue", handleLiveIssueUpdate);
+
+        return () => {
+            socket.off("update:issue", handleLiveIssueUpdate)
+        }
+    }, [socket])
 
 
     if (isWorkspacePending || isProjectPending || areIssuesPending) {
@@ -210,7 +236,7 @@ export const KanbanComponent = () => {
                 <div>
                     {onlineUsers?.length! > 0 && <div className="flex">{
                         onlineUsers?.map((user) => (
-                            <img src={user.img} className="size-7 rounded-full" />
+                            <img key={user.id} src={user.img} className="size-7 rounded-full" />
                         ))
                     }</div>}
                 </div>

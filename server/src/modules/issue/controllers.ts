@@ -4,6 +4,7 @@ import { issueServices } from './services';
 import { projectServices } from '../projects/services';
 import { workspaceServices } from '../workspace/services';
 import { activityLogQueue } from '../../queues/activitylog.queue';
+import { io } from '../../index';
 
 export const IssueControllers = {
 
@@ -138,6 +139,7 @@ export const IssueControllers = {
         try {
             const { title, description, priority, order, assignee_id, dueDate, status } = req.body;
             const projectId = req.params.projectId as string;
+
             const workspaceId = req.params.workspaceId as string;
             const issueId = req.params.issueId as string;
             const userId = req.user?.id;
@@ -170,6 +172,9 @@ export const IssueControllers = {
             };
 
             const issue = await issueServices.updateIssue(workspaceId, projectId, issueId, { title, description, status, priority, order, assignee_id, dueDate: formatDate });
+            console.log('in controller: ', projectId);
+
+            io.to(projectId).emit('update:issue', issue);
 
             res.status(200).json({
                 success: true,
