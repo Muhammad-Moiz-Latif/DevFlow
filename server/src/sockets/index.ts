@@ -1,6 +1,6 @@
 import type { Server } from "socket.io";
 import { verifyAuth } from "./middlewares/auth";
-import { handleKanbanDisconnect, registerKanbanHandlers } from "./handlers/kanban";
+import { handleKanbanDisconnect, registerKanbanHandlers } from "./handlers/kanban_scaled";
 
 export const initializeSocket = (io: Server) => {
 

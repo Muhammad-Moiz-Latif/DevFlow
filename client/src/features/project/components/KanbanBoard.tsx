@@ -222,7 +222,7 @@ export const KanbanComponent = () => {
 
     };
 
-
+    console.log(onlineUsers)
 
     return (
         <div className="flex flex-col h-full p-4">

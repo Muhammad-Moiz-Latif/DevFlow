@@ -3,7 +3,7 @@ export const LiveCursors = ({ combinedUsers, currentSocketId }: { combinedUsers:
     return (
         <>
             {combinedUsers.map((user: any) => {
-              
+
                 // 1. Don't render a fake cursor for the person actually moving the mouse
                 if (user.socketId === currentSocketId) return null;
 

@@ -54,7 +54,8 @@ export default function GoogleLoginButton({ label }: { label: string }) {
         onSuccess: async ({ code }) => {
             setIsLoading(true);
             try {
-                const response = await publicApi.post<LoginResponse>('/auth/google', { code });
+                const redirect_uri = window.location.origin;
+                const response = await publicApi.post<LoginResponse>('/auth/google', { code, redirect_uri });
                 if (response.status === 201) {
                     setUserId(response.data.data?._id!);
                     setGoogleMerge(true);

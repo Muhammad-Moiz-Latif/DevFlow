@@ -10,6 +10,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!accessToken) return;
+
         const s = io(import.meta.env.VITE_SOCKET_URL, {
             auth: { token: accessToken },
         });

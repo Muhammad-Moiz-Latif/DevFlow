@@ -111,12 +111,12 @@ export const authController = {
 
     async handleGoogleVerification(req: Request, res: Response) {
         try {
-            const { code } = req.body;
+            const { code, redirect_uri } = req.body;
             const access_secret = process.env.ACCESS_TOKEN_SECRET!;
             const refresh_secret = process.env.REFRESH_TOKEN_SECRET!;
 
             // Exchange code for tokens (tokens.access_token, tokens.id_token, tokens.refresh_token)
-            const { tokens } = await oAuth2Client.getToken(code);
+            const { tokens } = await oAuth2Client.getToken({ code, redirect_uri });
 
             const ticket = await oAuth2Client.verifyIdToken({
                 idToken: tokens.id_token!,
