@@ -41,18 +41,12 @@ export const KanbanComponent = () => {
     const [dragDropEvents, setDragDropEvents] = useState<DragDropType[]>([]);
     const queryClient = useQueryClient();
     const lastDragMoveEmitAt = useRef(0);
-    const combinedUsers = userCoordinates.map((user) => {
-        // 1. Find the matching coordinates for this specific user
-        const coordinates = onlineUsers.find(
-            (coord) => coord.socketId === user.socketId
-        );
-
-        // 2. Return a new object merging both sets of data
-        return {
-            ...user,                  // Spreads: id, username, img, socketId
-            ...coordinates// Adds y (defaults to 0 if not found)
-        };
-    });
+    const combinedUsers = userCoordinates
+        .filter((user) => onlineUsers.some((online) => online.socketId === user.socketId))
+        .map((user) => {
+            const presenceData = onlineUsers.find((online) => online.socketId === user.socketId)!;
+            return { ...presenceData, x: user.x, y: user.y };
+        });
 
     const dragGhosts = dragDropEvents
         .filter((dragEvent) => dragEvent.socketId !== socket?.id)
@@ -166,6 +160,9 @@ export const KanbanComponent = () => {
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { source, target } = event.operation;
+
+        if (socket) socket.emit('on-drag-end');
+
         if (!source || !target || event.canceled || source.id === target.id) return;
         const sourceIssue = issues.find((issue) => issue.id === source.id);
         if (!sourceIssue) return;
