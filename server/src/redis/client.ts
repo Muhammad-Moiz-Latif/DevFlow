@@ -1,10 +1,14 @@
 // src/lib/redis.ts
 import Redis from 'ioredis'
+import 'dotenv/config'
 import { type ConnectionOptions } from 'bullmq'
 
+const redisHost = process.env.REDIS_HOST || '127.0.0.1'
+const redisPort = Number(process.env.REDIS_PORT) || 6379
+
 export const redisClient = new Redis({
-    host: '127.0.0.1',
-    port: 6379,
+    host: redisHost,
+    port: redisPort,
 })
 
 redisClient.on('connect', () => {
@@ -16,6 +20,8 @@ redisClient.on('error', (err) => {
 })
 
 export const redisConnection: ConnectionOptions = {
-    host: '127.0.0.1',
-    port: 6379,
+    host: redisHost,
+    port: redisPort,
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
 }

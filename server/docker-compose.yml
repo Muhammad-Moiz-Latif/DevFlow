@@ -1,0 +1,31 @@
+services:
+  api:
+    build:
+      # telling docker to build the image from scratch using our own docker image
+      context: . # the location of all application code in directory
+      dockerfile: docker/DockerFile.api
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      # This forces the API to look for the container named "redis"
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+    depends_on:
+      - redis # Do not start the api container until the redis container has started.
+      - workers
+
+  workers:
+    build:
+      context: .
+      dockerfile: docker/DockerFile.workers
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine # instead of building our own image we use a prebuilt one
+    ports:
+      - "6379:6379"
