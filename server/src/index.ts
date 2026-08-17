@@ -13,11 +13,10 @@ import { router as WorkspaceInvitationRoutes } from './modules/invitations/route
 import { router as InvitationAcceptRoutes } from './modules/invitations/accept-routes';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
-import './redis/client';
+import { redisClient } from './redis/client';
 import './queues/notification.queue'
 import './queues/activitylog.queue'
 import './queues/general.queue'
-import Redis from 'ioredis';
 import { initializeSocket } from './sockets';
 import { createAdapter } from "@socket.io/redis-adapter";
 
@@ -34,10 +33,9 @@ if (process.env.RUN_WORKERS_INLINE === 'true') {
 const app = express();
 const httpServer = createServer(app);
 
-// the mouth (messages are yelled into redis) via a new redis connection
-const pubClient = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
-// the ear (listening for messages from other servers)
-const subClient = pubClient.duplicate();
+// Use the shared Redis client so Socket.IO and BullMQ all follow the same retry-safe configuration.
+const pubClient = redisClient;
+const subClient = redisClient.duplicate();
 export const io = new Server(httpServer, {
     connectionStateRecovery: {
         // the backup duration of the sessions and the packets
