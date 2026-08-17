@@ -14,12 +14,6 @@ type IssueCardProps = {
     issue: IssueCardIssue;
 };
 
-const statusBorderMap: Record<IssueCardIssue["status"], string> = {
-    TODO: "border-l-status-todo",
-    IN_PROGRESS: "border-l-status-progress",
-    IN_REVIEW: "border-l-status-review",
-    DONE: "border-l-status-done",
-};
 
 const statusBadgeMap: Record<IssueCardIssue["status"], "todo" | "progress" | "review" | "done"> = {
     TODO: "todo",
