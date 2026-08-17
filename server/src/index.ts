@@ -21,6 +21,13 @@ import Redis from 'ioredis';
 import { initializeSocket } from './sockets';
 import { createAdapter } from "@socket.io/redis-adapter";
 
+if (process.env.RUN_WORKERS_INLINE === 'true') {
+    console.log('Starting workers inline (single-service mode)...');
+    import('./workers/notification.worker');
+    import('./workers/activitylog.worker');
+    import('./workers/generalJobs.worker');
+}
+
 
 
 
