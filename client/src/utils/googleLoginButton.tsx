@@ -92,16 +92,32 @@ export default function GoogleLoginButton({ label }: { label: string }) {
         },
     });
 
-    if (googleMerge) return <div
-        className="h-screen w-full bg-black/40 backdrop-blur-xs flex justify-center items-center absolute top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 rounded-md z-30">
-        <div className="w-140 h-64 bg-gray-800 rounded-md p-4 text-sm text-center">
-            <p>This Google account is connected to your existing email. Would you like to link them for easier login?</p>
-            <div className="flex justify-center gap-3 items-center">
-                <button className="border px-10 py-2" onClick={() => handleMerge()}>Yes</button>
-                <button className="border px-10 py-2" onClick={() => setGoogleMerge(false)}>No</button>
+    if (googleMerge) return (
+        <div className="h-screen w-full bg-background/80 backdrop-blur-xs flex justify-center items-center fixed inset-0 z-30">
+            <div className="w-full max-w-[420px] mx-4 bg-card border border-border p-6 text-sm text-center">
+                <p className="text-[10px] font-mono tracking-[0.15em] text-muted-foreground mb-3">
+                    ACCOUNT MATCH FOUND
+                </p>
+                <p className="text-foreground/90 leading-relaxed">
+                    This Google account is connected to your existing email. Would you like to link them for easier login?
+                </p>
+                <div className="flex justify-center gap-3 items-center mt-5">
+                    <button
+                        className="h-9 px-8 border border-primary/80 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                        onClick={() => handleMerge()}
+                    >
+                        Yes
+                    </button>
+                    <button
+                        className="h-9 px-8 border border-border text-sm font-medium hover:bg-surface transition-colors"
+                        onClick={() => setGoogleMerge(false)}
+                    >
+                        No
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    )
 
     if (isLoading) return <>
         {<GeneralLoader label="Signing you in" />}
@@ -110,7 +126,7 @@ export default function GoogleLoginButton({ label }: { label: string }) {
     return (
         <button
             type="button"
-            className="w-full h-9 inline-flex items-center justify-center gap-2 rounded-md bg-surface border border-border text-sm font-medium hover:bg-surface-elevated transition-colors hover:cursor-pointer"
+            className="w-full h-9 inline-flex items-center justify-center gap-2 bg-surface border border-border text-sm font-medium hover:bg-surface-elevated transition-colors hover:cursor-pointer"
             onClick={() => googleLogin()}
         >
             <svg className="size-4" viewBox="0 0 24 24">

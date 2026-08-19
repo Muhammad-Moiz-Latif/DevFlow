@@ -17,14 +17,15 @@ export function LoginPage() {
                 </>
             }
         >
-            <GoogleLoginButton label="Continue with Google"/>
+            <GoogleLoginButton label="Continue with Google" />
             <Divider text="or" />
 
             <LoginForm />
 
-            <p className="text-xs text-muted-foreground text-center mt-5">
+            <p className="text-[11px] text-muted-foreground/60 text-center mt-6 tracking-wide">
                 Don't have an account?{" "}
-                <Link to="/signup" className="text-foreground font-medium hover:underline">
+                <Link to="/signup" className="text-foreground/80 font-medium hover:text-foreground hover:underline transition-colors"
+                >
                     Create one
                 </Link>
             </p>

@@ -6,7 +6,7 @@ import { useState } from "react";
 import axios from "axios";
 import { successToast } from "../../../components/ui/CustomToasts";
 import { useLocation, useNavigate } from "react-router";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuthStore } from "../../../stores/auth-store";
 
 
@@ -77,55 +77,84 @@ export const LoginForm = () => {
 
     return (
         <form
-            className="flex flex-col gap-3.5"
+            className="flex flex-col gap-4"
             onSubmit={handleSubmit(onSubmit)}
         >
             {errorMessage && (
-                <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/8 border border-destructive/20 px-4 py-2.5 rounded-xl animate-slide-down">
+                <div className="flex items-center gap-2.5 text-[11px] text-destructive bg-destructive/5 border border-destructive/20 px-4 py-2.5 rounded-md animate-slide-down">
                     <div className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
-                    {errorMessage}
+                    <span className="font-mono tracking-wide">{errorMessage}</span>
                 </div>
             )}
-            <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-foreground/90">Email</label>
+
+            <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-foreground/80 tracking-wide">
+                    Email
+                </label>
                 <input
-                    className="w-full h-9 px-3 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                    className="w-full h-10 px-3.5 rounded-md bg-surface border border-border/60 text-[13.5px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all hover:border-border"
                     type="email"
                     {...register("email")}
                     placeholder={email ?? "you@company.com"}
                     autoComplete="email"
                 />
-                {errors.email && <h1 className="text-xs text-red-600 tracking-tight">{errors.email.message}</h1>}
+                {errors.email && (
+                    <p className="text-[10px] font-mono text-destructive/80 tracking-wide">
+                        {errors.email.message}
+                    </p>
+                )}
             </div>
-            <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-foreground/90">Password</label>
+
+            <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-medium text-foreground/80 tracking-wide">
+                        Password
+                    </label>
+                    <a
+                        href="#"
+                        className="text-[10px] font-mono text-muted-foreground/60 hover:text-foreground transition-colors tracking-wide"
+                    >
+                        Forgot?
+                    </a>
+                </div>
                 <div className="relative">
                     <input
-                        className="w-full h-9 px-3 pr-10 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                        className="w-full h-10 px-3.5 pr-10 rounded-md bg-surface border border-border/60 text-[13.5px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all hover:border-border"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         autoComplete="current-password"
                         {...register("password")}
-
                     />
                     <button
                         type="button"
-                        onClick={() => setShowPassword((visible) => !visible)}
+                        onClick={() => setShowPassword((v) => !v)}
                         aria-label={showPassword ? "Hide password" : "Show password"}
-                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3.5 text-muted-foreground/60 hover:text-foreground transition-colors"
                     >
                         {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
                 </div>
-                {errors.password && <h1 className="text-xs text-red-600 tracking-tight">{errors.password.message}</h1>}
+                {errors.password && (
+                    <p className="text-[10px] font-mono text-destructive/80 tracking-wide">
+                        {errors.password.message}
+                    </p>
+                )}
             </div>
 
             <button
                 type="submit"
-                className="w-full h-9 mt-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity hover:cursor-pointer"
+                disabled={isPending}
+                className="group relative w-full h-10 mt-1 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
             >
-                {isPending ? "Signing in..." : "Sign in"}
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                    {isPending ? "Signing in..." : "Sign in"}
+                    {!isPending && (
+                        <ArrowRight className="size-3.5 opacity-80 group-hover:translate-x-0.5 transition-transform" />
+                    )}
+                </span>
+                {/* Subtle hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </button>
         </form>
-    )
-}
+    );
+};

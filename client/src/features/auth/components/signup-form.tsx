@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, Eye, EyeOff } from "lucide-react";
+import { Camera, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod"
@@ -76,115 +76,153 @@ export const SignUpForm = () => {
 
     return (
         <form
-            className="flex flex-col gap-3.5 relative"
+            className="flex flex-col gap-4"
             onSubmit={handleSubmit(onSubmit)}
         >
             {errorMessage && (
-                <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/8 border border-destructive/20 px-4 py-2.5 rounded-xl animate-slide-down">
+                <div className="flex items-center gap-2.5 text-[11px] text-destructive bg-destructive/5 border border-destructive/20 px-4 py-2.5 rounded-md animate-slide-down">
                     <div className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
-                    {errorMessage}
+                    <span className="font-mono tracking-wide">{errorMessage}</span>
                 </div>
             )}
 
             {/* FULL NAME FIELD */}
-            <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-foreground/90">Full name</label>
+            <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-foreground/80 tracking-wide">
+                    Full name
+                </label>
                 <input
-                    className="w-full h-9 px-3 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                    className="w-full h-10 px-3.5 rounded-md bg-surface border border-border/60 text-[13.5px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all hover:border-border"
                     type="text"
                     {...register("username")}
-                    placeholder="John doe"
+                    placeholder="John Doe"
+                    autoComplete="name"
                 />
-                {errors.username && <h1 className="text-xs text-red-600 tracking-tight">{errors.username.message}</h1>}
+                {errors.username && (
+                    <p className="text-[10px] font-mono text-destructive/80 tracking-wide">
+                        {errors.username.message}
+                    </p>
+                )}
             </div>
 
             {/* EMAIL FIELD */}
-            <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-foreground/90">Work email</label>
+            <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-foreground/80 tracking-wide">
+                    Work email
+                </label>
                 <input
-                    className="w-full h-9 px-3 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                    className="w-full h-10 px-3.5 rounded-md bg-surface border border-border/60 text-[13.5px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all hover:border-border"
                     type="email"
                     {...register("email")}
-                    placeholder={email ?? "you@gmail.com"}
+                    placeholder={email ?? "you@company.com"}
+                    autoComplete="email"
                 />
-                {errors.email && <h1 className="text-xs text-red-600 tracking-tight">{errors.email.message}</h1>}
+                {errors.email && (
+                    <p className="text-[10px] font-mono text-destructive/80 tracking-wide">
+                        {errors.email.message}
+                    </p>
+                )}
             </div>
 
             {/* PROFILE PICTURE FIELD */}
-            <div className="flex items-center gap-4 animate-slide-down" style={{ animationDelay: '0.1s' }}>
+            <div className="flex items-center gap-4 py-1">
                 <label className="relative cursor-pointer group">
-                    <div className="w-16 h-16 rounded-full border-2 border-dashed border-border overflow-hidden flex items-center justify-center group-hover:border-primary transition-colors bg-secondary/50">
+                    <div className="w-14 h-14 rounded-full border-2 border-dashed border-border/60 overflow-hidden flex items-center justify-center group-hover:border-primary/40 transition-all bg-surface/50 group-hover:bg-surface">
                         {previewUrl ? (
                             <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                         ) : (
-                            <Camera className="w-5 h-5 text-muted-foreground/60" />
+                            <Camera className="w-5 h-5 text-muted-foreground/60 group-hover:text-muted-foreground/80 transition-colors" />
                         )}
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shadow-md">
+                    <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold shadow-sm border border-primary/30">
                         +
                     </div>
                     <input type="file" accept="image/*" {...register("image")} className="hidden" />
                 </label>
                 <div>
-                    <p className="text-sm font-medium text-foreground font-sans">Add a photo</p>
-                    <p className="text-[11px] text-muted-foreground font-sans">This helps others recognize you</p>
-                    {errors.image && <p className="text-xs text-destructive mt-0.5">{errors.image.message}</p>}
+                    <p className="text-[13px] font-medium text-foreground/80 tracking-tight">Add a photo</p>
+                    <p className="text-[11px] text-muted-foreground/60 tracking-wide">This helps others recognize you</p>
+                    {errors.image && (
+                        <p className="text-[10px] font-mono text-destructive/80 tracking-wide mt-0.5">
+                            {errors.image.message}
+                        </p>
+                    )}
                 </div>
             </div>
 
             {/* PASSWORD FIELD */}
-            <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-foreground/90">Password</label>
+            <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-foreground/80 tracking-wide">
+                    Password
+                </label>
                 <div className="relative">
                     <input
-                        className="w-full h-9 px-3 pr-10 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                        className="w-full h-10 px-3.5 pr-10 rounded-md bg-surface border border-border/60 text-[13.5px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all hover:border-border"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
+                        autoComplete="new-password"
                         {...register("password")}
-
                     />
                     <button
                         type="button"
                         onClick={() => setShowPassword((visible) => !visible)}
                         aria-label={showPassword ? "Hide password" : "Show password"}
-                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3.5 text-muted-foreground/60 hover:text-foreground transition-colors"
                     >
                         {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
                 </div>
-                {errors.password && <h1 className="text-xs text-red-600 tracking-tight">{errors.password.message}</h1>}
+                {errors.password && (
+                    <p className="text-[10px] font-mono text-destructive/80 tracking-wide">
+                        {errors.password.message}
+                    </p>
+                )}
             </div>
 
             {/* CONFIRM PASSWORD FIELD */}
-            <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-foreground/90">Confirm password</label>
+            <div className="space-y-1.5">
+                <label className="text-[11px] font-medium text-foreground/80 tracking-wide">
+                    Confirm password
+                </label>
                 <div className="relative">
                     <input
-                        className="w-full h-9 px-3 pr-10 rounded-md bg-surface border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                        className="w-full h-10 px-3.5 pr-10 rounded-md bg-surface border border-border/60 text-[13.5px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all hover:border-border"
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
+                        autoComplete="new-password"
                         {...register("confirmPassword")}
-
                     />
                     <button
                         type="button"
                         onClick={() => setShowConfirmPassword((visible) => !visible)}
                         aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute inset-y-0 right-0 flex items-center justify-center px-3.5 text-muted-foreground/60 hover:text-foreground transition-colors"
                     >
                         {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
                 </div>
-                {errors.confirmPassword && <h1 className="text-xs text-red-600 tracking-tight">{errors.confirmPassword.message}</h1>}
+                {errors.confirmPassword && (
+                    <p className="text-[10px] font-mono text-destructive/80 tracking-wide">
+                        {errors.confirmPassword.message}
+                    </p>
+                )}
             </div>
 
             {/* SIGNUP BUTTON */}
             <button
                 type="submit"
-                className="w-full h-9 mt-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity hover:cursor-pointer"
+                disabled={isPending}
+                className="group relative w-full h-10 mt-1 rounded-md bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
             >
-                {isPending ? "Signing up..." : "Sign up"}
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                    {isPending ? "Creating account..." : "Create account"}
+                    {!isPending && (
+                        <ArrowRight className="size-3.5 opacity-80 group-hover:translate-x-0.5 transition-transform" />
+                    )}
+                </span>
+                {/* Subtle hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </button>
         </form>
-    )
+    );
 }

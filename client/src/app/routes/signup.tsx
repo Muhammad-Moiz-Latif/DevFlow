@@ -1,32 +1,40 @@
-import { AuthShell, Divider } from "../../components/ui/AuthShell";
 import { Link } from "react-router";
+import { AuthShell, Divider } from "../../components/ui/AuthShell";
 import { SignUpForm } from "../../features/auth/components/signup-form";
 import GoogleLoginButton from "../../utils/googleLoginButton";
-
-
 
 export function SignupPage() {
     return (
         <AuthShell
             title="Create your account"
-            subtitle="Start tracking issues with your team in minutes."
+            subtitle="Start collaborating with your team in minutes."
             footer={
                 <>
-                    Already trusted by product teams at fast-moving startups.
+                    By signing up you agree to our{" "}
+                    <a href="#" className="text-foreground/70 hover:text-foreground hover:underline transition-colors">
+                        Terms
+                    </a>{" "}
+                    and{" "}
+                    <a href="#" className="text-foreground/70 hover:text-foreground hover:underline transition-colors">
+                        Privacy Policy
+                    </a>.
                 </>
             }
         >
-            <GoogleLoginButton label="Sign up with Google"/>
-            <Divider text="or sign up with email" />
+            <GoogleLoginButton label="Continue with Google" />
+            <Divider text="or" />
 
             <SignUpForm />
 
-            <p className="text-xs text-muted-foreground text-center mt-5">
+            <p className="text-[11px] text-muted-foreground/60 text-center mt-6 tracking-wide">
                 Already have an account?{" "}
-                <Link to="/login" className="text-foreground font-medium hover:underline">
+                <Link
+                    to="/login"
+                    className="text-foreground/80 font-medium hover:text-foreground hover:underline transition-colors"
+                >
                     Sign in
                 </Link>
             </p>
         </AuthShell>
     );
-};
+}
