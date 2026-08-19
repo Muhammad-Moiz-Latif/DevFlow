@@ -1,3 +1,4 @@
+// NotificationRow.tsx
 import { useEffect, useRef, useState } from "react";
 import type { NotificationItem } from "../../types";
 import { MoreHorizontal } from "lucide-react";
@@ -5,15 +6,27 @@ import { useUpdateNotification } from "../query/useUpdateNotification";
 import { useParams } from "react-router";
 import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
 
-const notificationBadgeStyles: Record<NotificationItem["notification-type"], { label: string; className: string }> = {
-    ISSUE_ASSIGNED: { label: "Issue assigned", className: "bg-status-progress/15 text-status-progress" },
-    ISSUE_UNASSIGNED: { label: "Issue unassigned", className: "bg-muted text-muted-foreground" },
-    COMMENT_ON_ISSUE: { label: "Comment", className: "bg-sky-500/15 text-sky-500" },
-    MENTIONED: { label: "Mentioned", className: "bg-violet-500/15 text-violet-500" },
-    INVITE_ACCEPTED: { label: "Invite accepted", className: "bg-emerald-500/15 text-emerald-500" },
-    INVITE_ISSUED: { label: "Invite issued", className: "bg-amber-500/15 text-amber-500" },
-    REMOVED: { label: "Removed", className: "bg-rose-500/15 text-rose-500" },
+// Single source of truth for column widths — MyNotifications' header row
+// must use this exact string too, or the header will drift out of alignment.
+export const NOTIFICATION_GRID_COLS = "grid-cols-[minmax(0,1fr)_140px_160px_48px]";
+
+const notificationBadgeStyles: Record<NotificationItem["notification-type"], { label: string; dot: string }> = {
+    ISSUE_ASSIGNED: { label: "Issue assigned", dot: "bg-status-progress" },
+    ISSUE_UNASSIGNED: { label: "Issue unassigned", dot: "bg-border" },
+    COMMENT_ON_ISSUE: { label: "Comment", dot: "bg-status-review" },
+    MENTIONED: { label: "Mentioned", dot: "bg-primary" },
+    INVITE_ACCEPTED: { label: "Invite accepted", dot: "bg-status-done" },
+    INVITE_ISSUED: { label: "Invite issued", dot: "bg-priority-medium" },
+    REMOVED: { label: "Removed", dot: "bg-priority-urgent" },
 };
+
+const getInitials = (name: string) =>
+    name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join("");
 
 export const NotificationRow = ({ data }: { data: NotificationItem }) => {
     const { workspaceSlug } = useParams();
@@ -53,30 +66,47 @@ export const NotificationRow = ({ data }: { data: NotificationItem }) => {
         };
     }, [visibility, data.isRead, mutate])
 
-
     return (
-        <div ref={rowElement} className={`grid grid-cols-[minmax(0,1fr)_140px_193px_48px] ${!data.isRead ? "bg-emerald-500/30" : "bg-transparent"} rounded-md items-center gap-4 px-6 py-6 transition-colors duration-500 hover:bg-white/1.5`}>
-            <div className="min-w-0">
-                <h2 className="truncate text-[15px] font-semibold text-foreground">{data.message}</h2>
-                <p className="truncate text-xs text-muted-foreground">{data.link}</p>
+        <div
+            ref={rowElement}
+            className={`grid ${NOTIFICATION_GRID_COLS} items-center gap-4 px-6 py-4 transition-colors duration-500 hover:bg-surface/60 ${!data.isRead ? "bg-primary/5 border-l-2 border-l-primary" : "bg-transparent border-l-2 border-l-transparent"
+                }`}
+        >
+            <div className="flex items-center gap-3 min-w-0">
+                {data.user.img ? (
+                    <img
+                        src={data.user.img}
+                        alt={data.user.username}
+                        className="size-8 rounded-full object-cover ring-1 ring-border shrink-0"
+                    />
+                ) : (
+                    <div className="size-8 flex items-center justify-center border border-border text-[10px] font-mono text-muted-foreground shrink-0">
+                        {getInitials(data.user.username)}
+                    </div>
+                )}
+                <div className="min-w-0">
+                    <h2 className="truncate text-[14px] font-semibold text-foreground">{data.message}</h2>
+                    <p className="truncate text-xs text-muted-foreground">{data.user.username}</p>
+                </div>
             </div>
 
             <div className="flex justify-center">
-                <span className={`inline-flex px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wide ${badge.className}`}>
+                <span className="inline-flex items-center gap-1.5 border border-border/60 px-2 py-1 text-[10px] font-mono uppercase tracking-wide text-foreground/70">
+                    <span className={`size-1.5 ${badge.dot}`} />
                     {badge.label}
                 </span>
             </div>
 
-            <div className="text-center text-xs text-muted-foreground">
+            <div className="text-center text-xs font-mono text-muted-foreground">
                 {formattedDate}
             </div>
 
             <button
                 type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
+                className="flex h-8 w-8 items-center justify-center border border-transparent text-muted-foreground transition-colors hover:border-border hover:text-foreground mx-auto"
                 aria-label={`Open actions for notification ${data.id}`}
             >
-                <MoreHorizontal className="size-5" />
+                <MoreHorizontal className="size-4" />
             </button>
         </div>
     );

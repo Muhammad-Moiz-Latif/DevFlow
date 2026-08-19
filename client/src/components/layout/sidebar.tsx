@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { useAuthStore } from "../../stores/auth-store";
 import logo from '../../assets/logo.png';
 import { useUserWorkspaces } from "../../features/workspace/query/useAllUserWorkspaces";
-import { ChevronLeft, LayoutDashboard, ListTodo, FolderKanban, Users, Bell, LogOut, ChevronRight, CircleDot, Plus } from "lucide-react";
+import { ChevronLeft, LayoutDashboard, ListTodo, FolderKanban, Users, Bell, LogOut, ChevronRight, Plus } from "lucide-react";
 import { useCurrentWorkspace } from "../../features/workspace/query/useCurrentWorkspace";
 import { useMyInfiniteNotifications } from "../../features/members/query/useMyInfiniteNotifications";
 import { WorkspaceDropDown } from "../ui/WorkspaceDropdown";

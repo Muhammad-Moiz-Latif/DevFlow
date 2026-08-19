@@ -151,6 +151,11 @@ export type NotificationItem = {
     isRead: boolean,
     userId: string,
     workspaceId: string,
+    user: {
+        email: string,
+        username: string,
+        img: string
+    },
     createdAt: Date
 };
 

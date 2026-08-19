@@ -1,5 +1,5 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
-import { X } from "lucide-react";
+import { useState, type Dispatch, type SetStateAction, useRef } from "react";
+import { X, ArrowRight, Calendar, User, AlertCircle, FileText } from "lucide-react";
 import type { createIssueType } from "../../issue/apis/createissue";
 import { useCreateIssue } from "../../issue/queries/useCreateIssue";
 import { errorToast, successToast } from "../../../components/ui/CustomToasts";
@@ -26,6 +26,8 @@ const CreateIssueModal = ({
         assignee_id: "",
         due_date: "",
     });
+    const [errors, setErrors] = useState<{ title?: string }>({});
+    const titleInputRef = useRef<HTMLInputElement>(null);
 
     const { mutate, isPending } = useCreateIssue(workspaceId, projectId);
     const { data } = useWorkspaceMembers(workspaceId);
@@ -40,6 +42,17 @@ const CreateIssueModal = ({
         )
     });
 
+    const validateForm = (): boolean => {
+        const newErrors: { title?: string } = {};
+
+        if (!formData.title.trim()) {
+            newErrors.title = "Title is required";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
@@ -49,13 +62,21 @@ const CreateIssueModal = ({
             ...prev,
             [name]: value,
         }));
+
+        // Clear error when user types
+        if (name === 'title' && errors.title) {
+            setErrors({});
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.title.trim()) {
-            alert("Title is required");
+        if (!validateForm()) {
+            // Focus the title input if there's an error
+            if (errors.title && titleInputRef.current) {
+                titleInputRef.current.focus();
+            }
             return;
         }
 
@@ -85,135 +106,187 @@ const CreateIssueModal = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/50"
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={() => setIsCreateModalOpen(false)}
             />
 
-            {/* Modal */}
-            <div className="relative z-50 w-full max-w-md mx-4 bg-background border border-border/50 rounded-lg shadow-lg max-h-[90vh] overflow-y-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-border/30">
-                    <h2 className="text-lg font-semibold text-foreground">Create New Issue</h2>
+            {/* Modal - increased width */}
+            <div className="relative z-50 w-full max-w-lg bg-background border border-border/60 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.12)] max-h-[90vh] overflow-y-auto overflow-x-hidden">
+                {/* Registration marks */}
+                <div className="absolute -top-px -left-px size-2 border-t border-l border-primary/40" />
+                <div className="absolute -top-px -right-px size-2 border-t border-r border-primary/40" />
+
+                {/* Header with drafting aesthetic */}
+                <div className="h-9 border-b border-border/60 bg-sidebar/40 flex items-center px-3.5 gap-2.5">
+                    <span className="text-[10px] font-mono tracking-wide text-muted-foreground/60 uppercase">
+                        New Entry
+                    </span>
+                    <span className="text-[10px] font-mono text-foreground/70">
+                        Fig. 14 — Issue
+                    </span>
                     <button
                         onClick={() => setIsCreateModalOpen(false)}
-                        className="p-1 hover:bg-accent/10 hover:cursor-pointer rounded-md transition-colors"
+                        className="ml-auto p-1 -mr-1 text-muted-foreground/60 hover:text-foreground transition-colors"
+                        aria-label="Close"
                     >
-                        <X className="w-5 h-5 text-muted-foreground" />
+                        <X className="size-3.5" strokeWidth={1.8} />
                     </button>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-4 space-y-3">
-                    {/* Title Field */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                            Title <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            placeholder="Issue title"
-                            className="w-full px-3 py-2 bg-background border border-border/50 rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
-                        />
+                {/* Body */}
+                <div className="p-6">
+                    <div className="inline-flex items-center gap-3 mb-3 text-[10px] font-mono tracking-[0.14em] text-muted-foreground/55 uppercase">
+                        <span className="w-4 h-px bg-border" />
+                        {projectId.slice(0, 8).toUpperCase()}
+                        <span className="w-4 h-px bg-border" />
+                        <span className="text-muted-foreground/30">{status}</span>
                     </div>
 
-                    {/* Description Field */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                            Description
-                        </label>
-                        <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            placeholder="Issue description (optional)"
-                            rows={2}
-                            className="w-full px-3 py-2 bg-background border border-border/50 rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none"
-                        />
-                    </div>
+                    <h2 className="text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight">
+                        Create new issue
+                    </h2>
+                    <p className="text-[12.5px] text-muted-foreground mt-1 leading-relaxed">
+                        Add a new task to the {status.toLowerCase().replace('_', ' ')} column.
+                    </p>
 
-                    {/* Grid for Priority and Due Date */}
-                    <div className="grid grid-cols-2 gap-4">
-                        {/* Priority Field */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                                Priority
+                    <form onSubmit={handleSubmit} className="mt-5 space-y-3.5">
+                        {/* Title Field */}
+                        <div>
+                            <label className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/60 uppercase block mb-1">
+                                Title <span className="text-destructive/60">*</span>
                             </label>
-                            <select
-                                name="priority"
-                                value={formData.priority}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 bg-background border border-border/50 rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
-                            >
-                                <option value="LOW">Low</option>
-                                <option value="MEDIUM">Medium</option>
-                                <option value="HIGH">High</option>
-                                <option value="URGENT">Urgent</option>
-                            </select>
+                            <div className="relative">
+                                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" strokeWidth={1.8} />
+                                <input
+                                    ref={titleInputRef}
+                                    type="text"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleChange}
+                                    placeholder="Issue title"
+                                    className={`w-full h-9 pl-9 pr-3 bg-surface border rounded-md text-[13px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all ${errors.title
+                                            ? 'border-destructive/60 ring-1 ring-destructive/30 focus:border-destructive/50'
+                                            : 'border-border/60 focus:border-primary/50'
+                                        }`}
+                                />
+                            </div>
+                            {errors.title && (
+                                <p className="text-[10px] font-mono text-destructive/80 mt-1.5 tracking-wide">
+                                    {errors.title}
+                                </p>
+                            )}
                         </div>
 
-                        {/* Due Date Field */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-foreground">
-                                Due Date
+                        {/* Description Field */}
+                        <div>
+                            <label className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/60 uppercase block mb-1">
+                                Description
                             </label>
-                            <input
-                                type="date"
-                                name="due_date"
-                                value={formData.due_date}
+                            <textarea
+                                name="description"
+                                value={formData.description}
                                 onChange={handleChange}
-                                className="w-full px-3 py-2 bg-background border border-border/50 rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50"
+                                placeholder="Issue description (optional)"
+                                rows={2}
+                                className="w-full px-3 py-2 bg-surface border border-border/60 rounded-md text-[13px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all resize-none"
                             />
                         </div>
-                    </div>
 
-                    {/* Assignee Field */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                            Assignee (optional)
-                        </label>
-                        <select
-                            value={formData.assignee_id}
-                            onChange={handleChange}
-                            name="assignee_id"
-                            className="flex w-full px-3 py-2 border border-border/50 rounded-md">
-                            <option value={undefined}>null</option>
-                            {membersData}
-                        </select>
-                        <p className="text-xs text-muted-foreground">
-                            You can improve this by fetching team members
-                        </p>
-                    </div>
+                        {/* Grid for Priority and Due Date */}
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* Priority Field */}
+                            <div>
+                                <label className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/60 uppercase block mb-1">
+                                    Priority
+                                </label>
+                                <div className="relative">
+                                    <AlertCircle className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" strokeWidth={1.8} />
+                                    <select
+                                        name="priority"
+                                        value={formData.priority}
+                                        onChange={handleChange}
+                                        className="w-full h-9 pl-9 pr-3 bg-surface border border-border/60 rounded-md text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all appearance-none"
+                                    >
+                                        <option value="LOW">Low</option>
+                                        <option value="MEDIUM">Medium</option>
+                                        <option value="HIGH">High</option>
+                                        <option value="URGENT">Urgent</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                    {/* Status Display */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
-                            Status
-                        </label>
-                        <div className="px-3 py-2 bg-accent/5 border border-border/30 rounded-md text-foreground text-sm">
-                            {status}
+                            {/* Due Date Field */}
+                            <div>
+                                <label className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/60 uppercase block mb-1">
+                                    Due Date
+                                </label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" strokeWidth={1.8} />
+                                    <input
+                                        type="date"
+                                        name="due_date"
+                                        value={formData.due_date}
+                                        onChange={handleChange}
+                                        className="w-full h-9 pl-9 pr-3 bg-surface border border-border/60 rounded-md text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </form>
 
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-3 p-4 border-t border-border/30">
-                    <button
-                        onClick={() => setIsCreateModalOpen(false)}
-                        className="px-4 py-2 hover:cursor-pointer text-sm font-medium text-foreground bg-background border border-border/50 rounded-md hover:bg-accent/5 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        className="px-4 py-2 text-sm font-medium text-background bg-accent-foreground rounded-md hover:bg-accent/90 hover:cursor-pointer transition-colors"
-                    >
-                        {isPending ? "Creating..." : "Create Issue"}
-                    </button>
+                        {/* Assignee Field */}
+                        <div>
+                            <label className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/60 uppercase block mb-1">
+                                Assignee
+                            </label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" strokeWidth={1.8} />
+                                <select
+                                    value={formData.assignee_id}
+                                    onChange={handleChange}
+                                    name="assignee_id"
+                                    className="w-full h-9 pl-9 pr-3 bg-surface border border-border/60 rounded-md text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all appearance-none"
+                                >
+                                    <option value="">Unassigned</option>
+                                    {membersData}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Status Display - Readonly */}
+                        <div>
+                            <label className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/60 uppercase block mb-1">
+                                Status
+                            </label>
+                            <div className="h-9 px-3 bg-primary/5 border border-primary/20 rounded-md flex items-center text-[13px] text-primary/80 font-medium">
+                                {status.replace('_', ' ')}
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={isPending}
+                            className="group w-full h-10 mt-2 bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 inline-flex items-center justify-center gap-2 transition-all border border-primary/70 disabled:opacity-50 disabled:cursor-not-allowed rounded-md"
+                        >
+                            {isPending ? "Creating..." : "Create issue"}
+                            {!isPending && (
+                                <ArrowRight className="size-3.5 opacity-80 group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                            )}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Footer strip */}
+                <div className="flex items-center justify-between px-6 pb-3.5 text-[8px] font-mono tracking-[0.12em] text-muted-foreground/30 uppercase">
+                    <span>devflow.app</span>
+                    <span className="flex items-center gap-2">
+                        <span className="size-1 rounded-full bg-status-todo" />
+                        {status}
+                    </span>
+                    <span>Esc to close</span>
                 </div>
             </div>
         </div>

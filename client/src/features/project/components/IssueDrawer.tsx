@@ -18,7 +18,7 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
     useEffect(() => {
         setDisplayIssue(issue);
     }, [issue]);
-    
+
     const { workspaceSlug, projectSlug } = useParams();
     const { data: workspaceData } = useCurrentWorkspace(workspaceSlug!);
     const { data: projectData } = useCurrentProject(projectSlug!, workspaceData?.data?.id!);
@@ -108,10 +108,6 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
         return formatFullDate(date);
     }
 
-    // handle change priority
-    // handle assign issue
-    // handle change dueDate
-
     return (
         <>
             <div
@@ -119,21 +115,25 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                     }`}
                 onClick={handleClose}
             />
-            <aside className={`fixed top-0 right-0 h-screen w-130 bg-surface border-l border-border z-50 flex flex-col shadow-2xl overflow-hidden transition-transform duration-300 ${isClosing ? 'translate-x-full' : 'translate-x-0'
+            <aside className={`fixed top-0 right-0 h-screen w-130 bg-card border-l border-border z-50 flex flex-col overflow-hidden transition-transform duration-300 ${isClosing ? 'translate-x-full' : 'translate-x-0'
                 }`}>
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-                    <div className="flex items-center gap-2 text-xs">
-                        <span className="font-mono text-muted-foreground">{displayIssue.id.slice(0, 8)}</span>
-                        <span className="text-muted-foreground">·</span>
-                        <StatusBadge status={statusMap[displayIssue.status] as "todo" | "progress" | "review" | "done"} />
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <button className="size-7 rounded-md hover:bg-accent flex items-center justify-center transition-colors">
-                            <MoreHorizontal className="size-4 text-muted-foreground" />
+                {/* Title block — same language as board / activity panels */}
+                <div className="h-9 border-b border-border bg-sidebar/40 flex items-center px-3.5 gap-2.5 shrink-0">
+                    <span className="text-[10px] font-mono tracking-wide text-muted-foreground/60 uppercase">
+                        Issue
+                    </span>
+                    <span className="text-[10px] font-mono text-foreground/70">
+                        {displayIssue.id.slice(0, 8).toUpperCase()}
+                    </span>
+                    <span className="w-px h-2.5 bg-border" />
+                    <StatusBadge status={statusMap[displayIssue.status] as "todo" | "progress" | "review" | "done"} />
+
+                    <div className="ml-auto flex items-center gap-1">
+                        <button className="size-6 flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-surface/60 transition-colors">
+                            <MoreHorizontal className="size-3.5" strokeWidth={1.8} />
                         </button>
-                        <button onClick={handleClose} className="size-7 rounded-md hover:bg-accent flex items-center justify-center transition-colors">
-                            <X className="size-4 text-muted-foreground" />
+                        <button onClick={handleClose} className="size-6 flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-surface/60 transition-colors">
+                            <X className="size-3.5" strokeWidth={1.8} />
                         </button>
                     </div>
                 </div>
@@ -141,13 +141,15 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                 {/* Body */}
                 <div className="flex-1 overflow-y-auto scrollbar-thin">
                     <div className="px-5 py-5">
-                        <h2 className="text-lg font-semibold leading-tight mb-3">{displayIssue.title}</h2>
-                        <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                        <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em] leading-tight mb-2.5">
+                            {displayIssue.title}
+                        </h2>
+                        <p className="text-[13px] text-muted-foreground leading-relaxed mb-5">
                             {displayIssue.description || "No description provided"}
                         </p>
 
                         {/* Properties */}
-                        <div className="space-y-2.5 text-xs border-t border-border pt-4">
+                        <div className="space-y-3 text-[12.5px] border-t border-border pt-4">
                             <Property label="Status">
                                 <StatusBadge status={statusMap[displayIssue.status] as "todo" | "progress" | "review" | "done"} />
                             </Property>
@@ -156,19 +158,20 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                                     <PriorityBadge priority={displayIssue.priority.toLowerCase() as "urgent" | "high" | "medium" | "low"} />
                                     <button
                                         onClick={() => setShowPriorityMenu(!showPriorityMenu)}
-                                        className="border w-24 border-zinc-800 text-xs tracking-tight py-1 rounded-md
-                                    hover:opacity-60 hover:cursor-pointer"
-                                    >change priority</button>
+                                        className="h-7 px-2.5 border border-border/70 text-[10px] font-mono uppercase tracking-wide text-muted-foreground/70 hover:text-foreground hover:border-border hover:bg-surface/40 transition-colors"
+                                    >
+                                        Change
+                                    </button>
                                     {showPriorityMenu && (
-                                        <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-md shadow-lg z-10 w-32">
+                                        <div className="absolute right-0 top-full mt-1.5 bg-card border border-border shadow-sm z-10 w-32">
                                             {(['URGENT', 'HIGH', 'MEDIUM', 'LOW'] as const).map((p) => (
                                                 <button
                                                     key={p}
                                                     onClick={() => handlePriorityChange(p)}
-                                                    className="w-full text-left px-3 py-2 text-xs hover:bg-accent transition-colors flex items-center justify-between"
+                                                    className="w-full text-left px-3 py-2 text-[11px] font-mono tracking-wide hover:bg-surface/50 transition-colors flex items-center justify-between"
                                                 >
                                                     {p}
-                                                    {displayIssue.priority === p && <Check className="size-3" />}
+                                                    {displayIssue.priority === p && <Check className="size-3 text-primary" />}
                                                 </button>
                                             ))}
                                         </div>
@@ -176,37 +179,39 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                                 </div>
                             </Property>
                             <Property label="Assignee">
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1.5">
                                         <Avatar name={displayIssue.assignee?.name || "Unassigned"} size={20} />
-                                        <span className="text-foreground">{displayIssue.assignee?.name || "Unassigned"}</span>
+                                        <span className="text-foreground/85">{displayIssue.assignee?.name || "Unassigned"}</span>
                                     </div>
                                     <button
                                         onClick={() => setShowMembersDrawer(true)}
-                                        className="border border-zinc-800 text-xs tracking-tight w-24 py-1 rounded-md
-                                    hover:opacity-60 hover:cursor-pointer"
-                                    >{displayIssue.assignee ? "Reassign" : "Assign"}</button>
+                                        className="h-7 px-2.5 border border-border/70 text-[10px] font-mono uppercase tracking-wide text-muted-foreground/70 hover:text-foreground hover:border-border hover:bg-surface/40 transition-colors"
+                                    >
+                                        {displayIssue.assignee ? "Reassign" : "Assign"}
+                                    </button>
                                 </div>
                             </Property>
                             <Property label="Due date">
                                 <div className="flex justify-between items-center relative">
-                                    <span className="inline-flex items-center gap-1.5 text-foreground">
-                                        <Calendar className="size-3.5 text-muted-foreground" />
+                                    <span className="inline-flex items-center gap-1.5 text-foreground/85">
+                                        <Calendar className="size-3.5 text-muted-foreground/60" strokeWidth={1.8} />
                                         {displayIssue.dueDate ? formatFullDate(new Date(displayIssue.dueDate)) : "No due date"}
                                     </span>
                                     <div className="relative">
                                         <button
                                             onClick={() => setShowDatePicker(!showDatePicker)}
-                                            className="border w-24 border-zinc-800 text-xs tracking-tight py-1 rounded-md
-                                        hover:opacity-60 hover:cursor-pointer"
-                                        >Update date</button>
+                                            className="h-7 px-2.5 border border-border/70 text-[10px] font-mono uppercase tracking-wide text-muted-foreground/70 hover:text-foreground hover:border-border hover:bg-surface/40 transition-colors"
+                                        >
+                                            Update
+                                        </button>
                                         {showDatePicker && (
-                                            <div className="absolute right-0 top-full mt-1 bg-surface border border-border rounded-md shadow-lg z-10 p-3">
+                                            <div className="absolute right-0 top-full mt-1.5 bg-card border border-border shadow-sm z-10 p-3 w-48">
                                                 <input
                                                     type="date"
                                                     defaultValue={issue.dueDate ? new Date(issue.dueDate).toISOString().split('T')[0] : ''}
                                                     onChange={(e) => handleDueDateChange(e.target.value)}
-                                                    className="w-full px-2 py-1 bg-background border border-border rounded text-xs text-foreground"
+                                                    className="w-full px-2 py-1.5 rounded-md bg-background border border-border/70 text-[12px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
                                                 />
                                                 {issue.dueDate && (
                                                     <button
@@ -218,7 +223,7 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                                                             });
                                                             setShowDatePicker(false);
                                                         }}
-                                                        className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground py-1 transition-colors"
+                                                        className="w-full mt-2 text-[10px] font-mono uppercase tracking-wide text-muted-foreground/60 hover:text-foreground py-1 transition-colors"
                                                     >
                                                         Clear due date
                                                     </button>
@@ -227,24 +232,21 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                                         )}
                                     </div>
                                 </div>
-
                             </Property>
                             <Property label="Labels">
-                                <div className="flex gap-1">
-                                    <span className="text-muted-foreground italic text-[10px]">To be implemented</span>
-                                </div>
+                                <span className="text-muted-foreground/50 italic text-[11px]">To be implemented</span>
                             </Property>
                             <Property label="Created by">
                                 <div className="flex items-center gap-1.5">
                                     <Avatar name={displayIssue.creator?.name || "Unknown"} size={20} />
-                                    <span className="text-foreground">{displayIssue.creator?.name || "Unknown"}</span>
+                                    <span className="text-foreground/85">{displayIssue.creator?.name || "Unknown"}</span>
                                 </div>
                             </Property>
                         </div>
 
                         {/* Activity */}
                         <div className="mt-6">
-                            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                            <h3 className="text-[10px] font-mono tracking-[0.12em] text-muted-foreground/50 uppercase mb-3">
                                 Activity
                             </h3>
                             <div className="space-y-2.5 border-l border-border pl-4 ml-1.5">
@@ -254,33 +256,33 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                                     time={formatTimeAgo(displayIssue.createdAt)}
                                 />
                             </div>
-                            <p className="text-muted-foreground italic text-[10px] mt-2">Additional activity tracking to be implemented</p>
+                            <p className="text-muted-foreground/40 italic text-[10px] mt-2">Additional activity tracking to be implemented</p>
                         </div>
 
                         {/* Comments */}
                         <div className="mt-6">
-                            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                            <h3 className="text-[10px] font-mono tracking-[0.12em] text-muted-foreground/50 uppercase mb-3">
                                 Comments · 0
                             </h3>
-                            <p className="text-muted-foreground italic text-[10px]">Comments feature to be implemented</p>
+                            <p className="text-muted-foreground/40 italic text-[10px]">Comments feature to be implemented</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Composer */}
-                <div className="border-t border-border p-3">
-                    <div className="bg-background border border-border rounded-md focus-within:ring-1 focus-within:ring-ring focus-within:border-primary/40">
+                <div className="border-t border-border p-3 shrink-0">
+                    <div className="bg-background border border-border/70 rounded-md focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/50 transition-all">
                         <textarea
                             placeholder="Leave a comment..."
                             rows={2}
                             disabled
-                            className="w-full bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground resize-none focus:outline-none disabled:opacity-50 cursor-not-allowed"
+                            className="w-full bg-transparent px-3 py-2 text-[13px] placeholder:text-muted-foreground/50 resize-none focus:outline-none disabled:opacity-50 cursor-not-allowed"
                         />
-                        <div className="flex items-center justify-between px-2 py-1.5 border-t border-border">
-                            <button disabled className="text-xs text-muted-foreground inline-flex items-center gap-1 hover:text-foreground disabled:opacity-50 cursor-not-allowed">
+                        <div className="flex items-center justify-between px-2 py-1.5 border-t border-border/70">
+                            <button disabled className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground/50 inline-flex items-center gap-1 hover:text-foreground disabled:opacity-50 cursor-not-allowed">
                                 <Tag className="size-3" /> Mention
                             </button>
-                            <button disabled className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 disabled:opacity-50 cursor-not-allowed">
+                            <button disabled className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md bg-primary text-primary-foreground text-[11px] font-medium hover:opacity-90 disabled:opacity-50 cursor-not-allowed">
                                 Comment
                             </button>
                         </div>
@@ -296,21 +298,23 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                         onClick={() => setShowMembersDrawer(false)}
                     />
                     <div className="fixed inset-0 z-50 flex items-end">
-                        <div className="bg-surface border-t border-border rounded-t-2xl w-full max-h-96 overflow-y-auto shadow-2xl">
-                            <div className="flex items-center justify-between px-5 py-3 border-b border-border sticky top-0 bg-surface">
-                                <h3 className="text-sm font-semibold">Assign member</h3>
+                        <div className="bg-card border-t border-border w-full max-h-96 overflow-y-auto shadow-lg">
+                            <div className="h-9 border-b border-border bg-sidebar/40 flex items-center px-3.5 sticky top-0">
+                                <span className="text-[10px] font-mono tracking-wide text-muted-foreground/60 uppercase">
+                                    Assign member
+                                </span>
                                 <button
                                     onClick={() => setShowMembersDrawer(false)}
-                                    className="size-6 rounded-md hover:bg-accent flex items-center justify-center transition-colors"
+                                    className="ml-auto size-6 flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-surface/60 transition-colors"
                                 >
-                                    <X className="size-4 text-muted-foreground" />
+                                    <X className="size-3.5" strokeWidth={1.8} />
                                 </button>
                             </div>
-                            <div className="p-3 space-y-1">
+                            <div className="p-3 space-y-0.5">
                                 {displayIssue.assignee && (
                                     <button
                                         onClick={handleUnassign}
-                                        className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-accent rounded-md transition-colors text-muted-foreground hover:text-foreground"
+                                        className="w-full flex items-center justify-between px-3 py-2 text-[12px] hover:bg-surface/50 transition-colors text-muted-foreground/70 hover:text-foreground"
                                     >
                                         Unassigned
                                     </button>
@@ -320,17 +324,17 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                                         <button
                                             key={member.user.id}
                                             onClick={() => handleAssignMember(member.user.id)}
-                                            className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-accent rounded-md transition-colors"
+                                            className="w-full flex items-center justify-between px-3 py-2 text-[12px] hover:bg-surface/50 transition-colors"
                                         >
                                             <div className="flex items-center gap-2">
                                                 <Avatar name={member.user.name} size={20} />
-                                                <span className="text-foreground">{member.user.name}</span>
+                                                <span className="text-foreground/85">{member.user.name}</span>
                                             </div>
                                             {displayIssue.assignee?.id === member.user.id && <Check className="size-3 text-primary" />}
                                         </button>
                                     ))
                                 ) : (
-                                    <div className="px-3 py-2 text-xs text-muted-foreground">
+                                    <div className="px-3 py-2 text-[12px] text-muted-foreground/50">
                                         No members available
                                     </div>
                                 )}
@@ -345,8 +349,10 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
 
 function Property({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-        <div className="grid grid-cols-[100px_1fr] items-center">
-            <span className="text-muted-foreground">{label}</span>
+        <div className="grid grid-cols-[90px_1fr] items-center">
+            <span className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/50 uppercase">
+                {label}
+            </span>
             <div>{children}</div>
         </div>
     );
@@ -354,10 +360,10 @@ function Property({ label, children }: { label: string; children: React.ReactNod
 
 function ActivityItem({ actor, action, time }: { actor: string; action: string; time: string }) {
     return (
-        <div className="relative text-xs text-muted-foreground">
-            <span className="absolute -left-5.25 top-1.5 size-2 rounded-full bg-border ring-2 ring-surface" />
-            <span className="text-foreground font-medium">{actor}</span> {action}
-            <span className="text-muted-foreground/70"> · {time}</span>
+        <div className="relative text-[12px] text-muted-foreground/70">
+            <span className="absolute -left-5.25 top-1.5 size-2 rounded-full bg-border ring-2 ring-card" />
+            <span className="text-foreground/85 font-medium">{actor}</span> {action}
+            <span className="text-muted-foreground/50"> · {time}</span>
         </div>
     );
 }

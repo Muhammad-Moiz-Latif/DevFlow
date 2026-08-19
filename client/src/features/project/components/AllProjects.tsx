@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router";
 import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
 import { useAllProjects } from "../query/useAllProjects";
-import { Loader2, Plus, Archive, Layers, ArrowRight } from "lucide-react";
+import { Loader2, Plus, Layers, ArrowRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CreateProjectModal } from "./createProject";
 

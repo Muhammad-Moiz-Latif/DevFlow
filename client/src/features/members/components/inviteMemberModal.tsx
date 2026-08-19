@@ -18,7 +18,13 @@ const InviteMemberSchema = z.object({
 
 export type InviteMemberSchemaType = z.infer<typeof InviteMemberSchema>;
 
-export const InviteMemberModal = ({ setInviteModalVisibility, workspaceId }: { setInviteModalVisibility: Dispatch<SetStateAction<boolean>>, workspaceId: string }) => {
+export const InviteMemberModal = ({
+    setInviteModalVisibility,
+    workspaceId,
+}: {
+    setInviteModalVisibility: Dispatch<SetStateAction<boolean>>;
+    workspaceId: string;
+}) => {
     const {
         register,
         handleSubmit,
@@ -28,123 +34,145 @@ export const InviteMemberModal = ({ setInviteModalVisibility, workspaceId }: { s
         resolver: zodResolver(InviteMemberSchema),
         defaultValues: { role: "MEMBER" },
     });
-    const { mutate, isPending } = useInviteMember()
+    const { mutate, isPending } = useInviteMember();
 
     const onSubmit = async (data: InviteMemberSchemaType) => {
-        mutate({
-            workspaceId,
-            data
-        }, {
-            onSuccess: (data) => {
-                if (data.status === 200) {
-                    successToast("The user is aready a member of this workspace")
-                } else if (data.status === 209) {
-                    successToast("An active email has already been sent to this user")
-                } else if (data.status === 201) {
-                    successToast("Email sent successfully!")
-                };
-
-                reset();
-                setTimeout(() => {
-                    setInviteModalVisibility((prev) => !prev)
-                }, 1000);
+        mutate(
+            {
+                workspaceId,
+                data,
             },
-            onError: () => {
-                reset();
-                errorToast("Could not send email"),
+            {
+                onSuccess: (data) => {
+                    if (data.status === 200) {
+                        successToast("The user is aready a member of this workspace");
+                    } else if (data.status === 209) {
+                        successToast("An active email has already been sent to this user");
+                    } else if (data.status === 201) {
+                        successToast("Email sent successfully!");
+                    }
+
+                    reset();
                     setTimeout(() => {
-                        setInviteModalVisibility((prev) => !prev)
+                        setInviteModalVisibility((prev) => !prev);
                     }, 1000);
+                },
+                onError: () => {
+                    reset();
+                    errorToast("Could not send email"),
+                        setTimeout(() => {
+                            setInviteModalVisibility((prev) => !prev);
+                        }, 1000);
+                },
             }
-        });
+        );
     };
 
     return (
         <div
-            className="fixed inset-0 z-70 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-70 flex items-center justify-center bg-background/60 backdrop-blur-sm"
             onClick={() => setInviteModalVisibility((prev) => !prev)}
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-w-md rounded-3xl border border-border/s80 bg-surface/95 p-6 shadow-[0_24px_80px_-32px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+                className="relative w-full max-w-md border border-border bg-card overflow-hidden"
             >
-                <button
-                    type="button"
-                    onClick={() => setInviteModalVisibility((prev) => !prev)}
-                    aria-label="Close"
-                    className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
-                >
-                    <X className="size-4" />
-                </button>
-
-                <div className="mb-6 space-y-1.5 pr-8">
-                    <h1 className="text-xl font-semibold tracking-tight text-foreground">
-                        Invite a member
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        Send an invitation to a personal email address. They'll be added
-                        to this workspace once accepted.
-                    </p>
+                {/* Header bar */}
+                <div className="h-10 border-b border-border bg-sidebar/50 flex items-center px-4 gap-2.5">
+                    <span className="text-[10px] font-mono tracking-wide text-muted-foreground/60 uppercase">
+                        Invite
+                    </span>
+                    <span className="text-[10px] font-mono text-foreground/70">New member</span>
+                    <button
+                        type="button"
+                        onClick={() => setInviteModalVisibility((prev) => !prev)}
+                        aria-label="Close"
+                        className="ml-auto size-7 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <X className="size-3.5" strokeWidth={1.8} />
+                    </button>
                 </div>
 
-                <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-medium text-foreground/90">
-                            Email address
-                        </label>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                            <input
-                                type="email"
-                                placeholder="example@gmail.com"
-                                autoComplete="email"
-                                {...register("email")}
-                                className="h-10 w-full rounded-md border border-border bg-background/60 pl-9 pr-3 text-sm placeholder:text-muted-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                            />
+                <div className="p-5">
+                    {/* Title */}
+                    <div className="relative mb-5 pb-4 border-b border-border">
+                        <div className="absolute top-0 left-0 size-1.5 border-t border-l border-primary/40" />
+                        <div className="absolute top-0 right-0 size-1.5 border-t border-r border-primary/40" />
+
+                        <div className="inline-flex items-center gap-2 mb-2 text-[9px] font-mono tracking-[0.14em] text-muted-foreground/50 uppercase">
+                            <span className="w-3 h-px bg-border" />
+                            Workspace invite
+                            <span className="w-3 h-px bg-border" />
                         </div>
-                        {errors.email && (
-                            <p className="text-xs text-destructive tracking-tight">
-                                {errors.email.message}
-                            </p>
-                        )}
+
+                        <h1 className="text-[1.1rem] font-semibold tracking-tight text-foreground">
+                            Invite a member
+                        </h1>
+                        <p className="text-[12.5px] text-muted-foreground mt-1.5 leading-relaxed">
+                            Send an invitation to a personal email address. They'll be added to this
+                            workspace once accepted.
+                        </p>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-medium text-foreground/90">
-                            Role
-                        </label>
-                        <select
-                            {...register("role")}
-                            className="h-10 w-full cursor-pointer rounded-md border border-border bg-background/60 px-3 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        >
-                            <option value="ADMIN">Admin</option>
-                            <option value="MEMBER">Member</option>
-                            <option value="VIEWER">Viewer</option>
-                        </select>
-                        {errors.role && (
-                            <p className="text-xs text-destructive tracking-tight">
-                                {errors.role.message}
-                            </p>
-                        )}
-                    </div>
+                    <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-mono tracking-wide text-muted-foreground/60 uppercase">
+                                Email address
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/60" strokeWidth={1.8} />
+                                <input
+                                    type="email"
+                                    placeholder="example@gmail.com"
+                                    autoComplete="email"
+                                    {...register("email")}
+                                    className="h-9 w-full border border-border bg-background pl-9 pr-3 text-[13px] placeholder:text-muted-foreground/50 transition-colors focus:border-primary/40 focus:outline-none"
+                                />
+                            </div>
+                            {errors.email && (
+                                <p className="text-[11px] text-destructive tracking-tight">
+                                    {errors.email.message}
+                                </p>
+                            )}
+                        </div>
 
-                    <div className="mt-2 flex justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setInviteModalVisibility((prev) => !prev)}
-                            className="h-9 rounded-md px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isPending}
-                            className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:cursor-pointer hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {isPending ? "Sending invite..." : "Send Invite"}
-                        </button>
-                    </div>
-                </form>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] font-mono tracking-wide text-muted-foreground/60 uppercase">
+                                Role
+                            </label>
+                            <select
+                                {...register("role")}
+                                className="h-9 w-full cursor-pointer border border-border bg-background px-3 text-[13px] text-foreground transition-colors focus:border-primary/40 focus:outline-none"
+                            >
+                                <option value="ADMIN">Admin</option>
+                                <option value="MEMBER">Member</option>
+                                <option value="VIEWER">Viewer</option>
+                            </select>
+                            {errors.role && (
+                                <p className="text-[11px] text-destructive tracking-tight">
+                                    {errors.role.message}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="mt-2 flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setInviteModalVisibility((prev) => !prev)}
+                                className="h-9 px-4 border border-border text-[12px] font-medium text-muted-foreground hover:bg-surface/40 hover:text-foreground transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isPending}
+                                className="h-9 px-4 bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90 transition-colors disabled:cursor-not-allowed disabled:opacity-60 border border-primary/70"
+                            >
+                                {isPending ? "Sending invite…" : "Send Invite"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

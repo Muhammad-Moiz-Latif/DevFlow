@@ -1,6 +1,5 @@
 import { Calendar, ArrowRight } from "lucide-react";
 import { PriorityBadge, StatusBadge } from "../../../components/ui/badges";
-import { useParams } from "react-router";
 
 export type IssueCardIssue = {
     id: string;
@@ -40,7 +39,6 @@ const formatDueDate = (dueDate: IssueCardIssue["dueDate"]) => {
 
 export const IssueCard = ({ issue }: IssueCardProps) => {
     const dueDateLabel = formatDueDate(issue.dueDate);
-    const { workspaceSlug } = useParams();
 
     return (
         <article className="group relative grid grid-cols-[auto_1fr_auto] items-center gap-2.5 px-3.5 py-2.5 hover:bg-surface/30 transition-colors cursor-pointer border-l-2 border-transparent hover:border-primary/40">
