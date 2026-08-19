@@ -1,38 +1,51 @@
 import toast from "react-hot-toast";
 
-const toastStyles = {
-    style: {
-        background: "oklch(0.20 0.013 270)",
-        color: "oklch(0.96 0.005 270)",
-        border: "1px solid oklch(0.27 0.013 270)",
-        borderRadius: "8px",
-        padding: "13px 16px",
-        fontSize: "13.5px",
-        fontWeight: "500",
-        boxShadow: "0 4px 20px oklch(0 0 0 / 0.4)",
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        maxWidth: "360px",
-    },
+const baseStyle: React.CSSProperties = {
+    background: "oklch(0.18 0.012 270)",
+    color: "oklch(0.95 0.005 270)",
+    border: "1px solid oklch(0.28 0.012 270)",
+    borderRadius: "4px",                 // sharper, less soft
+    padding: "11px 14px",
+    fontSize: "13px",
+    fontWeight: "500",
+    boxShadow: "none",                   // no soft glow
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    maxWidth: "340px",
+    letterSpacing: "-0.01em",
 };
 
 export const successToast = (message: string) => {
     toast.success(message, {
-        ...toastStyles,
+        style: baseStyle,
         iconTheme: {
-            primary: "oklch(0.68 0.16 150)",
-            secondary: "oklch(0.20 0.013 270)",
+            primary: "oklch(0.70 0.15 155)",   // calm green
+            secondary: "oklch(0.18 0.012 270)",
         },
+        duration: 3200,
     });
 };
 
 export const errorToast = (message: string) => {
     toast.error(message, {
-        ...toastStyles,
-        iconTheme: {
-            primary: "oklch(0.62 0.22 25)",
-            secondary: "oklch(0.20 0.013 270)",
+        style: {
+            ...baseStyle,
+            borderColor: "oklch(0.45 0.12 25 / 0.5)", // subtle red edge
         },
+        iconTheme: {
+            primary: "oklch(0.62 0.20 25)",
+            secondary: "oklch(0.18 0.012 270)",
+        },
+        duration: 4200,
+    });
+};
+
+// Optional: info / neutral toast if you need it later
+export const infoToast = (message: string) => {
+    toast(message, {
+        style: baseStyle,
+        icon: "·",                         // minimal mark
+        duration: 3000,
     });
 };

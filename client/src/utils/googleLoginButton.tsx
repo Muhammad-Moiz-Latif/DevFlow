@@ -16,7 +16,6 @@ export default function GoogleLoginButton({ label }: { label: string }) {
     const location = useLocation();
     const { fromInvite } = location.state || {};
     const invitationToken = sessionStorage.getItem('invitationToken');
-    console.log(invitationToken, fromInvite)
 
 
     async function handleMerge() {

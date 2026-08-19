@@ -114,7 +114,7 @@ export const LoginForm = () => {
                         href="#"
                         className="text-[10px] font-mono text-muted-foreground/60 hover:text-foreground transition-colors tracking-wide"
                     >
-                        Forgot?
+                        Forgot password?
                     </a>
                 </div>
                 <div className="relative">
