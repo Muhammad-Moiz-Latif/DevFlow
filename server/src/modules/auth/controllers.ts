@@ -162,7 +162,8 @@ export const authController = {
 
                 res.cookie("refresh_token", refresh_token, {
                     httpOnly: true,
-                    sameSite: "lax",
+                    secure: process.env.NODE_ENV === "production", // must be true when sameSite is "none"
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
                     maxAge: 24 * 60 * 60 * 1000
                 });
 
@@ -219,7 +220,8 @@ export const authController = {
 
                 res.cookie("refresh_token", refresh_token, {
                     httpOnly: true,
-                    sameSite: "lax",
+                    secure: process.env.NODE_ENV === "production", // must be true when sameSite is "none"
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
                     maxAge: 24 * 60 * 60 * 1000
                 });
 
@@ -286,7 +288,8 @@ export const authController = {
 
             res.cookie("refresh_token", refresh_token, {
                 httpOnly: true,
-                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production", // must be true when sameSite is "none"
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
                 maxAge: 24 * 60 * 60 * 1000
             });
 
@@ -412,7 +415,8 @@ export const authController = {
 
             res.cookie("refresh_token", refresh_token, {
                 httpOnly: true,
-                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production", // must be true when sameSite is "none"
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
                 maxAge: 24 * 60 * 60 * 1000
             });
 

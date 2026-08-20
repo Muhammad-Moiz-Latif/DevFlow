@@ -182,10 +182,18 @@ export const workspaceServices = {
         // the newest batch of notifications
         if (!cursor) {
             const result = await pool.query(`
-            SELECT *
-            FROM notifications
+            SELECT
+            n.*,
+            json_build_object (
+                'email',u.email,
+                'username',u.name,
+                'img',u.img
+            ) AS user
+            FROM notifications n
+            JOIN users u
+            ON n."userId" = u.id
             WHERE ${conditions}
-            ORDER BY "createdAt" DESC
+            ORDER BY n."createdAt" DESC
             LIMIT $${values.length + 1}
             `, [...values, limit]);
 
@@ -194,13 +202,21 @@ export const workspaceServices = {
 
         // the newest batch after the previous set of notifications
         const result = await pool.query(`
-            SELECT *
-            FROM notifications
-            WHERE "userId" = $1
-            AND "workspaceId" = $2
-            AND "createdAt" < (SELECT "createdAt" FROM notifications
+             SELECT
+            n.*,
+            json_build_object (
+                'email',u.email,
+                'username',u.name,
+                'img',u.img
+            ) AS user
+            FROM notifications n
+            JOIN users u
+            ON n."userId" = u.id
+            WHERE n."userId" = $1
+            AND n."workspaceId" = $2
+            AND n."createdAt" < (SELECT "createdAt" FROM notifications
                 WHERE id=$3)
-            ORDER BY "createdAt" DESC
+            ORDER BY n."createdAt" DESC
             LIMIT $4
             `, [userId, workspaceId, cursor, 10]);
 
