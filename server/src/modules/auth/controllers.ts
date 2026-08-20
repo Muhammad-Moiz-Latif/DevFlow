@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { sendEmailToken } from '../../utils/send-email';
 import { oAuth2Client } from '../../config/oauth';
+import { generalQueue } from '../../queues/general.queue';
 
 
 export const authController = {
@@ -37,6 +38,7 @@ export const authController = {
                 });
             };
 
+
             const createUser = await authServices.registerUser(name, email, imgURL, 'CREDENTIALS', password);
 
             if (!createUser) {
@@ -46,7 +48,11 @@ export const authController = {
                 });
             }
 
-            await sendEmailToken(createUser.name, createUser.email!, "EMAIL_VERIFICATION", createUser.id);
+            await generalQueue.add('EMAIL_VERIFICATION', {
+                username: createUser.name, email: createUser.email!, type: "EMAIL_VERIFICATION", userId: createUser.id
+            });
+
+            // await sendEmailToken(createUser.name, createUser.email!, "EMAIL_VERIFICATION", createUser.id);
 
             // sending userId to frontend in-case of re-creating verification token 
             return res.status(201).json({

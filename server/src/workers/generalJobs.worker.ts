@@ -1,13 +1,16 @@
 import { Worker, type Job } from "bullmq";
 import { authServices } from "../modules/auth/services";
 import { redisConnection } from "../redis/client";
+import { sendEmailToken } from "../utils/send-email";
 
 export const generalWorker = new Worker('general', async (job) => {
     const job_type = job.name;
     const userId = job.data.userId;
     if (job_type === 'UPDATE_USER_WORKSPACE') {
         await authServices.updateUser({ lastWorkspaceId: job.data.workspaceId }, userId);
-    };
+    } else if (job_type === 'EMAIL_VERIFICATION') {
+        await sendEmailToken(job.data.username, job.data.email, job.data.type, job.data.userId);
+    }
 }, {
     connection: redisConnection,
     settings: {
