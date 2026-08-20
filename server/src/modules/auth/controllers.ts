@@ -604,7 +604,13 @@ export const authController = {
             });
         };
 
-        res.clearCookie("refresh_token", { httpOnly: true, sameSite: "lax", maxAge: 24 * 60 * 60 * 1000 });
+        const isProd = process.env.NODE_ENV === "production";
+
+        res.clearCookie("refresh_token", {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: isProd ? "none" : "lax"
+        });
 
         return res.status(200).json({
             success: true,
