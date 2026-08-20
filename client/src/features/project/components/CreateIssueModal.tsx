@@ -1,10 +1,9 @@
 import { useState, type Dispatch, type SetStateAction, useRef } from "react";
-import { X, ArrowRight, Calendar, User, AlertCircle, FileText } from "lucide-react";
+import { X, ArrowRight, Calendar, User, AlertCircle, FileText, ChevronDown, Check, Circle } from "lucide-react";
 import type { createIssueType } from "../../issue/apis/createissue";
 import { useCreateIssue } from "../../issue/queries/useCreateIssue";
 import { errorToast, successToast } from "../../../components/ui/CustomToasts";
 import { useWorkspaceMembers } from "../../members/query/useWorkspaceMembers";
-
 
 type CreateIssueModalProps = {
     workspaceId: string;
@@ -12,6 +11,23 @@ type CreateIssueModalProps = {
     status: 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE';
     setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
 };
+
+type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+
+const PRIORITY_OPTIONS: { value: Priority; label: string; colorClass: string }[] = [
+    { value: "LOW", label: "Low", colorClass: "text-blue-400 fill-blue-400" },
+    { value: "MEDIUM", label: "Medium", colorClass: "text-yellow-400 fill-yellow-400" },
+    { value: "HIGH", label: "High", colorClass: "text-orange-400 fill-orange-400" },
+    { value: "URGENT", label: "Urgent", colorClass: "text-red-500 fill-red-500" },
+];
+
+const getInitials = (name: string) =>
+    name
+        .split(" ")
+        .map((part) => part[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase();
 
 const CreateIssueModal = ({
     workspaceId,
@@ -22,25 +38,21 @@ const CreateIssueModal = ({
     const [formData, setFormData] = useState({
         title: "",
         description: "",
-        priority: "MEDIUM" as const,
+        priority: "MEDIUM" as Priority,
         assignee_id: "",
         due_date: "",
     });
     const [errors, setErrors] = useState<{ title?: string }>({});
+    const [isPriorityOpen, setIsPriorityOpen] = useState(false);
+    const [isAssigneeOpen, setIsAssigneeOpen] = useState(false);
     const titleInputRef = useRef<HTMLInputElement>(null);
 
     const { mutate, isPending } = useCreateIssue(workspaceId, projectId);
     const { data } = useWorkspaceMembers(workspaceId);
-    const membersData = data?.data!.map(member => {
-        return (
-            <option
-                key={member.id}
-                value={member.user.id}
-            >
-                {member.user.name}
-            </option >
-        )
-    });
+    const members = data?.data ?? [];
+
+    const selectedPriority = PRIORITY_OPTIONS.find((p) => p.value === formData.priority)!;
+    const selectedAssignee = members.find((m) => m.user.id === formData.assignee_id);
 
     const validateForm = (): boolean => {
         const newErrors: { title?: string } = {};
@@ -54,7 +66,7 @@ const CreateIssueModal = ({
     };
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
 
@@ -67,6 +79,16 @@ const CreateIssueModal = ({
         if (name === 'title' && errors.title) {
             setErrors({});
         }
+    };
+
+    const handlePrioritySelect = (priority: Priority) => {
+        setFormData((prev) => ({ ...prev, priority }));
+        setIsPriorityOpen(false);
+    };
+
+    const handleAssigneeSelect = (assigneeId: string) => {
+        setFormData((prev) => ({ ...prev, assignee_id: assigneeId }));
+        setIsAssigneeOpen(false);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -87,7 +109,7 @@ const CreateIssueModal = ({
                 title: formData.title,
                 description: formData.description,
                 status,
-                priority: formData.priority as "URGENT" | "HIGH" | "MEDIUM" | "LOW",
+                priority: formData.priority,
                 assignee_id: formData.assignee_id || undefined,
                 due_date: formData.due_date ? new Date(formData.due_date) : undefined,
             },
@@ -168,8 +190,8 @@ const CreateIssueModal = ({
                                     onChange={handleChange}
                                     placeholder="Issue title"
                                     className={`w-full h-9 pl-9 pr-3 bg-surface border rounded-md text-[13px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all ${errors.title
-                                            ? 'border-destructive/60 ring-1 ring-destructive/30 focus:border-destructive/50'
-                                            : 'border-border/60 focus:border-primary/50'
+                                        ? 'border-destructive/60 ring-1 ring-destructive/30 focus:border-destructive/50'
+                                        : 'border-border/60 focus:border-primary/50'
                                         }`}
                                 />
                             </div>
@@ -197,25 +219,45 @@ const CreateIssueModal = ({
 
                         {/* Grid for Priority and Due Date */}
                         <div className="grid grid-cols-2 gap-3">
-                            {/* Priority Field */}
-                            <div>
+                            {/* Priority Field - custom dropdown */}
+                            <div className="relative">
                                 <label className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/60 uppercase block mb-1">
                                     Priority
                                 </label>
-                                <div className="relative">
-                                    <AlertCircle className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" strokeWidth={1.8} />
-                                    <select
-                                        name="priority"
-                                        value={formData.priority}
-                                        onChange={handleChange}
-                                        className="w-full h-9 pl-9 pr-3 bg-surface border border-border/60 rounded-md text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all appearance-none"
-                                    >
-                                        <option value="LOW">Low</option>
-                                        <option value="MEDIUM">Medium</option>
-                                        <option value="HIGH">High</option>
-                                        <option value="URGENT">Urgent</option>
-                                    </select>
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsPriorityOpen((prev) => !prev);
+                                        setIsAssigneeOpen(false);
+                                    }}
+                                    className="w-full h-9 pl-3 pr-2.5 bg-surface border border-border/60 rounded-md text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all flex items-center gap-2"
+                                >
+                                    <Circle className={`size-2.5 ${selectedPriority.colorClass} shrink-0`} strokeWidth={0} />
+                                    <span className="flex-1 text-left truncate">{selectedPriority.label}</span>
+                                    <ChevronDown className={`size-3.5 text-muted-foreground/40 transition-transform shrink-0 ${isPriorityOpen ? 'rotate-180' : ''}`} strokeWidth={1.8} />
+                                </button>
+
+                                {isPriorityOpen && (
+                                    <div className="absolute left-0 right-0 top-full mt-1.5 z-20 bg-surface/95 backdrop-blur-md border border-border/60 rounded-md shadow-lg overflow-hidden">
+                                        {PRIORITY_OPTIONS.map((option) => (
+                                            <button
+                                                key={option.value}
+                                                type="button"
+                                                onClick={() => handlePrioritySelect(option.value)}
+                                                className={`w-full flex items-center gap-2 px-3 py-2 text-[12.5px] transition-colors ${formData.priority === option.value
+                                                        ? 'bg-primary/10 text-foreground'
+                                                        : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
+                                                    }`}
+                                            >
+                                                <Circle className={`size-2.5 ${option.colorClass} shrink-0`} strokeWidth={0} />
+                                                <span className="flex-1 text-left">{option.label}</span>
+                                                {formData.priority === option.value && (
+                                                    <Check className="size-3 text-primary shrink-0" strokeWidth={2.5} />
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Due Date Field */}
@@ -224,7 +266,7 @@ const CreateIssueModal = ({
                                     Due Date
                                 </label>
                                 <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" strokeWidth={1.8} />
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40 pointer-events-none" strokeWidth={1.8} />
                                     <input
                                         type="date"
                                         name="due_date"
@@ -236,23 +278,74 @@ const CreateIssueModal = ({
                             </div>
                         </div>
 
-                        {/* Assignee Field */}
-                        <div>
+                        {/* Assignee Field - custom dropdown */}
+                        <div className="relative">
                             <label className="text-[10px] font-mono tracking-[0.08em] text-muted-foreground/60 uppercase block mb-1">
                                 Assignee
                             </label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/40" strokeWidth={1.8} />
-                                <select
-                                    value={formData.assignee_id}
-                                    onChange={handleChange}
-                                    name="assignee_id"
-                                    className="w-full h-9 pl-9 pr-3 bg-surface border border-border/60 rounded-md text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all appearance-none"
-                                >
-                                    <option value="">Unassigned</option>
-                                    {membersData}
-                                </select>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsAssigneeOpen((prev) => !prev);
+                                    setIsPriorityOpen(false);
+                                }}
+                                className="w-full h-9 pl-2.5 pr-2.5 bg-surface border border-border/60 rounded-md text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all flex items-center gap-2"
+                            >
+                                {selectedAssignee ? (
+                                    <span className="size-5 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-[9px] font-semibold text-primary shrink-0">
+                                        {getInitials(selectedAssignee.user.name)}
+                                    </span>
+                                ) : (
+                                    <span className="size-5 rounded-full bg-border/30 border border-border/60 flex items-center justify-center shrink-0">
+                                        <User className="size-2.5 text-muted-foreground/50" strokeWidth={1.8} />
+                                    </span>
+                                )}
+                                <span className="flex-1 text-left truncate">
+                                    {selectedAssignee?.user.name ?? "Unassigned"}
+                                </span>
+                                <ChevronDown className={`size-3.5 text-muted-foreground/40 transition-transform shrink-0 ${isAssigneeOpen ? 'rotate-180' : ''}`} strokeWidth={1.8} />
+                            </button>
+
+                            {isAssigneeOpen && (
+                                <div className="absolute left-0 right-0 top-full mt-1.5 z-20 bg-surface/95 backdrop-blur-md border border-border/60 rounded-md shadow-lg overflow-hidden max-h-[220px] overflow-y-auto">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleAssigneeSelect("")}
+                                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] transition-colors ${formData.assignee_id === ""
+                                                ? 'bg-primary/10 text-foreground'
+                                                : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
+                                            }`}
+                                    >
+                                        <span className="size-5 rounded-full bg-border/30 border border-border/60 flex items-center justify-center shrink-0">
+                                            <User className="size-2.5 text-muted-foreground/50" strokeWidth={1.8} />
+                                        </span>
+                                        <span className="flex-1 text-left">Unassigned</span>
+                                        {formData.assignee_id === "" && (
+                                            <Check className="size-3 text-primary shrink-0" strokeWidth={2.5} />
+                                        )}
+                                    </button>
+
+                                    {members.map((member) => (
+                                        <button
+                                            key={member.id}
+                                            type="button"
+                                            onClick={() => handleAssigneeSelect(member.user.id)}
+                                            className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] transition-colors ${formData.assignee_id === member.user.id
+                                                    ? 'bg-primary/10 text-foreground'
+                                                    : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
+                                                }`}
+                                        >
+                                            <span className="size-5 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-[9px] font-semibold text-primary shrink-0">
+                                                {getInitials(member.user.name)}
+                                            </span>
+                                            <span className="flex-1 text-left truncate">{member.user.name}</span>
+                                            {formData.assignee_id === member.user.id && (
+                                                <Check className="size-3 text-primary shrink-0" strokeWidth={2.5} />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Status Display - Readonly */}

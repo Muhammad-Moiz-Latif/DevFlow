@@ -4,7 +4,8 @@ import { create } from 'zustand'
 type User = {
     _id: string
     image: string
-    username: string
+    username: string,
+    email: string
 }
 
 type AuthStore = {
@@ -22,6 +23,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
     setAccessToken: (accessToken) => set({ accessToken }),
     clearAuth: () => {
         set({ user: null, accessToken: null }),
-        console.log('clearAuth called', new Error().stack)
+            console.log('clearAuth called', new Error().stack)
     }
 }))

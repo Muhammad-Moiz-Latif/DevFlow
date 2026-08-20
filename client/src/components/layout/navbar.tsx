@@ -1,16 +1,38 @@
-import { Bell, Search, Settings, User } from "lucide-react";
+import { Bell, Search, User } from "lucide-react";
 import { useState } from "react";
 import { NotificationDropdown } from "../ui/NotificationDropdown";
 import { useParams } from "react-router";
 import { useCurrentWorkspace } from "../../features/workspace/query/useCurrentWorkspace";
 import { useMyInfiniteNotifications } from "../../features/members/query/useMyInfiniteNotifications";
+import { useAuthStore } from "../../stores/auth-store";
+import { Logout } from "../../features/auth/api/logout";
+import { errorToast, successToast } from "../ui/CustomToasts";
+import { useNavigate } from "react-router";
+import { LogOut, ChevronRight } from "lucide-react";
 
 export const Navbar = ({ isRetracted }: { isRetracted: boolean }) => {
     const [isDropdownActive, setIsDropDownActive] = useState(false);
+    const [isUserDropdownActive, setIsUserDropdownActive] = useState(false);
     const { workspaceSlug } = useParams();
+    const { user, clearAuth } = useAuthStore();
+    const navigate = useNavigate();
+    const [imageError, setImageError] = useState(false);
     const { data: useCurrentWorkspaceData } = useCurrentWorkspace(workspaceSlug!);
     const { data: MyInfiniteNotifications } = useMyInfiniteNotifications(useCurrentWorkspaceData?.data?.id!);
     const unreadNotifications = MyInfiniteNotifications?.pages.flatMap((data) => data.data?.notifications).filter((notification) => !notification?.isRead) ?? [];
+
+    async function handleLogout() {
+        const { success } = await Logout();
+        if (success) {
+            clearAuth();
+            successToast("You have been logged out");
+            setTimeout(() => {
+                navigate('/login');
+            }, 1500);
+        } else {
+            errorToast("An error occurred");
+        }
+    }
 
     return (
         <nav className={`fixed top-0 right-0 z-50 h-15.25 bg-background/80 backdrop-blur-md border-b border-border/60 transition-all duration-300 ${isRetracted ? "left-24" : "left-56"}`}>
@@ -55,17 +77,57 @@ export const Navbar = ({ isRetracted }: { isRetracted: boolean }) => {
                     {/* Divider */}
                     <div className="w-px h-5 bg-border/40 mx-1" />
 
-                    {/* Settings Button */}
-                    <button className="p-2 hover:bg-surface/70 transition-colors rounded-md text-muted-foreground/70 hover:text-foreground">
-                        <Settings className="size-5" strokeWidth={1.8} />
-                    </button>
+                    {/* User Avatar with Dropdown */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsUserDropdownActive((prev) => !prev)}
+                            className="p-1 hover:bg-surface/70 transition-colors rounded-md"
+                        >
+                            <div className="size-7 rounded-full bg-linear-to-br from-primary/20 to-primary/10 border border-border/60 flex items-center justify-center hover:border-primary/40 transition-colors overflow-hidden">
+                                {user?.image && !imageError ? (
+                                    <img
+                                        src={user.image}
+                                        alt={user?.username || "User"}
+                                        referrerPolicy="no-referrer"
+                                        onError={() => setImageError(true)}
+                                        className="size-full object-cover"
+                                    />
+                                ) : (
+                                    <User className="size-4 text-foreground/70" strokeWidth={2} />
+                                )}
+                            </div>
+                        </button>
 
-                    {/* User Avatar */}
-                    <button className="p-1 hover:bg-surface/70 transition-colors rounded-md">
-                        <div className="size-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border border-border/60 flex items-center justify-center hover:border-primary/40 transition-colors">
-                            <User className="size-4 text-foreground/70" strokeWidth={2} />
-                        </div>
-                    </button>
+                        {/* User Dropdown */}
+                        {isUserDropdownActive && (
+                            <div className="absolute right-0 top-full mt-2 z-60 min-w-[220px]">
+                                <div className="bg-surface/95 backdrop-blur-md border border-border/60 rounded-lg shadow-lg overflow-hidden">
+                                    {/* User Info */}
+                                    <div className="px-4 py-3 border-b border-border/40">
+                                        <p className="text-sm font-medium text-foreground truncate">
+                                            {user?.username || "User"}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground/70 truncate">
+                                            {user?.email || "user@example.com"}
+                                        </p>
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div className="w-full h-px bg-border/40" />
+
+                                    {/* Logout Button */}
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-all group"
+                                    >
+                                        <LogOut className="size-4 flex-shrink-0 group-hover:scale-105 transition-transform" strokeWidth={1.8} />
+                                        <span className="truncate">Sign out</span>
+                                        <ChevronRight className="size-3.5 ml-auto opacity-50 group-hover:opacity-100 transition-opacity" strokeWidth={1.5} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </nav>

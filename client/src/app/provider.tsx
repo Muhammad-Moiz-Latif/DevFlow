@@ -30,7 +30,8 @@ export const CustomProvider = () => {
                     setAuth({
                         _id: response.data.data.id,
                         image: response.data.data.img,
-                        username: response.data.data.name
+                        username: response.data.data.name,
+                        email: response.data.data.email
                     }, currentToken);
                 }
             } catch (error) {

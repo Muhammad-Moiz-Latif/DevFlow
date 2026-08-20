@@ -22,10 +22,10 @@ export const Sidebar = ({ isRetracted, setIsRetracted }: { isRetracted: boolean,
     const firstWorkspace = useMemo(() => data?.data![0], [data]);
 
     async function handleLogout() {
+        successToast("You have been logged out");
         const { success } = await Logout();
         if (success) {
             clearAuth();
-            successToast("You have been logged out");
             setTimeout(() => {
                 navigate('/login');
             }, 1500);
