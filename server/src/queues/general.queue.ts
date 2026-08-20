@@ -12,3 +12,5 @@ export const generalQueue = new Queue('general', {
         removeOnFail: false
     }
 });
+
+console.log('General queue initialized');
