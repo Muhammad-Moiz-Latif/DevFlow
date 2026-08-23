@@ -1,4 +1,3 @@
-import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import "dotenv/config";
 import { authServices } from '../modules/auth/services';
@@ -6,14 +5,43 @@ import { db } from '../config/db';
 import { verificationTokenTable } from '../db/schema/tokens';
 import { and, eq } from 'drizzle-orm';
 
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.SENDER_EMAIL,
-        pass: process.env.SENDER_PASSWORD
+type SendEmailParams = {
+    to: string;
+    subject: string;
+    html: string;
+};
+
+// Shared sender for all outgoing mail — swap the email if you verify a domain later
+const sendViaBrevo = async ({ to, subject, html }: SendEmailParams) => {
+    const response = await fetch(BREVO_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'api-key': process.env.BREVO_API_KEY!,
+        },
+        body: JSON.stringify({
+            sender: {
+                name: 'DevFlow',
+                email: process.env.SENDER_EMAIL,
+            },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html,
+        }),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(
+            `Brevo send failed (${response.status}): ${errorBody?.message ?? 'Unknown error'}`
+        );
     }
-});
+
+    return response.json();
+};
 
 export type emailTokenType = "EMAIL_VERIFICATION" | "PASSWORD_RESET";
 
@@ -25,8 +53,7 @@ export const sendWorkspaceInvitationEmail = async (data: {
     role: "ADMIN" | "MEMBER" | "VIEWER"
 }) => {
     try {
-        const { rejected } = await transporter.sendMail({
-            from: `DevFlow <${process.env.SENDER_EMAIL}>`,
+        await sendViaBrevo({
             to: data.email,
             subject: `You have been invited to join ${data.workspaceName} - DevFlow`,
             html: `
@@ -56,10 +83,6 @@ export const sendWorkspaceInvitationEmail = async (data: {
         `
         });
 
-        if (rejected.length > 0) {
-            throw new Error("Failed to send invitation email");
-        }
-
         return { success: true };
     } catch (error) {
         console.error("Workspace invitation email error:", error);
@@ -80,8 +103,7 @@ export const sendEmailToken = async (username: string, email: string, type: emai
 
     if (type === "EMAIL_VERIFICATION") {
         try {
-            const { rejected } = await transporter.sendMail({
-                from: `DevFlow <${process.env.SENDER_EMAIL}>`,
+            await sendViaBrevo({
                 to: email,
                 subject: 'Verify Your Email - DevFlow',
                 html: `
@@ -115,11 +137,6 @@ export const sendEmailToken = async (username: string, email: string, type: emai
         `
             });
 
-            if (rejected.length > 0) {
-                console.error("Rejected recipients:", rejected);
-                throw new Error("Failed to send email");
-            }
-
             return { success: true };
         } catch (error) {
             console.error("Email sending error:", error);
@@ -128,8 +145,7 @@ export const sendEmailToken = async (username: string, email: string, type: emai
     } else {
         const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${createdToken?.token}`;
         try {
-            const { rejected } = await transporter.sendMail({
-                from: `DevFlow <${process.env.SENDER_EMAIL}>`,
+            await sendViaBrevo({
                 to: email,
                 subject: 'Reset Your Password - DevFlow',
                 html: `
@@ -168,11 +184,6 @@ export const sendEmailToken = async (username: string, email: string, type: emai
             </div>
         `
             });
-
-            if (rejected.length > 0) {
-                console.error("Rejected recipients:", rejected);
-                throw new Error("Failed to send email");
-            }
 
             return { success: true };
         } catch (error) {
