@@ -12,17 +12,10 @@ import {
     Check
 } from "lucide-react";
 import { Link } from "react-router";
+import { useShouldShowLoader } from "../../utils/useShouldShowLoader";
 
 export function LandingPage() {
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Simulate loading
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, []);
+    const isLoading = useShouldShowLoader();
 
     if (isLoading) {
         return <LoadingSkeleton />;

@@ -3,17 +3,10 @@ import { AuthShell, Divider } from "../../components/ui/AuthShell";
 import { SignUpForm } from "../../features/auth/components/signup-form";
 import GoogleLoginButton from "../../utils/googleLoginButton";
 import { LoadingAuthSkeleton } from "../../components/ui/LoadingAuthSkeleton";
-import { useEffect, useState } from "react";
+import { useShouldShowLoader } from "../../utils/useShouldShowLoader";
 
 export function SignupPage() {
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1500);
-        return () => clearTimeout(timer);
-    }, []);
+    const isLoading = useShouldShowLoader();
 
     if (isLoading) {
         return <LoadingAuthSkeleton variant="signup" />;

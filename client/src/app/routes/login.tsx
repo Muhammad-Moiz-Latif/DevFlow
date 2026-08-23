@@ -3,18 +3,11 @@ import { AuthShell, Divider } from "../../components/ui/AuthShell";
 import { LoginForm } from "../../features/auth/components/login-form";
 import { LoadingAuthSkeleton } from "../../components/ui/LoadingAuthSkeleton";
 import GoogleLoginButton from "../../utils/googleLoginButton";
-import { useEffect, useState } from "react";
+import { useShouldShowLoader } from "../../utils/useShouldShowLoader";
 
 
 export function LoginPage() {
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
+    const isLoading = useShouldShowLoader();
 
     if (isLoading) {
         return <LoadingAuthSkeleton variant="login" />;

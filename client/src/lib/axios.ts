@@ -44,7 +44,8 @@ privateApi.interceptors.response.use(
                 return privateApi(originalRequest)
             } catch {
                 useAuthStore.getState().clearAuth();
-                if (window.location.pathname !== '/login') {
+                // Public invitation pages must remain available to logged-out recipients.
+                if (!['/login', '/accept-invitation'].includes(window.location.pathname)) {
                     window.location.href = '/login'
                 }
             }

@@ -28,7 +28,6 @@ export const MyIssuesModal = () => {
     const { data: workspaceData } = useCurrentWorkspace(workspaceSlug!);
     const { data: projectData } = useCurrentProject(projectSlug!, workspaceData?.data?.id!);
     const { data: myIssuesData, isPending } = useMyIssues(workspaceData?.data?.id!, projectData?.data?.id!);
-
     const [selectedPriorities, setSelectedPriorities] = useState<Set<Priority>>(new Set());
     const [selectedStatuses, setSelectedStatuses] = useState<Set<Status>>(new Set());
     const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
