@@ -30,6 +30,7 @@ export default function GoogleLoginButton({ label }: { label: string }) {
                     _id: response.data.data?._id!,
                     image: response.data.data?.img!,
                     username: response.data.data?.username!,
+                    email: response.data.data?.email!
                 }, response.data.access_token);
 
                 const workspaceSlug = response.data.defaultWorkspaceSlug;
@@ -66,6 +67,7 @@ export default function GoogleLoginButton({ label }: { label: string }) {
                         _id: response.data.data?._id!,
                         image: response.data.data?.img!,
                         username: response.data.data?.username!,
+                        email: response.data.data?.email!
                     }, response.data.access_token);
 
                     const workspaceSlug = response.data.defaultWorkspaceSlug;

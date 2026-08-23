@@ -50,6 +50,12 @@ export const workspaceControllers = {
                 });
             };
 
+            // SIDE-AFFECT: Updates users lastworkspaceId parameter
+            await generalQueue.add('UPDATE_USER_WORKSPACE', {
+                workspaceId: createdWorkspace?.id,
+                userId: id
+            });
+
             return res.status(201).json({
                 success: true,
                 message: "Workspace created successfully"

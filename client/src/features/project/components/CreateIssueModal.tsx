@@ -1,5 +1,5 @@
 import { useState, type Dispatch, type SetStateAction, useRef } from "react";
-import { X, ArrowRight, Calendar, User, AlertCircle, FileText, ChevronDown, Check, Circle } from "lucide-react";
+import { X, ArrowRight, Calendar, User, FileText, ChevronDown, Check, Circle } from "lucide-react";
 import type { createIssueType } from "../../issue/apis/createissue";
 import { useCreateIssue } from "../../issue/queries/useCreateIssue";
 import { errorToast, successToast } from "../../../components/ui/CustomToasts";
@@ -245,8 +245,8 @@ const CreateIssueModal = ({
                                                 type="button"
                                                 onClick={() => handlePrioritySelect(option.value)}
                                                 className={`w-full flex items-center gap-2 px-3 py-2 text-[12.5px] transition-colors ${formData.priority === option.value
-                                                        ? 'bg-primary/10 text-foreground'
-                                                        : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
+                                                    ? 'bg-primary/10 text-foreground'
+                                                    : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
                                                     }`}
                                             >
                                                 <Circle className={`size-2.5 ${option.colorClass} shrink-0`} strokeWidth={0} />
@@ -312,8 +312,8 @@ const CreateIssueModal = ({
                                         type="button"
                                         onClick={() => handleAssigneeSelect("")}
                                         className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] transition-colors ${formData.assignee_id === ""
-                                                ? 'bg-primary/10 text-foreground'
-                                                : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
+                                            ? 'bg-primary/10 text-foreground'
+                                            : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
                                             }`}
                                     >
                                         <span className="size-5 rounded-full bg-border/30 border border-border/60 flex items-center justify-center shrink-0">
@@ -331,8 +331,8 @@ const CreateIssueModal = ({
                                             type="button"
                                             onClick={() => handleAssigneeSelect(member.user.id)}
                                             className={`w-full flex items-center gap-2.5 px-3 py-2 text-[12.5px] transition-colors ${formData.assignee_id === member.user.id
-                                                    ? 'bg-primary/10 text-foreground'
-                                                    : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
+                                                ? 'bg-primary/10 text-foreground'
+                                                : 'text-foreground/75 hover:bg-border/20 hover:text-foreground'
                                                 }`}
                                         >
                                             <span className="size-5 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-[9px] font-semibold text-primary shrink-0">

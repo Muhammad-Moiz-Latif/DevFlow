@@ -1,15 +1,10 @@
 import { useState } from "react";
-import { Building2, Mail, ArrowRight, Check, Sparkles } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Building2, ArrowRight, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router";
 import { useCreateWorkspace } from "../query/useCreateWorkspace";
 import { errorToast, successToast } from "../../../components/ui/CustomToasts";
 import { GeneralLoader } from "../../../utils/loader";
 
-
-const pendingInvites = [
-    { workspace: "Acme Corp", inviter: "Sarah Kim", role: "Member", slug: "acme" },
-    { workspace: "Helix Labs", inviter: "Marcus Lee", role: "Viewer", slug: "helix" },
-];
 
 export function CreateWorkspace() {
     const [name, setName] = useState("");
@@ -50,7 +45,7 @@ export function CreateWorkspace() {
             <div className="w-full max-w-2xl">
                 <div className="flex justify-between">
                     <button onClick={() => navigate(-1)} className="inline-flex hover:cursor-pointer items-center gap-2 mb-8 group">
-                        <div className="size-7 rounded-md bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-semibold text-xs">
+                        <div className="size-7 rounded-md bg-linear-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-semibold text-xs">
                             DF
                         </div>
                         <span className="text-sm font-semibold tracking-tight">DevFlow</span>
@@ -121,48 +116,6 @@ export function CreateWorkspace() {
                         <ArrowRight className="size-4" />
                     </button>
                 </form>
-
-                {/* Invitations */}
-                <div className="bg-card border border-border rounded-lg p-6">
-                    <div className="flex items-center gap-2 mb-5">
-                        <div className="size-8 rounded-md bg-status-done/15 flex items-center justify-center">
-                            <Mail className="size-4 text-status-done" />
-                        </div>
-                        <div>
-                            <h2 className="text-sm font-semibold">Pending invitations</h2>
-                            <p className="text-[11px] text-muted-foreground">You've been invited to {pendingInvites.length} workspaces</p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        {pendingInvites.map((inv) => (
-                            <div
-                                key={inv.slug}
-                                className="flex items-center gap-3 p-3 rounded-md border border-border bg-surface/40 hover:bg-surface-elevated transition-colors"
-                            >
-                                <div className="size-9 rounded-md bg-gradient-to-br from-primary/30 to-primary/10 border border-border flex items-center justify-center text-xs font-semibold">
-                                    {inv.workspace.slice(0, 2).toUpperCase()}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-medium">{inv.workspace}</div>
-                                    <div className="text-[11px] text-muted-foreground">
-                                        Invited by {inv.inviter} · {inv.role}
-                                    </div>
-                                </div>
-                                <Link
-                                    to="/w/$workspaceSlug"
-                                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity"
-                                >
-                                    <Check className="size-3.5" />
-                                    Accept
-                                </Link>
-                                <button className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
-                                    Decline
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
         </div>
     );

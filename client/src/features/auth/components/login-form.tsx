@@ -48,7 +48,8 @@ export const LoginForm = () => {
                     setAuthStore({
                         _id: response.data?._id,
                         image: response.data?.img,
-                        username: response.data?.username
+                        username: response.data?.username,
+                        email: response.data.email
                     }, response.access_token);
                     if (fromInvite && invitationToken) {
                         return setTimeout(() => {

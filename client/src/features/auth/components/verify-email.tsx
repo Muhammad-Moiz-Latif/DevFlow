@@ -69,10 +69,10 @@ export default function VerifyEmail() {
             onSuccess: (response) => {
                 if (response.success) {
                     sessionStorage.removeItem('pendingVerificationUserId');
-                    successToast("Email verified! Welcome to DevFlow"),
-                        setTimeout(() => {
-                            navigate('/login', { state: { fromInvite: invitationToken ? true : false } });
-                        }, 1000);
+                    successToast("Email verified successfully! Please log in.");
+                    setTimeout(() => {
+                        navigate('/login', { state: { fromInvite: invitationToken ? true : false } });
+                    }, 1000);
                 };
             },
             onError: (error: Error) => {

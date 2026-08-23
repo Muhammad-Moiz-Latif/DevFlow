@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import logo from '../../assets/logo.png';
+import { LoadingSkeleton } from "../../components/ui/landing-skeleton";
 import {
     ArrowRight,
     Zap,
@@ -13,6 +14,19 @@ import {
 import { Link } from "react-router";
 
 export function LandingPage() {
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // Simulate loading
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (isLoading) {
+        return <LoadingSkeleton />;
+    }
     // Smooth scroll function
     const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
         e.preventDefault();

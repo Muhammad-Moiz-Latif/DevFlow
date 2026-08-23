@@ -2,7 +2,6 @@ import { useParams } from "react-router";
 import { useCurrentWorkspace } from "../../workspace/query/useCurrentWorkspace";
 import { useCurrentProject } from "../../project/query/useCurrentProject";
 import { useMyIssues } from "../queries/useMyIssues";
-import { useAllProjects } from "../../project/query/useAllProjects";
 import { useMemo, useState } from "react";
 import { IssueCard } from "./issue-card";
 import type { IssueCardIssue } from "./issue-card";
@@ -27,19 +26,12 @@ const formatStatus = (s: Status) => s.replace('_', ' ').toLowerCase();
 export const MyIssuesModal = () => {
     const { projectSlug, workspaceSlug } = useParams();
     const { data: workspaceData } = useCurrentWorkspace(workspaceSlug!);
-    const { data: allProjectsData } = useAllProjects(workspaceData?.data?.id!);
     const { data: projectData } = useCurrentProject(projectSlug!, workspaceData?.data?.id!);
     const { data: myIssuesData, isPending } = useMyIssues(workspaceData?.data?.id!, projectData?.data?.id!);
 
     const [selectedPriorities, setSelectedPriorities] = useState<Set<Priority>>(new Set());
     const [selectedStatuses, setSelectedStatuses] = useState<Set<Status>>(new Set());
     const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
-
-    const totalProjects = useMemo(() => {
-        const issues = (myIssuesData?.data ?? []) as MyIssueListItem[];
-        const filteredIssues = new Set(issues.map((issue) => issue.project.id));
-        return filteredIssues.size;
-    }, [myIssuesData?.data, allProjectsData?.data]);
 
     const togglePriority = (priority: Priority) => {
         setSelectedPriorities((prev) => {
