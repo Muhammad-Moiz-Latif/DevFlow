@@ -25,6 +25,8 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
     const { data: workspaceMembers } = useWorkspaceMembers(workspaceData?.data?.id!);
     const { mutate } = useUpdateIssue(workspaceData?.data?.id!, projectData?.data?.id!);
 
+    console.log(issue.logs)
+
     const handleClose = () => {
         setIsClosing(true);
         setTimeout(() => {
@@ -78,6 +80,54 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
         });
         setShowDatePicker(false);
     };
+
+    function formatStatusLabel(status: string | null): string {
+        const map: Record<string, string> = {
+            TODO: "To Do",
+            IN_PROGRESS: "In Progress",
+            IN_REVIEW: "In Review",
+            DONE: "Done",
+        };
+        return status ? (map[status] ?? status) : "none";
+    }
+
+    function formatPriorityLabel(priority: string | null): string {
+        const map: Record<string, string> = {
+            URGENT: "Urgent",
+            HIGH: "High",
+            MEDIUM: "Medium",
+            LOW: "Low",
+        };
+        return priority ? (map[priority] ?? priority) : "none";
+    }
+
+    function getActivityAction(log: IssueType["logs"][number]): string {
+        switch (log.type) {
+            case "ISSUE_CREATED":
+                return "created the issue";
+
+            case "STATUS_CHANGED":
+                return `changed status from ${formatStatusLabel(log.oldValue)} to ${formatStatusLabel(log.newValue)}`;
+
+            case "PRIORITY_CHANGED":
+                return `changed priority from ${formatPriorityLabel(log.oldValue)} to ${formatPriorityLabel(log.newValue)}`;
+
+            case "ASSIGNEE_CHANGED":
+                return log.newValue
+                    ? `assigned to ${log.newValue}`
+                    : "unassigned this issue";
+
+            case "COMMENT_ADDED":
+                return "added a comment";
+
+            case "COMMENT_DELETED":
+                return "deleted a comment";
+
+            default:
+                return "updated the issue";
+        }
+    }
+
     const statusMap: Record<string, "todo" | "progress" | "review" | "done"> = {
         "TODO": "todo",
         "IN_PROGRESS": "progress",
@@ -250,13 +300,23 @@ export function IssueDrawer({ issue, onClose }: { issue: IssueType; onClose: () 
                                 Activity
                             </h3>
                             <div className="space-y-2.5 border-l border-border pl-4 ml-1.5">
-                                <ActivityItem
-                                    actor={displayIssue.creator?.name || "Unknown"}
-                                    action="created the issue"
-                                    time={formatTimeAgo(displayIssue.createdAt)}
-                                />
+                                {displayIssue.logs && displayIssue.logs.length > 0 ? (
+                                    displayIssue.logs.map((log) => (
+                                        <ActivityItem
+                                            key={log.id}
+                                            actor={log.actor?.username || "Unknown"}
+                                            action={getActivityAction(log)}
+                                            time={formatTimeAgo(log.createdAt)}
+                                        />
+                                    ))
+                                ) : (
+                                    <ActivityItem
+                                        actor={displayIssue.creator?.name || "Unknown"}
+                                        action="created the issue"
+                                        time={formatTimeAgo(displayIssue.createdAt)}
+                                    />
+                                )}
                             </div>
-                            <p className="text-muted-foreground/40 italic text-[10px] mt-2">Additional activity tracking to be implemented</p>
                         </div>
 
                         {/* Comments */}

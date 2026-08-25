@@ -45,39 +45,60 @@ export const issueServices = {
 
     async getAllIssues(workspaceId: string, projectId: string) {
         const issues = await db.execute(sql`
-            SELECT
-                i.id,
-                i.title,
-                i.description,
-                i.status,
-                i.priority,
-                i.order,
-                i."dueDate",
-                i."createdAt",
-                i."updatedAt",
-                CASE
-                    WHEN u.id IS NOT NULL THEN
-                        json_build_object(
-                        'id',u.id,
-                        'name',u.name,
-                        'email',u.email,
-                        'img',u.img
+        SELECT
+            i.id,
+            i.title,
+            i.description,
+            i.status,
+            i.priority,
+            i.order,
+            i."dueDate",
+            i."createdAt",
+            i."updatedAt",
+            CASE
+                WHEN u.id IS NOT NULL THEN
+                    json_build_object(
+                    'id',u.id,
+                    'name',u.name,
+                    'email',u.email,
+                    'img',u.img
+                    )
+                ELSE NULL
+            END AS assignee,
+            json_build_object(
+                'id',ou.id,
+                'name',ou.name,
+                'email',ou.email,
+                'img',ou.img
+            ) AS creator,
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', al.id,
+                        'type', al."logType",
+                        'oldValue', al."oldValue",
+                        'newValue', al."newValue",
+                        'createdAt', al."createdAt",
+                        'actor', json_build_object(
+                            'id', au.id,
+                            'username', au.name,
+                            'email', au.email,
+                            'img', au.img
                         )
-                    ELSE NULL
-                END AS assignee,
-                json_build_object(
-                    'id',ou.id,
-                    'name',ou.name,
-                    'email',ou.email,
-                    'img',ou.img
-                ) AS creator
+                    ) ORDER BY al."createdAt" DESC
+                ) FILTER (WHERE al.id IS NOT NULL),
+            '[]'
+            ) AS logs
 
-                FROM issues i
-                LEFT JOIN users u ON i."assigneeId" = u.id
-                JOIN users ou ON i."createdBy" = ou.id
-                WHERE i."workspaceId" = ${workspaceId}
-                AND i."projectId" = ${projectId}
-        `);
+            FROM issues i
+            LEFT JOIN users u ON i."assigneeId" = u.id
+            JOIN users ou ON i."createdBy" = ou.id
+            LEFT JOIN "activity-logs" al ON al."issueId" = i.id
+            LEFT JOIN users au ON al."actorId" = au.id
+            WHERE i."workspaceId" = ${workspaceId}
+            AND i."projectId" = ${projectId}
+            GROUP BY i.id, u.id, ou.id
+    `);
 
         return issues.rows;
     },

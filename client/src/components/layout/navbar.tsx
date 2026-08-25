@@ -9,9 +9,12 @@ import { Logout } from "../../features/auth/api/logout";
 import { errorToast, successToast } from "../ui/CustomToasts";
 import { useNavigate } from "react-router";
 import { LogOut, ChevronRight } from "lucide-react";
+import SearchDropdown from "../ui/SearchDropdown";
+import { useDebounce } from "../hooks/useDebouce";
 
 export const Navbar = ({ isRetracted }: { isRetracted: boolean }) => {
     const [isDropdownActive, setIsDropDownActive] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
     const [isUserDropdownActive, setIsUserDropdownActive] = useState(false);
     const { workspaceSlug } = useParams();
     const { user, clearAuth } = useAuthStore();
@@ -20,6 +23,7 @@ export const Navbar = ({ isRetracted }: { isRetracted: boolean }) => {
     const { data: useCurrentWorkspaceData } = useCurrentWorkspace(workspaceSlug!);
     const { data: MyInfiniteNotifications } = useMyInfiniteNotifications(useCurrentWorkspaceData?.data?.id!);
     const unreadNotifications = MyInfiniteNotifications?.pages.flatMap((data) => data.data?.notifications).filter((notification) => !notification?.isRead) ?? [];
+    const debouncedSearchValue = useDebounce(searchValue, 500);
 
     async function handleLogout() {
         const { success } = await Logout();
@@ -32,24 +36,39 @@ export const Navbar = ({ isRetracted }: { isRetracted: boolean }) => {
         } else {
             errorToast("An error occurred");
         }
-    }
+    };
+
+    function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
+        const inputValue = e.target.value;
+        setSearchValue(inputValue);
+    };
 
     return (
         <nav className={`fixed top-0 right-0 z-50 h-15.25 bg-background/80 backdrop-blur-md border-b border-border/60 transition-all duration-300 ${isRetracted ? "left-24" : "left-56"}`}>
             <div className="h-full px-6 flex items-center justify-between">
-                {/* Search Bar */}
-                <div className="flex-1 max-w-xs">
+                {/* Search Actions */}
+                <div className="relative flex-1 max-w-xs">
+                    {/* Search Bar */}
                     <div className="relative group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/60 group-focus-within:text-primary/80 transition-colors" />
                         <input
                             type="text"
+                            value={searchValue}
                             placeholder="Search issues..."
+                            onChange={handleSearch}
                             className="w-full h-10 pl-9 pr-3 rounded-md bg-surface border border-border/60 text-[13px] placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all hover:border-border"
                         />
                         <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/40 bg-border/30 px-1.5 py-0.5 rounded border border-border/40">
                             ⌘K
                         </kbd>
                     </div>
+
+                    {/* Search Dropdown */}
+                    <SearchDropdown
+                        debouncedValue={debouncedSearchValue}
+                        userId={user?._id || ""}
+                        workspaceId={useCurrentWorkspaceData?.data?.id || ""}
+                    />
                 </div>
 
                 {/* Right Actions */}

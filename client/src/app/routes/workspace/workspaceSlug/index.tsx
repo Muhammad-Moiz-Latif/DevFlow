@@ -1,20 +1,28 @@
 import {
-    CheckCircle2,
-    Clock,
-    Loader2,
+    Activity,
     ArrowRight,
+    CheckCircle2,
+    Clock3,
+    Command,
+    Layers3,
+    Loader2,
+    Zap,
 } from "lucide-react";
+import { Link, useParams } from "react-router";
+import { useMemo } from "react";
+
 import { PriorityBadge, StatusBadge } from "../../../../components/ui/badges";
 import { useMyIssues } from "../../../../features/workspace/query/useMyIssues";
-import { useParams } from "react-router";
 import { useCurrentWorkspace } from "../../../../features/workspace/query/useCurrentWorkspace";
 import { useAuthStore } from "../../../../stores/auth-store";
 import { useAllActivityLogs } from "../../../../features/workspace/query/useAllActivityLogs";
-import { useMemo } from "react";
-import { Link } from "react-router";
 
 type Priority = "urgent" | "high" | "medium" | "low";
 type Status = "todo" | "progress" | "review" | "done";
+
+/* -------------------------------------------------------------------------- */
+/* HELPERS                                                                    */
+/* -------------------------------------------------------------------------- */
 
 const mapPriority = (priority: string): Priority => {
     const map: Record<string, Priority> = {
@@ -23,6 +31,7 @@ const mapPriority = (priority: string): Priority => {
         MEDIUM: "medium",
         LOW: "low",
     };
+
     return map[priority] || "low";
 };
 
@@ -33,18 +42,32 @@ const mapStatus = (status: string): Status => {
         IN_REVIEW: "review",
         DONE: "done",
     };
+
     return map[status] || "todo";
 };
 
-const formatDate = (date: Date | string): string => {
+const formatDate = (date: Date | string | null | undefined): string => {
+    if (!date) return "—";
+
     const d = new Date(date);
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    if (Number.isNaN(d.getTime())) {
+        return "—";
+    }
+
+    return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+    });
 };
 
 const formatTimeAgo = (date: Date | string): string => {
     const d = new Date(date);
+
     const now = new Date();
+
     const diffMs = now.getTime() - d.getTime();
+
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
@@ -53,406 +76,1063 @@ const formatTimeAgo = (date: Date | string): string => {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return "Yesterday";
+
     return `${diffDays}d ago`;
 };
 
 const getActivityMessage = (log: any): string => {
     const { logType, newValue } = log;
+
     switch (logType) {
         case "STATUS_CHANGED":
             return `changed status to ${newValue}`;
+
         case "PRIORITY_CHANGED":
             return `changed priority to ${newValue}`;
+
         case "ASSIGNEE_CHANGED":
-            return `reassigned issue`;
+            return "reassigned issue";
+
         case "COMMENT_ADDED":
-            return `commented on issue`;
+            return "commented on issue";
+
         case "COMMENT_DELETED":
-            return `deleted a comment`;
+            return "deleted a comment";
+
         case "ISSUE_CREATED":
-            return `created issue`;
+            return "created issue";
+
         default:
             return "updated issue";
     }
 };
 
+/* -------------------------------------------------------------------------- */
+/* DASHBOARD                                                                  */
+/* -------------------------------------------------------------------------- */
+
 export function Dashboard() {
     const { user } = useAuthStore();
+
     const { workspaceSlug } = useParams();
-    const { data: workspaceData, isPending } = useCurrentWorkspace(workspaceSlug!);
-    const { data: allIssues, isPending: isIssuesPending } = useMyIssues(
+
+    const {
+        data: workspaceData,
+        isPending: isWorkspacePending,
+    } = useCurrentWorkspace(workspaceSlug!);
+
+    const {
+        data: allIssues,
+        isPending: isIssuesPending,
+    } = useMyIssues(
         user?._id!,
         workspaceData?.data?.id!
     );
-    const { data: allActivityLogs, isPending: isActivityPending } =
-        useAllActivityLogs(workspaceData?.data?.id!);
 
-    const { openIssues, urgentIssues, completedIssues, completionRate } = useMemo(() => {
-        if (!allIssues?.data) {
-            return { openIssues: 0, urgentIssues: 0, completedIssues: 0, completionRate: 0 };
-        }
+    const {
+        data: allActivityLogs,
+        isPending: isActivityPending,
+    } = useAllActivityLogs(
+        workspaceData?.data?.id!
+    );
 
-        let openIssues = 0;
-        let urgentIssues = 0;
-        let completedIssues = 0;
+    /* ---------------------------------------------------------------------- */
+    /* METRICS                                                                */
+    /* ---------------------------------------------------------------------- */
 
-        allIssues.data.forEach((issue) => {
-            openIssues++;
-            if (issue.priority === "URGENT") urgentIssues++;
-            if (issue.status === "DONE") completedIssues++;
-        });
+    const metrics = useMemo(() => {
+        const issues = allIssues?.data ?? [];
 
-        const completionRate = openIssues > 0 ? Math.round((completedIssues / openIssues) * 100) : 0;
+        const total = issues.length;
 
-        return { openIssues, urgentIssues, completedIssues, completionRate };
+        const completed = issues.filter(
+            (issue) => issue.status === "DONE"
+        ).length;
+
+        const urgent = issues.filter(
+            (issue) => issue.priority === "URGENT"
+        ).length;
+
+        const inProgress = issues.filter(
+            (issue) => issue.status === "IN_PROGRESS"
+        ).length;
+
+        const inReview = issues.filter(
+            (issue) => issue.status === "IN_REVIEW"
+        ).length;
+
+        const todo = issues.filter(
+            (issue) => issue.status === "TODO"
+        ).length;
+
+        const completionRate =
+            total > 0
+                ? Math.round((completed / total) * 100)
+                : 0;
+
+        return {
+            total,
+            completed,
+            urgent,
+            inProgress,
+            inReview,
+            todo,
+            completionRate,
+        };
     }, [allIssues?.data]);
 
-    if (!user || isPending || !workspaceData?.data) {
-        return (
-            <div className="p-6 max-w-6xl mx-auto flex items-center justify-center min-h-[60vh]">
-                <div className="flex items-center gap-2.5 border border-border bg-card px-5 py-3">
-                    <Loader2 className="size-3.5 animate-spin text-primary" />
-                    <span className="text-[12px] font-mono tracking-wide text-muted-foreground">
-                        Loading workspace…
-                    </span>
-                </div>
-            </div>
-        );
+    /* ---------------------------------------------------------------------- */
+    /* LOADING                                                                 */
+    /* ---------------------------------------------------------------------- */
+
+    if (
+        !user ||
+        isWorkspacePending ||
+        !workspaceData?.data
+    ) {
+        return <DashboardLoader />;
     }
 
     const hour = new Date().getHours();
+
     const greeting =
-        hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+        hour < 12
+            ? "morning"
+            : hour < 17
+                ? "afternoon"
+                : "evening";
 
-    const railLength = Math.min(Math.max(openIssues, 1), 24);
+    const workspaceName =
+        workspaceData.data.name || "Workspace";
 
+    // Get top 5 issues and activities
+    const topIssues = allIssues?.data?.slice(0, 5) ?? [];
+    const topActivities = allActivityLogs?.data
+        ? [...allActivityLogs.data]
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 5)
+        : [];
     return (
-        <div className="p-5 md:p-6 max-w-6xl mx-auto">
-            {/* ── Title block ── */}
-            <div className="relative mb-7 pb-5 border-b border-border">
-                <div className="absolute top-0 left-0 size-2 border-t border-l border-primary/40" />
-                <div className="absolute top-0 right-0 size-2 border-t border-r border-primary/40" />
+        <div className="relative min-h-full overflow-hidden">
+            {/* -----------------------BACKGROUND----------------------------------------- */}
 
-                <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                        <div className="inline-flex items-center gap-3 mb-3 text-[10px] font-mono tracking-[0.14em] text-muted-foreground/55 uppercase">
+            <DashboardAtmosphere />
+
+            {/* -----------------------------CONTENT----------------------------------- */}
+
+
+            <main className="relative z-10 max-w-[1400px] mx-auto px-4 py-5 md:px-6 md:py-7">
+
+                {/* ==========================HEADER================================== */}
+
+
+                <section className="relative mb-8">
+
+                    {/* registration marks with spacing */}
+
+                    <CornerMark position="top-left" />
+                    <CornerMark position="top-right" />
+
+                    <div className="border-b border-border/70 pb-5 pt-2">
+
+                        {/* technical identity */}
+
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 my-4">
+
+                            <TechnicalLabel>
+                                FIG. 10
+                            </TechnicalLabel>
+
                             <span className="w-4 h-px bg-border" />
-                            Fig. 10 — Dashboard
-                            <span className="w-4 h-px bg-border" />
-                            <span className="text-muted-foreground/40">
-                                {new Date().toLocaleDateString("en-US", {
-                                    weekday: "short",
-                                    month: "short",
-                                    day: "numeric",
-                                })}
+
+                            <TechnicalLabel>
+                                WORKSPACE CONTROL
+                            </TechnicalLabel>
+
+                            <span className="w-px h-3 bg-border/60" />
+
+                            <TechnicalLabel>
+                                {formatDate(new Date())}
+                            </TechnicalLabel>
+
+                            <span className="w-px h-3 bg-border/60" />
+
+                            <span className="inline-flex items-center gap-1.5 text-[9px] font-mono tracking-[0.12em] text-primary/75 uppercase">
+
+                                <span className="size-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_oklch(0.72_0.20_290/0.55)]" />
+
+                                SYSTEM / LIVE
+
                             </span>
-                            <span className="w-px h-2.5 bg-border/50" />
-                            <span className="flex items-center gap-1.5 text-primary/70 normal-case tracking-wide">
-                                <span className="size-1 rounded-full bg-primary animate-pulse" />
-                                LIVE
-                            </span>
-                        </div>
 
-                        <h1 className="text-[1.5rem] md:text-[1.65rem] font-semibold tracking-[-0.03em] leading-tight">
-                            Good {greeting}, {user?.username}
-                        </h1>
+                            <div className="ml-auto hidden md:flex items-center gap-2">
 
-                        <p className="text-[13.5px] text-muted-foreground mt-1.5 leading-relaxed">
-                            You have{" "}
-                            <span className="text-foreground font-medium">
-                                {openIssues} {openIssues === 1 ? "issue" : "issues"}
-                            </span>{" "}
-                            assigned
-                            {urgentIssues > 0 && (
-                                <>
-                                    {" "}
-                                    ·{" "}
-                                    <span className="text-priority-urgent font-medium">
-                                        {urgentIssues} urgent
-                                    </span>
-                                </>
-                            )}
-                            {completedIssues > 0 && (
-                                <>
-                                    {" "}
-                                    ·{" "}
-                                    <span className="text-status-done font-medium">
-                                        {completedIssues} done
-                                    </span>
-                                </>
-                            )}
-                        </p>
-
-                        {/* Workload rail — same scale-bar motif as the Hero, driven by real data */}
-                        <div className="mt-4 flex items-center gap-2.5">
-                            <div className="flex items-end gap-[3px]">
-                                {Array.from({ length: railLength }).map((_, i) => {
-                                    const filled = i < completedIssues;
-                                    return (
-                                        <span
-                                            key={i}
-                                            className={filled ? "bg-status-done" : "bg-border/70"}
-                                            style={{
-                                                width: "2px",
-                                                height: i % 4 === 0 ? "11px" : i % 2 === 0 ? "7px" : "4px",
-                                            }}
-                                        />
-                                    );
-                                })}
-                            </div>
-                            <span className="text-[9px] font-mono tracking-[0.14em] text-muted-foreground/40 uppercase">
-                                Workload rail · {completedIssues}/{openIssues} closed
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Scale mark */}
-                    <div className="hidden sm:flex flex-col items-end gap-1 pt-1 shrink-0">
-                        <div className="flex items-end gap-[2px]">
-                            {Array.from({ length: 11 }).map((_, i) => (
-                                <span
-                                    key={i}
-                                    className={i % 4 === 0 ? "bg-primary/45" : "bg-border/50"}
-                                    style={{
-                                        width: "1px",
-                                        height: i % 4 === 0 ? "9px" : i % 2 === 0 ? "5px" : "3px",
-                                    }}
-                                />
-                            ))}
-                        </div>
-                        <span className="text-[8px] font-mono tracking-[0.16em] text-muted-foreground/35 uppercase">
-                            Scale 1:1
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            {/* ── Instrument strip ── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border border border-border mb-6">
-                <StatCell label="Open" value={openIssues} hint="Active" tone="progress" />
-                <StatCell label="Urgent" value={urgentIssues} hint="Attention" tone="urgent" />
-                <DialCell value={completionRate} label="Completion" total={openIssues} />
-                <StatCell label="Velocity" value="+12%" hint="vs last" tone="primary" />
-            </div>
-
-            {/* ── Main grid ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                {/* Assigned issues */}
-                <div className="lg:col-span-3 border border-border bg-card overflow-hidden">
-                    <div className="h-9 border-b border-border bg-sidebar/40 flex items-center px-3.5 gap-2.5">
-                        <span className="text-[10px] font-mono tracking-wide text-muted-foreground/60">
-                            ASSIGNED
-                        </span>
-                        <span className="text-[10px] font-mono text-foreground/70">
-                            {allIssues?.data?.length ?? 0}
-                        </span>
-                        <Link
-                            to={`/w/${workspaceSlug}/my-issues`}
-                            className="ml-auto group flex items-center gap-1 text-[11px] font-medium text-primary/75 hover:text-primary transition-colors"
-                        >
-                            View all
-                            <ArrowRight
-                                className="size-3 opacity-70 group-hover:translate-x-0.5 transition-transform"
-                                strokeWidth={1.8}
-                            />
-                        </Link>
-                    </div>
-
-                    <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-                        {isIssuesPending ? (
-                            <div className="flex items-center justify-center py-14 gap-2 text-muted-foreground">
-                                <Loader2 className="size-3.5 animate-spin text-primary" />
-                                <span className="text-[11px] font-mono tracking-wide">
-                                    Loading issues…
+                                <span className="text-[8px] font-mono tracking-[0.15em] text-muted-foreground/35 uppercase">
+                                    REV / 02
                                 </span>
+
+                                <span className="w-1 h-1 rounded-full bg-border" />
+
+                                <span className="text-[8px] font-mono tracking-[0.15em] text-muted-foreground/35 uppercase">
+                                    SCALE / 1:1
+                                </span>
+
                             </div>
-                        ) : allIssues?.data && allIssues.data.length > 0 ? (
-                            allIssues.data.slice(0, 6).map((issue) => (
-                                <div
-                                    key={issue.id}
-                                    className="flex items-center gap-2.5 px-3.5 py-2.5 hover:bg-surface/30 transition-colors cursor-pointer group"
-                                >
-                                    <PriorityBadge
-                                        priority={mapPriority(issue.priority)}
-                                        compact
+                        </div>
+
+                        {/* main heading */}
+
+                        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+
+                            <div>
+
+                                <h1 className="text-[1.75rem] md:text-[2.15rem] font-semibold tracking-[-0.045em] leading-none">
+
+                                    Good {greeting},{" "}
+
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary to-primary/55">
+                                        {user.username}
+                                    </span>
+
+                                </h1>
+
+                                <p className="mt-2.5 text-[13px] text-muted-foreground max-w-xl leading-relaxed">
+
+                                    Your workspace is operational.
+                                    You have{" "}
+
+                                    <span className="text-foreground font-medium">
+                                        {metrics.total}{" "}
+                                        {metrics.total === 1
+                                            ? "assigned issue"
+                                            : "assigned issues"}
+                                    </span>
+
+                                    {metrics.urgent > 0 && (
+                                        <>
+                                            {" "}with{" "}
+
+                                            <span className="text-priority-urgent font-medium">
+                                                {metrics.urgent} urgent
+                                            </span>
+                                        </>
+                                    )}
+
+                                    .
+
+                                </p>
+
+                            </div>
+
+                            {/* workspace identity */}
+
+                            <div className="flex items-center gap-3 shrink-0">
+
+                                <div className="size-9 border border-border bg-card flex items-center justify-center">
+
+                                    <Command
+                                        className="size-4 text-primary/75"
+                                        strokeWidth={1.5}
                                     />
-                                    <span className="font-mono text-[9.5px] text-muted-foreground/65 w-16 shrink-0 tracking-wide">
-                                        {issue.id.slice(0, 8).toUpperCase()}
-                                    </span>
-                                    <span className="text-[13px] flex-1 truncate text-foreground/85 group-hover:text-foreground transition-colors">
-                                        {issue.title}
-                                    </span>
-                                    <StatusBadge status={mapStatus(issue.status)} />
-                                    <span className="text-[10px] font-mono text-muted-foreground/50 w-12 text-right tabular-nums">
-                                        {formatDate(issue.dueDate)}
-                                    </span>
+
                                 </div>
-                            ))
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-14 gap-1.5">
-                                <CheckCircle2
-                                    className="size-6 text-muted-foreground/25"
-                                    strokeWidth={1.5}
-                                />
-                                <p className="text-[13px] text-muted-foreground/60 tracking-tight">
-                                    No issues assigned
-                                </p>
-                                <p className="text-[10px] font-mono text-muted-foreground/40 tracking-wide">
-                                    All clear
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </div>
 
-                {/* Activity log */}
-                <div className="lg:col-span-2 border border-border bg-card overflow-hidden">
-                    <div className="h-9 border-b border-border bg-sidebar/40 flex items-center px-3.5 gap-2.5">
-                        <span className="text-[10px] font-mono tracking-wide text-muted-foreground/60">
-                            ACTIVITY
-                        </span>
-                        <span className="text-[10px] font-mono text-foreground/70">
-                            {allActivityLogs?.data?.length ?? 0}
-                        </span>
-                        <span className="ml-auto flex items-center gap-1.5 text-[10px] font-mono text-primary/70">
-                            <span className="size-1 rounded-full bg-primary animate-pulse" />
-                            LIVE
-                        </span>
-                    </div>
+                                <div>
 
-                    <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-                        {isActivityPending ? (
-                            <div className="flex items-center justify-center py-14 gap-2 text-muted-foreground">
-                                <Loader2 className="size-3.5 animate-spin text-primary" />
-                                <span className="text-[11px] font-mono tracking-wide">
-                                    Loading activity…
-                                </span>
-                            </div>
-                        ) : allActivityLogs?.data && allActivityLogs.data.length > 0 ? (
-                            allActivityLogs.data.slice(0, 8).map((log, i) => {
-                                const isLive = i === 0;
-                                return (
-                                    <div
-                                        key={`${log.id}-${i}`}
-                                        className={`flex gap-2.5 px-3.5 py-2.5 transition-colors ${isLive ? "bg-primary/[0.03]" : "hover:bg-surface/25"
-                                            }`}
-                                    >
-                                        <div className="size-6 flex items-center justify-center border border-border text-[9px] font-mono text-muted-foreground shrink-0">
-                                            {log.actor.username.slice(0, 2).toUpperCase()}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[12px] leading-snug text-foreground/85">
-                                                <span className="font-medium">{log.actor.username}</span>{" "}
-                                                <span className="text-muted-foreground/70">
-                                                    {getActivityMessage(log)}
-                                                </span>
-                                            </p>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <span className="text-[9.5px] font-mono text-muted-foreground/50 tracking-wide">
-                                                    {formatTimeAgo(log.createdAt)}
-                                                </span>
-                                                {isLive && (
-                                                    <>
-                                                        <span className="w-px h-2 bg-primary/30" />
-                                                        <span className="text-[8px] font-mono text-primary/65 tracking-wide uppercase">
-                                                            Live
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
+                                    <div className="text-[9px] font-mono tracking-[0.14em] text-muted-foreground/45 uppercase">
+                                        ACTIVE SURFACE
                                     </div>
-                                );
-                            })
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-14 gap-1.5">
-                                <Clock
-                                    className="size-6 text-muted-foreground/25"
-                                    strokeWidth={1.5}
-                                />
-                                <p className="text-[13px] text-muted-foreground/60 tracking-tight">
-                                    No activity yet
-                                </p>
-                                <p className="text-[10px] font-mono text-muted-foreground/40 tracking-wide">
-                                    Waiting for updates
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
 
-            {/* ── Sheet footer ── */}
-            <div className="mt-6 flex items-center justify-between text-[9px] font-mono tracking-[0.12em] text-muted-foreground/30 uppercase border-t border-border/50 pt-3">
-                <span>Sheet 01 / 01</span>
-                <div className="flex items-center gap-2.5">
-                    <span>v2.0.1</span>
-                    <span className="w-px h-2 bg-border/40" />
-                    <span>devflow.app</span>
-                </div>
-            </div>
+                                    <div className="mt-0.5 text-[12px] font-medium text-foreground/85">
+                                        {workspaceName}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {/* workload scale */}
+
+                        <WorkloadScale
+                            total={metrics.total}
+                            completed={metrics.completed}
+                        />
+
+                    </div>
+                </section>
+
+                {/* ===========================INSTRUMENT STRIP================================= */}
+
+
+                <section className="mb-6">
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border border border-border">
+
+                        <InstrumentCell
+                            icon={Layers3}
+                            label="Assigned"
+                            value={metrics.total}
+                            meta="ISSUES"
+                        />
+
+                        <InstrumentCell
+                            icon={Zap}
+                            label="Urgent"
+                            value={metrics.urgent}
+                            meta="ATTENTION"
+                            tone="urgent"
+                        />
+
+                        <InstrumentCell
+                            icon={Activity}
+                            label="In progress"
+                            value={metrics.inProgress}
+                            meta="ACTIVE"
+                            tone="progress"
+                        />
+
+                        <InstrumentCell
+                            icon={CheckCircle2}
+                            label="Completed"
+                            value={metrics.completed}
+                            meta="CLOSED"
+                            tone="done"
+                        />
+
+                    </div>
+
+                </section>
+
+                {/* ==========================MAIN OPERATIONAL SURFACE================================== */}
+
+
+                <section className="grid grid-cols-1 xl:grid-cols-[1.55fr_1fr] gap-4">
+
+                    {/* --------------------------ASSIGNED WORK ------------------------------ */}
+
+
+                    <Panel
+                        figure="FIG. 11"
+                        label="Assigned Work"
+                        count={metrics.total}
+                        action={
+                            metrics.total > 5 ? (
+                                <Link
+                                    to={`/w/${workspaceSlug}/my-issues`}
+                                    className="group inline-flex items-center gap-1.5 text-[10px] font-mono tracking-[0.08em] uppercase text-primary/65 hover:text-primary transition-colors"
+                                >
+                                    View all
+
+                                    <ArrowRight
+                                        className="size-3 transition-transform group-hover:translate-x-0.5"
+                                        strokeWidth={1.7}
+                                    />
+                                </Link>
+                            ) : null
+                        }
+                    >
+
+                        <div className="divide-y divide-border/70">
+
+                            {isIssuesPending ? (
+                                <PanelLoader label="Loading assigned work…" />
+                            ) : topIssues.length > 0 ? (
+
+                                topIssues.map((issue, index) => (
+
+                                    <IssueRow
+                                        key={issue.id}
+                                        issue={issue}
+                                        index={index}
+                                    />
+
+                                ))
+
+                            ) : (
+
+                                <EmptyState
+                                    icon={CheckCircle2}
+                                    title="No assigned work"
+                                    subtitle="The surface is clear."
+                                />
+
+                            )}
+
+                        </div>
+
+                        {/* panel footer */}
+
+                        <PanelFooter
+                            left="ISSUE STREAM"
+                            right={`${Math.min(topIssues.length, 5)} / ${metrics.total || 0}`}
+                        />
+
+                    </Panel>
+
+                    {/* ------------------------LIVE ACTIVITY -------------------------------- */}
+
+
+                    <Panel
+                        figure="FIG. 12"
+                        label="Activity Stream"
+                        count={allActivityLogs?.data?.length ?? 0}
+                        status
+                    >
+
+                        <div className="divide-y divide-border/70">
+
+                            {isActivityPending ? (
+                                <PanelLoader label="Listening for activity…" />
+                            ) : topActivities.length > 0 ? (
+
+                                topActivities.map((log, index) => (
+
+                                    <ActivityRow
+                                        key={`${log.id}-${index}`}
+                                        log={log}
+                                        live={index === 0}
+                                    />
+
+                                ))
+
+                            ) : (
+
+                                <EmptyState
+                                    icon={Clock3}
+                                    title="No activity yet"
+                                    subtitle="Waiting for workspace events."
+                                />
+
+                            )}
+
+                        </div>
+
+                        <PanelFooter
+                            left="STREAM"
+                            right="ACTIVE"
+                        />
+
+                    </Panel>
+
+                </section>
+
+                {/* =========================TECHNICAL FOOTER  =================================== */}
+
+
+                <footer className="mt-7 pt-3 border-t border-border/50 flex flex-wrap items-center justify-between gap-3">
+
+                    <div className="flex items-center gap-2.5 text-[8px] font-mono tracking-[0.14em] text-muted-foreground/30 uppercase">
+
+                        <span>
+                            SHEET 01 / 01
+                        </span>
+
+                        <span className="w-px h-2 bg-border/40" />
+
+                        <span>
+                            DEVFLOW / CORE SURFACE
+                        </span>
+
+                    </div>
+
+                    <div className="flex items-center gap-2.5 text-[8px] font-mono tracking-[0.14em] text-muted-foreground/30 uppercase">
+
+                        <span>
+                            WORKSPACE / {workspaceSlug}
+                        </span>
+
+                        <span className="w-px h-2 bg-border/40" />
+
+                        <span>
+                            REV. 02
+                        </span>
+
+                        <span className="w-px h-2 bg-border/40" />
+
+                        <span className="text-primary/45">
+                            SYSTEM / READY
+                        </span>
+
+                    </div>
+
+                </footer>
+
+            </main>
         </div>
     );
 }
 
-/* ── Stat cell (instrument strip) ── */
-function StatCell({
+/* ========================================================================= */
+/* BACKGROUND                                                                */
+/* ========================================================================= */
+
+function DashboardAtmosphere() {
+    return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+
+            {/* drafting grid */}
+
+            <div
+                className="absolute inset-0 opacity-[0.028]"
+                style={{
+                    backgroundImage: `
+                        linear-gradient(oklch(1 0 0 / 1) 1px, transparent 1px),
+                        linear-gradient(90deg, oklch(1 0 0 / 1) 1px, transparent 1px)
+                    `,
+                    backgroundSize: "40px 40px",
+                }}
+            />
+
+            {/* central atmospheric glow */}
+
+            <div
+                className="
+                    absolute
+                    left-[58%]
+                    top-[18%]
+                    -translate-x-1/2
+                    w-[650px]
+                    h-[420px]
+                    rounded-full
+                    bg-primary/[0.035]
+                    blur-[120px]
+                "
+            />
+
+            {/* secondary glow */}
+
+            <div
+                className="
+                    absolute
+                    right-[-200px]
+                    top-[45%]
+                    size-[400px]
+                    rounded-full
+                    bg-primary/[0.018]
+                    blur-[100px]
+                "
+            />
+
+            {/* horizontal signal */}
+
+            <div
+                className="
+                    absolute
+                    left-0
+                    top-[30%]
+                    w-32
+                    h-px
+                    bg-gradient-to-r
+                    from-transparent
+                    via-primary/20
+                    to-transparent
+                    animate-pulse
+                "
+            />
+
+        </div>
+    );
+}
+
+/* ========================================================================= */
+/* CORNER MARK                                                               */
+/* ========================================================================= */
+
+function CornerMark({
+    position,
+}: {
+    position: "top-left" | "top-right";
+}) {
+    return (
+        <div
+            className={`
+                absolute
+                top-0
+                ${position === "top-left" ? "left-0" : "right-0"}
+                size-3
+                border-primary/35
+                ${position === "top-left"
+                    ? "border-t border-l"
+                    : "border-t border-r"
+                }
+                pointer-events-none
+            `}
+        />
+    );
+}
+
+/* ========================================================================= */
+/* TECHNICAL LABEL                                                           */
+/* ========================================================================= */
+
+function TechnicalLabel({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    return (
+        <span className="text-[9px] font-mono tracking-[0.16em] text-muted-foreground/50 uppercase">
+            {children}
+        </span>
+    );
+}
+
+/* ========================================================================= */
+/* WORKLOAD SCALE                                                            */
+/* ========================================================================= */
+
+function WorkloadScale({
+    total,
+    completed,
+}: {
+    total: number;
+    completed: number;
+}) {
+    const length = Math.min(Math.max(total, 1), 32);
+
+    return (
+        <div className="mt-5 flex items-center gap-3">
+
+            <div className="flex items-end gap-[3px] h-3">
+
+                {Array.from({ length }).map((_, index) => {
+
+                    const filled =
+                        index < Math.min(completed, length);
+
+                    return (
+                        <span
+                            key={index}
+                            className={
+                                filled
+                                    ? "bg-status-done"
+                                    : "bg-border/70"
+                            }
+                            style={{
+                                width: "2px",
+                                height:
+                                    index % 5 === 0
+                                        ? "12px"
+                                        : index % 2 === 0
+                                            ? "7px"
+                                            : "4px",
+                            }}
+                        />
+                    );
+                })}
+
+            </div>
+
+            <span className="text-[8px] font-mono tracking-[0.13em] text-muted-foreground/35 uppercase">
+                Workload rail · {completed}/{total} closed
+            </span>
+
+            <div className="hidden sm:flex items-center gap-[3px] ml-auto">
+
+                {Array.from({ length: 13 }).map((_, index) => (
+                    <span
+                        key={index}
+                        className={
+                            index % 5 === 0
+                                ? "w-px h-3 bg-primary/35"
+                                : "w-px h-1.5 bg-border/50"
+                        }
+                    />
+                ))}
+
+                <span className="ml-2 text-[8px] font-mono tracking-[0.12em] text-muted-foreground/30 uppercase">
+                    SCALE 1:1
+                </span>
+
+            </div>
+
+        </div>
+    );
+}
+
+/* ========================================================================= */
+/* INSTRUMENT CELL                                                           */
+/* ========================================================================= */
+
+function InstrumentCell({
+    icon: Icon,
     label,
     value,
-    hint,
-    tone,
+    meta,
+    tone = "primary",
 }: {
+    icon: React.ElementType;
     label: string;
-    value: string | number;
-    hint: string;
-    tone: "progress" | "urgent" | "done" | "primary";
+    value: number;
+    meta: string;
+    tone?: "primary" | "urgent" | "progress" | "done";
 }) {
     const toneClass = {
-        progress: "text-status-progress",
-        urgent: "text-priority-urgent",
-        done: "text-status-done",
         primary: "text-primary",
+        urgent: "text-priority-urgent",
+        progress: "text-status-progress",
+        done: "text-status-done",
     }[tone];
 
     return (
         <div className="bg-background px-4 py-3.5 hover:bg-surface/25 transition-colors">
-            <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-mono tracking-[0.1em] text-muted-foreground/50 uppercase">
+
+            <div className="flex items-center justify-between mb-2">
+
+                <span className="text-[9px] font-mono tracking-[0.12em] text-muted-foreground/45 uppercase">
                     {label}
                 </span>
-                <span className={`text-[10px] font-mono ${toneClass}`}>{hint}</span>
+
+                <Icon
+                    className={`size-3 ${toneClass} opacity-60`}
+                    strokeWidth={1.6}
+                />
+
             </div>
-            <div className="text-[1.4rem] font-semibold tracking-[-0.02em] tabular-nums">
-                {value}
+
+            <div className="flex items-end justify-between">
+
+                <span
+                    className={`text-[1.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums ${toneClass}`}
+                >
+                    {value}
+                </span>
+
+                <span className="text-[8px] font-mono tracking-[0.12em] text-muted-foreground/30 uppercase">
+                    {meta}
+                </span>
+
             </div>
+
         </div>
     );
 }
 
-/* ── Dial cell — the one signature instrument in the strip ── */
-function DialCell({ value, label, total }: { value: number; label: string; total: number }) {
+/* ========================================================================= */
+/* PANEL                                                                     */
+/* ========================================================================= */
+
+function Panel({
+    figure,
+    label,
+    count,
+    status,
+    action,
+    children,
+}: {
+    figure: string;
+    label: string;
+    count: number;
+    status?: boolean;
+    action?: React.ReactNode;
+    children: React.ReactNode;
+}) {
     return (
-        <div className="bg-background px-4 py-3.5 flex items-center gap-3 hover:bg-surface/25 transition-colors">
-            <div
-                className="relative size-10 shrink-0 rounded-full"
-                style={{
-                    background: `conic-gradient(oklch(0.72 0.20 290) ${value * 3.6}deg, oklch(1 0 0 / 0.08) 0deg)`,
-                }}
-            >
-                <div className="absolute inset-[3px] rounded-full bg-background flex items-center justify-center">
-                    <span className="text-[9px] font-mono font-semibold tabular-nums">
-                        {value}%
-                    </span>
-                </div>
-            </div>
-            <div className="min-w-0">
-                <span className="block text-[10px] font-mono tracking-[0.1em] text-muted-foreground/50 uppercase">
+        <div className="relative border border-border bg-card overflow-hidden flex flex-col">
+
+            <div className="absolute top-0 left-0 size-2 border-t border-l border-primary/30 pointer-events-none" />
+
+            <div className="absolute top-0 right-0 size-2 border-t border-r border-primary/30 pointer-events-none" />
+
+            {/* header */}
+            <div className="h-10 border-b border-border bg-sidebar/35 px-3.5 flex items-center gap-2.5 shrink-0">
+
+                <span className="text-[8px] font-mono tracking-[0.14em] text-muted-foreground/35">
+                    {figure}
+                </span>
+
+                <span className="w-3 h-px bg-border" />
+
+                <span className="text-[10px] font-mono tracking-[0.08em] text-foreground/70 uppercase">
                     {label}
                 </span>
-                <span className="block text-[10px] font-mono text-muted-foreground/60 mt-1">
-                    of {total} tracked
+
+                <span className="text-[9px] font-mono text-muted-foreground/35">
+                    {String(count).padStart(2, "0")}
                 </span>
+
+                {status && (
+                    <span className="ml-auto flex items-center gap-1.5 text-[8px] font-mono tracking-[0.1em] text-primary/65 uppercase">
+
+                        <span className="size-1 rounded-full bg-primary animate-pulse" />
+
+                        LIVE
+
+                    </span>
+                )}
+
+                {action && (
+                    <div className="ml-auto">
+                        {action}
+                    </div>
+                )}
+
             </div>
+
+            <div className="flex-1">
+                {children}
+            </div>
+
+        </div>
+    );
+}
+
+/* ========================================================================= */
+/* ISSUE ROW                                                                 */
+/* ========================================================================= */
+
+function IssueRow({
+    issue,
+    index,
+}: {
+    issue: any;
+    index: number;
+}) {
+    return (
+        <div className="group flex items-center gap-3 px-3.5 py-3 hover:bg-surface/30 transition-colors h-[52px]">
+
+            {/* sequence */}
+
+            <span className="hidden sm:block w-5 text-[8px] font-mono text-muted-foreground/25 tabular-nums">
+                {String(index + 1).padStart(2, "0")}
+            </span>
+
+            {/* priority */}
+
+            <PriorityBadge
+                priority={mapPriority(issue.priority)}
+                compact
+            />
+
+            {/* issue id */}
+
+            <span className="hidden md:block w-16 shrink-0 text-[9px] font-mono tracking-wide text-muted-foreground/45">
+                {issue.id.slice(0, 8).toUpperCase()}
+            </span>
+
+            {/* title */}
+
+            <span className="flex-1 min-w-0 truncate text-[12px] md:text-[13px] text-foreground/80 group-hover:text-foreground transition-colors">
+                {issue.title}
+            </span>
+
+            {/* status */}
+
+            <StatusBadge
+                status={mapStatus(issue.status)}
+            />
+
+            {/* due date */}
+
+            <span className="hidden sm:block w-12 text-right text-[9px] font-mono text-muted-foreground/40 tabular-nums">
+                {formatDate(issue.dueDate)}
+            </span>
+
+            {/* arrow */}
+
+            <ArrowRight
+                className="size-3 text-muted-foreground/20 group-hover:text-primary/60 group-hover:translate-x-0.5 transition-all"
+                strokeWidth={1.5}
+            />
+
+        </div>
+    );
+}
+
+/* ========================================================================= */
+/* ACTIVITY ROW                                                              */
+/* ========================================================================= */
+
+function ActivityRow({
+    log,
+    live,
+}: {
+    log: any;
+    live: boolean;
+}) {
+    return (
+        <div
+            className={`
+                flex gap-2.5 px-3.5 py-3
+                transition-colors h-[52px] items-center
+                ${live
+                    ? "bg-primary/[0.035]"
+                    : "hover:bg-surface/25"
+                }
+            `}
+        >
+
+            {/* actor */}
+
+            <div className="size-7 shrink-0 border border-border bg-background flex items-center justify-center">
+
+                <span className="text-[8px] font-mono text-muted-foreground/65">
+                    {log.actor.username
+                        .slice(0, 2)
+                        .toUpperCase()}
+                </span>
+
+            </div>
+
+            {/* event */}
+
+            <div className="min-w-0 flex-1">
+
+                <div className="flex items-center gap-2">
+
+                    <p className="text-[11.5px] leading-snug text-foreground/80 truncate">
+
+                        <span className="font-medium text-foreground/90">
+                            {log.actor.username}
+                        </span>{" "}
+
+                        <span className="text-muted-foreground/65">
+                            {getActivityMessage(log)}
+                        </span>
+
+                    </p>
+
+                    {live && (
+                        <span className="shrink-0 size-1.5 rounded-full bg-primary animate-pulse" />
+                    )}
+
+                </div>
+
+                <div className="flex items-center gap-2 mt-0.5">
+
+                    <span className="text-[8.5px] font-mono tracking-wide text-muted-foreground/40">
+                        {formatTimeAgo(log.createdAt)}
+                    </span>
+
+                    {live && (
+                        <>
+                            <span className="w-px h-2 bg-primary/25" />
+
+                            <span className="text-[8px] font-mono tracking-[0.1em] text-primary/55 uppercase">
+                                Live
+                            </span>
+                        </>
+                    )}
+
+                </div>
+
+            </div>
+
+        </div>
+    );
+}
+
+/* ========================================================================= */
+/* PANEL FOOTER                                                              */
+/* ========================================================================= */
+
+function PanelFooter({
+    left,
+    right,
+}: {
+    left: string;
+    right: string;
+}) {
+    return (
+        <div className="h-8 border-t border-border bg-sidebar/30 px-3.5 flex items-center justify-between shrink-0">
+
+            <span className="text-[8px] font-mono tracking-[0.12em] text-muted-foreground/30 uppercase">
+                {left}
+            </span>
+
+            <span className="text-[8px] font-mono tracking-[0.1em] text-muted-foreground/30">
+                {right}
+            </span>
+
+        </div>
+    );
+}
+
+/* ========================================================================= */
+/* EMPTY STATE                                                               */
+/* ========================================================================= */
+
+function EmptyState({
+    icon: Icon,
+    title,
+    subtitle,
+}: {
+    icon: React.ElementType;
+    title: string;
+    subtitle: string;
+}) {
+    return (
+        <div className="flex flex-col items-center justify-center py-16 h-[260px]">
+
+            <Icon
+                className="size-6 text-muted-foreground/20 mb-2"
+                strokeWidth={1.4}
+            />
+
+            <p className="text-[12px] text-muted-foreground/55">
+                {title}
+            </p>
+
+            <p className="mt-1 text-[8px] font-mono tracking-[0.1em] text-muted-foreground/30 uppercase">
+                {subtitle}
+            </p>
+
+        </div>
+    );
+}
+
+/* ========================================================================= */
+/* LOADING                                                                   */
+/* ========================================================================= */
+
+function PanelLoader({
+    label,
+}: {
+    label: string;
+}) {
+    return (
+        <div className="flex items-center justify-center py-16 gap-2.5 h-[260px]">
+
+            <Loader2
+                className="size-3.5 animate-spin text-primary/70"
+                strokeWidth={1.6}
+            />
+
+            <span className="text-[9px] font-mono tracking-[0.12em] text-muted-foreground/45 uppercase">
+                {label}
+            </span>
+
+        </div>
+    );
+}
+
+function DashboardLoader() {
+    return (
+        <div className="min-h-[70vh] flex items-center justify-center">
+
+            <div className="relative border border-border bg-card px-6 py-4">
+
+                <div className="absolute -top-1 -left-1 size-3 border-t border-l border-primary/40" />
+
+                <div className="absolute -top-1 -right-1 size-3 border-t border-r border-primary/40" />
+
+                <div className="flex items-center gap-3">
+
+                    <Loader2
+                        className="size-3.5 animate-spin text-primary"
+                        strokeWidth={1.6}
+                    />
+
+                    <span className="text-[9px] font-mono tracking-[0.14em] text-muted-foreground/55 uppercase">
+                        Initializing workspace…
+                    </span>
+
+                </div>
+
+            </div>
+
         </div>
     );
 }

@@ -17,6 +17,7 @@ export const NotificationDropdown = ({
     const dropdownData =
         MyInfiniteNotifications?.pages
             .flatMap((data) => data.data?.notifications ?? [])
+            .filter((notification) => !notification.isRead)
             .slice(0, 4) ?? [];
     const navigate = useNavigate();
 

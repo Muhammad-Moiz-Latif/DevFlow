@@ -60,7 +60,8 @@ export type IssueType = {
         name: string,
         email: string,
         img: string
-    }
+    },
+    logs: ActivityLogType[]
 }
 
 type AllWorkspaceType = {
@@ -72,19 +73,25 @@ type AllWorkspaceType = {
 };
 
 type ActivityLogType = {
-    id: string,
-    issueId: string,
-    workspaceId: string,
-    logType: 'STATUS_CHANGED' | 'PRIORITY_CHANGED' | 'ASSIGNEE_CHANGED' | 'COMMENT_ADDED' | 'COMMENT_DELETED' | 'ISSUE_CREATED',
-    oldValue: string,
-    newValue: string,
-    createdAt: Date,
+    id: string;
+    issueId: string;
+    workspaceId: string;
+    type:
+    | "STATUS_CHANGED"
+    | "PRIORITY_CHANGED"
+    | "ASSIGNEE_CHANGED"
+    | "COMMENT_ADDED"
+    | "COMMENT_DELETED"
+    | "ISSUE_CREATED";
+    oldValue: string | null;
+    newValue: string | null;
+    createdAt: Date;
     actor: {
-        id: string,
-        username: string,
-        email: string,
-        img: string
-    }
+        id: string;
+        username: string;
+        email: string;
+        img: string;
+    };
 };
 
 type ProjectType = {

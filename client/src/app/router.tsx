@@ -12,6 +12,7 @@ import { MyIssuesPage } from "./routes/workspace/workspaceSlug/myIssues";
 import { MembersPage } from "./routes/workspace/workspaceSlug/members";
 import { NotificationsPage } from "./routes/workspace/workspaceSlug/notifications";
 import { AcceptMemberInvitationModal } from "../features/auth/components/accept-workspace-invitation-modal";
+import { NotFound } from "@/features/auth/components/not-found";
 
 
 export const router = createBrowserRouter([
@@ -78,6 +79,6 @@ export const router = createBrowserRouter([
     },
     {
         path: "*",
-        element: <h1>404 Page not found</h1>
+        element: <NotFound />
     }
 ]);
